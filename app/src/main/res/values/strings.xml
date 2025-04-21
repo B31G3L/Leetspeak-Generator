@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Leetspeak Generator</string>
+    <string name="app_subtitle">Generate your own leet</string>
+
+    <string name="simple">simple</string>
+    <string name="extended">extended</string>
+    <string name="custom">custom</string>
+
+    <string name="plaintext_placeholder">Your Plaintext …</string>
+    <string name="copy_text">Copy text</string>
+
+    <string name="simple_table_title">Simple Translate Table</string>
+    <string name="extended_table_title">Extended Translate Table</string>
+    <string name="custom_table_title">Custom Translate Table</string>
+
+    <string name="plain">Plain</string>
+    <string name="leet">Leet</string>
+
+    <string name="edit">Edit</string>
+    <string name="save">Save</string>
+
+    <string name="copy_success">Copied to clipboard</string>
+    <string name="save_success">Saved to storage</string>
+
+    <string name="version">Version: 3.14159265</string>
+    <string name="copyright">© beigel 2025</string>
+</resources>
