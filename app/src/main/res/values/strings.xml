@@ -3,9 +3,9 @@
     <string name="app_name">Leetspeak Generator</string>
     <string name="app_subtitle">Generate your own leet</string>
 
-    <string name="simple">simple</string>
-    <string name="extended">extended</string>
-    <string name="custom">custom</string>
+    <string name="simple">Simple</string>
+    <string name="extended">Extended</string>
+    <string name="custom">Custom</string>
 
     <string name="plaintext_placeholder">Your Plaintext …</string>
     <string name="copy_text">Copy text</string>
@@ -22,6 +22,30 @@
 
     <string name="copy_success">Copied to clipboard</string>
     <string name="save_success">Saved to storage</string>
+
+    <!-- Navigation strings -->
+    <string name="menu_mode">Mode</string>
+    <string name="modes">Modes</string>
+    <string name="custom_profiles">Custom Profiles</string>
+    <string name="profile_actions">Profile Actions</string>
+    <string name="open_drawer">Open navigation</string>
+    <string name="close_drawer">Close navigation</string>
+
+    <!-- Profile management -->
+    <string name="new_custom">Create new profile</string>
+    <string name="save_current_custom">Save current profile</string>
+    <string name="delete_current_custom">Delete current profile</string>
+    <string name="custom_profile_name">Custom profile name</string>
+    <string name="ok">OK</string>
+    <string name="cancel">Cancel</string>
+    <string name="profile_saved">Profile saved</string>
+    <string name="profile_deleted">Profile deleted</string>
+    <string name="default_custom_name">Custom</string>
+    <string name="create_new_profile">Create new profile</string>
+    <string name="enter_profile_name">Enter profile name</string>
+    <string name="delete_confirm">Delete this profile?</string>
+    <string name="delete_confirm_message">This action cannot be undone.</string>
+    <string name="default_profile_no_delete">Cannot delete default profile</string>
 
     <string name="version">Version: 3.14159265</string>
     <string name="copyright">© beigel 2025</string>
