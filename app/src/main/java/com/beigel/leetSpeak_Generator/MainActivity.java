@@ -7,7 +7,8 @@ import android.content.DialogInterface;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.view.LayoutInflater;
+import android.view.Gravity;
+import androidx.core.content.res.ResourcesCompat;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
@@ -244,6 +245,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
     private void showNewProfileDialog() {
+        // Verwende den Standard-Theme anstelle des benutzerdefinierten Themes
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle(R.string.create_new_profile);
 
@@ -289,6 +291,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
     private void showDeleteProfileConfirmDialog() {
+        // Verwende den Standard-Theme anstelle des benutzerdefinierten Themes
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle(R.string.delete_confirm)
                 .setMessage(R.string.delete_confirm_message)
@@ -409,30 +412,49 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }
     }
 
+    // Ändere in updateTable() die Erstellung der Tabellenzellen wie folgt:
+
     private void updateTable() {
         // Clear the table
         leetTable.removeAllViews();
 
+        // Tabellenzellen-Stil
+        int cellPadding = (int) getResources().getDimension(R.dimen.table_cell_padding);
+
         // Add rows to the table
         for (int i = 0; i < 13; i++) {
             TableRow row = new TableRow(this);
+            row.setBackgroundColor(i % 2 == 0 ?
+                    getResources().getColor(R.color.gray_light, getTheme()) :
+                    getResources().getColor(android.R.color.transparent, getTheme()));
 
             // Left side (letters 0-12)
             TextView leftPlain = new TextView(this);
             leftPlain.setText(String.valueOf(plaintextAlphabet[i]));
-            leftPlain.setPadding(10, 10, 10, 10);
+            leftPlain.setPadding(cellPadding, cellPadding, cellPadding, cellPadding);
+            leftPlain.setTextColor(getResources().getColor(R.color.text_primary, getTheme()));
+            leftPlain.setTypeface(ResourcesCompat.getFont(this, R.font.raleway));
+            leftPlain.setGravity(Gravity.CENTER);
             row.addView(leftPlain);
 
             // Left side leet character
             if (isEditMode && activeMode == CUSTOM) {
                 EditText leftLeet = new EditText(this);
                 leftLeet.setText(getTranslatedChar(plaintextAlphabet[i]));
+                leftLeet.setTextColor(getResources().getColor(R.color.text_primary, getTheme()));
+                leftLeet.setTypeface(ResourcesCompat.getFont(this, R.font.raleway));
+                leftLeet.setGravity(Gravity.CENTER);
+                leftLeet.setBackgroundResource(R.drawable.edit_text_background);
+                leftLeet.setPadding(cellPadding, cellPadding, cellPadding, cellPadding);
                 editableFields[i][0] = leftLeet;
                 row.addView(leftLeet);
             } else {
                 TextView leftLeet = new TextView(this);
                 leftLeet.setText(getTranslatedChar(plaintextAlphabet[i]));
-                leftLeet.setPadding(10, 10, 20, 10);
+                leftLeet.setPadding(cellPadding, cellPadding, cellPadding, cellPadding);
+                leftLeet.setTextColor(getResources().getColor(R.color.text_primary, getTheme()));
+                leftLeet.setTypeface(ResourcesCompat.getFont(this, R.font.raleway));
+                leftLeet.setGravity(Gravity.CENTER);
                 if (!isEditMode) {
                     displayFields[i][0] = leftLeet;
                 }
@@ -442,19 +464,30 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             // Right side (letters 13-25)
             TextView rightPlain = new TextView(this);
             rightPlain.setText(String.valueOf(plaintextAlphabet[i + 13]));
-            rightPlain.setPadding(20, 10, 10, 10);
+            rightPlain.setPadding(cellPadding, cellPadding, cellPadding, cellPadding);
+            rightPlain.setTextColor(getResources().getColor(R.color.text_primary, getTheme()));
+            rightPlain.setTypeface(ResourcesCompat.getFont(this, R.font.raleway));
+            rightPlain.setGravity(Gravity.CENTER);
             row.addView(rightPlain);
 
             // Right side leet character
             if (isEditMode && activeMode == CUSTOM) {
                 EditText rightLeet = new EditText(this);
                 rightLeet.setText(getTranslatedChar(plaintextAlphabet[i + 13]));
+                rightLeet.setTextColor(getResources().getColor(R.color.text_primary, getTheme()));
+                rightLeet.setTypeface(ResourcesCompat.getFont(this, R.font.raleway));
+                rightLeet.setGravity(Gravity.CENTER);
+                rightLeet.setBackgroundResource(R.drawable.edit_text_background);
+                rightLeet.setPadding(cellPadding, cellPadding, cellPadding, cellPadding);
                 editableFields[i][1] = rightLeet;
                 row.addView(rightLeet);
             } else {
                 TextView rightLeet = new TextView(this);
                 rightLeet.setText(getTranslatedChar(plaintextAlphabet[i + 13]));
-                rightLeet.setPadding(10, 10, 10, 10);
+                rightLeet.setPadding(cellPadding, cellPadding, cellPadding, cellPadding);
+                rightLeet.setTextColor(getResources().getColor(R.color.text_primary, getTheme()));
+                rightLeet.setTypeface(ResourcesCompat.getFont(this, R.font.raleway));
+                rightLeet.setGravity(Gravity.CENTER);
                 if (!isEditMode) {
                     displayFields[i][1] = rightLeet;
                 }
