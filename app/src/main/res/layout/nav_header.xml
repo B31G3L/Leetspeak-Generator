@@ -15,6 +15,7 @@
         android:layout_marginBottom="16dp"/>
 
     <TextView
+        android:id="@+id/navHeaderTitle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:paddingTop="8dp"
@@ -24,13 +25,5 @@
         android:textStyle="bold"
         android:fontFamily="@font/raleway"
         android:textColor="?android:attr/textColorPrimary" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/app_subtitle"
-        android:textAppearance="@style/TextAppearance.AppCompat.Body1"
-        android:fontFamily="@font/raleway"
-        android:textColor="?android:attr/textColorSecondary" />
 
 </LinearLayout>

@@ -25,6 +25,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
+import com.google.android.material.card.MaterialCardView;
+import com.google.android.material.button.MaterialButton;
 
 import com.google.android.material.navigation.NavigationView;
 
@@ -55,11 +57,16 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private Button buttonSave;
     private TextView tableTitle;
     private TableLayout leetTable;
+    private TextView appTitle;
+    private TextView navHeaderTitle;
+    private MaterialButton buttonExpandTable;
+    private MaterialCardView tableContainer;
 
     private ProfileManager profileManager;
     private EditText[][] editableFields = new EditText[13][2];
     private TextView[][] displayFields = new TextView[13][2];
     private boolean isEditMode = false;
+    private boolean isTableExpanded = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,6 +76,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         // Initialize Toolbar
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setTitle("");
+        }
 
         // Initialize DrawerLayout
         drawerLayout = findViewById(R.id.drawer_layout);
@@ -93,6 +103,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         buttonSave = findViewById(R.id.buttonSave);
         tableTitle = findViewById(R.id.tableTitle);
         leetTable = findViewById(R.id.leetTable);
+        appTitle = findViewById(R.id.appTitle);
+        buttonExpandTable = findViewById(R.id.buttonExpandTable);
+        tableContainer = findViewById(R.id.tableContainer);
+
+        // Get the navigation header view
+        View headerView = navigationView.getHeaderView(0);
+        navHeaderTitle = headerView.findViewById(R.id.navHeaderTitle);
 
         // Set up text change listener
         inputPlainText.addTextChangedListener(new TextWatcher() {
@@ -132,9 +149,21 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             }
         });
 
+        buttonExpandTable.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                toggleTableVisibility();
+            }
+        });
+
         // Set initial mode and update UI
         setActiveMode(SIMPLE);
         updateNavigationView();
+    }
+
+    private void toggleTableVisibility() {
+        isTableExpanded = !isTableExpanded;
+        tableContainer.setVisibility(isTableExpanded ? View.VISIBLE : View.GONE);
     }
 
     @Override
@@ -320,19 +349,31 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private void setActiveMode(int mode) {
         activeMode = mode;
 
-        // Update UI based on mode
+        // Update app title based on mode
         switch (mode) {
             case SIMPLE:
+                appTitle.setText(R.string.simple);
+                if (navHeaderTitle != null) {
+                    navHeaderTitle.setText(R.string.simple);
+                }
                 tableTitle.setText(R.string.simple_table_title);
                 buttonEdit.setVisibility(View.GONE);
                 buttonSave.setVisibility(View.GONE);
                 break;
             case EXTENDED:
+                appTitle.setText(R.string.extended);
+                if (navHeaderTitle != null) {
+                    navHeaderTitle.setText(R.string.extended);
+                }
                 tableTitle.setText(R.string.extended_table_title);
                 buttonEdit.setVisibility(View.GONE);
                 buttonSave.setVisibility(View.GONE);
                 break;
             case CUSTOM:
+                appTitle.setText(R.string.custom);
+                if (navHeaderTitle != null) {
+                    navHeaderTitle.setText(R.string.custom);
+                }
                 updateTableTitle();
                 buttonEdit.setVisibility(View.VISIBLE);
                 buttonSave.setVisibility(isEditMode ? View.VISIBLE : View.GONE);
@@ -411,8 +452,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 return String.valueOf(inputChar);
         }
     }
-
-    // Ändere in updateTable() die Erstellung der Tabellenzellen wie folgt:
 
     private void updateTable() {
         // Clear the table

@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Leetspeak Generator</string>
-    <string name="app_subtitle">Generate your own leet</string>
+    <string name="app_subtitle"></string>
 
-    <string name="simple">Simple</string>
-    <string name="extended">Extended</string>
-    <string name="custom">Custom</string>
+    <string name="simple">Simple Leet</string>
+    <string name="extended">Extended Leet</string>
+    <string name="custom">Custom Leet</string>
 
     <string name="plaintext_placeholder">Your Plaintext …</string>
     <string name="copy_text">Copy text</string>
@@ -13,9 +13,10 @@
     <string name="simple_table_title">Simple Translate Table</string>
     <string name="extended_table_title">Extended Translate Table</string>
     <string name="custom_table_title">Custom Translate Table</string>
+    <string name="table_expand">Show/Hide Table</string>
 
     <string name="plain">Plain</string>
-    <string name="leet">Leet</string>
+    <string name="leet">Leed</string>
 
     <string name="edit">Edit</string>
     <string name="save">Save</string>
@@ -47,6 +48,7 @@
     <string name="delete_confirm_message">This action cannot be undone.</string>
     <string name="default_profile_no_delete">Cannot delete default profile</string>
 
-    <string name="version">Version: 3.14159265</string>
-    <string name="copyright">© beigel 2025</string>
+
+    <string name="version">Version: 1337.00_8374_1</string>
+    <string name="copyright">© B31G3L 2025</string>
 </resources>

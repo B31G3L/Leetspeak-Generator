@@ -10,8 +10,8 @@ android {
         applicationId "com.beigel.leetSpeak_Generator"
         minSdk 26
         targetSdk 34
-        versionCode 1416000000
-        versionName "3.15"
+        versionCode 1501337001
+        versionName "1337.00_8374_1"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
