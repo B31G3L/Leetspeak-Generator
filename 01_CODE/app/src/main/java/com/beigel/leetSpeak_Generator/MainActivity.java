@@ -59,7 +59,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private EditText inputPlainText;
     private TextView outputLeetText;
     private Button buttonCopy;
-    private TextView tableTitle;
     private TableLayout leetTable;
     private TextView appTitle;
     private TextView navHeaderTitle;
@@ -108,7 +107,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         inputPlainText = findViewById(R.id.inputPlainText);
         outputLeetText = findViewById(R.id.outputLeetText);
         buttonCopy = findViewById(R.id.buttonCopy);
-        tableTitle = findViewById(R.id.tableTitle);
         leetTable = findViewById(R.id.leetTable);
         appTitle = findViewById(R.id.appTitle);
         buttonExpandTable = findViewById(R.id.buttonExpandTable);
@@ -212,7 +210,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         } else if (itemId == R.id.nav_custom_default) {
             setActiveMode(CUSTOM);
             profileManager.setCurrentProfileIndex(0); // Standard-Leet auswählen
-            updateTableTitle();
             updateOutput();
         } else if (itemId == R.id.nav_about) {
             showAboutView();
@@ -228,7 +225,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 try {
                     setActiveMode(CUSTOM);
                     profileManager.setCurrentProfileIndex(leetIndex);
-                    updateTableTitle();
                     updateOutput();
                     updateTable();
 
@@ -426,7 +422,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     // UI aktualisieren
                     setActiveMode(CUSTOM);
                     profileManager.setCurrentProfileIndex(profileManager.getProfiles().size() - 1);
-                    updateTableTitle();
                     updateTable();
 
                     // Wichtig: Menü aktualisieren, um den neuen Leet anzuzeigen
@@ -504,21 +499,20 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 if (navHeaderTitle != null) {
                     navHeaderTitle.setText(R.string.simple);
                 }
-                tableTitle.setText(R.string.simple_table_title);
                 break;
             case EXTENDED:
                 appTitle.setText(R.string.extended);
                 if (navHeaderTitle != null) {
                     navHeaderTitle.setText(R.string.extended);
                 }
-                tableTitle.setText(R.string.extended_table_title);
                 break;
             case CUSTOM:
-                appTitle.setText(R.string.custom);
+                String leetName = profileManager.getCurrentProfile().getName();
+                String titleText = leetName + " Leet";
+                appTitle.setText(titleText);
                 if (navHeaderTitle != null) {
-                    navHeaderTitle.setText(R.string.custom);
+                    navHeaderTitle.setText(titleText);
                 }
-                updateTableTitle();
                 break;
             case ABOUT:
                 // Navigiere zur About-Ansicht
@@ -546,12 +540,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         invalidateOptionsMenu();
     }
 
-    private void updateTableTitle() {
-        if (activeMode == CUSTOM) {
-            CustomProfile profile = profileManager.getCurrentProfile();
-            tableTitle.setText(profile.getName() + " " + getString(R.string.custom_table_title));
-        }
-    }
 
     private void updateOutput() {
         String input = inputPlainText.getText().toString();
