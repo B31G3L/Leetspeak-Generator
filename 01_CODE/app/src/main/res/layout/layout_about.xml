@@ -8,12 +8,6 @@
     android:gravity="center">
 
     <!-- Logo -->
-    <ImageView
-        android:layout_width="96dp"
-        android:layout_height="96dp"
-        android:src="@drawable/ic_leet_logo_app"
-        android:contentDescription="@string/app_name"
-        android:layout_marginBottom="24dp"/>
 
     <!-- App Name -->
     <TextView

@@ -7,13 +7,6 @@
     android:orientation="vertical"
     android:padding="16dp">
 
-    <ImageView
-        android:layout_width="match_parent"
-        android:layout_height="60dp"
-        android:src="@drawable/ic_leet_logo_app"
-        android:contentDescription="@string/app_name"
-        android:layout_marginBottom="16dp"/>
-
     <TextView
         android:id="@+id/navHeaderTitle"
         android:layout_width="match_parent"
