@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_mode_title"
+            android:title="@string/modes"
+            android:enabled="false" />
+
+        <item
+            android:id="@+id/nav_simple"
+            android:icon="@drawable/ic_simple_mode"
+            android:title="@string/simple" />
+
+        <item
+            android:id="@+id/nav_extended"
+            android:icon="@drawable/ic_extended_mode"
+            android:title="@string/extended" />
+    </group>
+
+    <item android:title="@string/custom_profiles">
+        <menu>
+            <item
+                android:id="@+id/nav_custom_default"
+                android:icon="@drawable/ic_custom_mode"
+                android:title="@string/custom" />
+
+            <!-- Hier werden benutzerdefinierte Profile dynamisch eingefügt -->
+        </menu>
+    </item>
+
+    <item android:title="@string/profile_actions">
+        <menu>
+            <item
+                android:id="@+id/nav_new_custom"
+                android:icon="@drawable/ic_add_profile"
+                android:title="@string/new_custom" />
+
+            <item
+                android:id="@+id/nav_save_custom"
+                android:icon="@drawable/ic_save_profile"
+                android:title="@string/save_current_custom"
+                android:visible="false" />
+
+            <item
+                android:id="@+id/nav_delete_custom"
+                android:icon="@drawable/ic_delete_profile"
+                android:title="@string/delete_current_custom"
+                android:visible="false" />
+        </menu>
+    </item>
+
+    <!-- Neues Menü für App-Informationen -->
+    <item android:title="@string/about">
+        <menu>
+            <item
+                android:id="@+id/nav_about"
+                android:icon="@drawable/ic_about"
+                android:title="@string/about" />
+        </menu>
+    </item>
+</menu>
