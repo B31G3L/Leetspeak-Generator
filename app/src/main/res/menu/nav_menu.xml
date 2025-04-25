@@ -1,10 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <group android:checkableBehavior="single">
-        <item
-            android:id="@+id/nav_mode_title"
-            android:title="@string/modes"
-            android:enabled="false" />
 
         <item
             android:id="@+id/nav_simple"
@@ -49,6 +45,16 @@
                 android:icon="@drawable/ic_delete_profile"
                 android:title="@string/delete_current_custom"
                 android:visible="false" />
+        </menu>
+    </item>
+
+    <!-- Neues Menü für App-Informationen -->
+    <item android:title="@string/about">
+        <menu>
+            <item
+                android:id="@+id/nav_about"
+                android:icon="@drawable/ic_about"
+                android:title="@string/about" />
         </menu>
     </item>
 </menu>
