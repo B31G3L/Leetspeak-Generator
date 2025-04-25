@@ -9,8 +9,6 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.Gravity;
-import androidx.core.content.res.ResourcesCompat;
-
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.SubMenu;
@@ -27,11 +25,13 @@ import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.content.res.ResourcesCompat;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
-import com.google.android.material.card.MaterialCardView;
-import com.google.android.material.button.MaterialButton;
 
+import com.google.android.material.button.MaterialButton;
+import com.google.android.material.card.MaterialCardView;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
 
 import java.util.HashMap;
@@ -43,7 +43,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private static final int SIMPLE = 0;
     private static final int EXTENDED = 1;
     private static final int CUSTOM = 2;
-    private static final int ABOUT = 3; // Neue Konstante für About-Ansicht
+    private static final int ABOUT = 3;
 
     private final char[] plaintextAlphabet = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'};
 
@@ -55,17 +55,17 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     private DrawerLayout drawerLayout;
     private NavigationView navigationView;
+    private FloatingActionButton fabAddLeet;
     private EditText inputPlainText;
     private TextView outputLeetText;
     private Button buttonCopy;
-    private Button buttonEdit;
-    private Button buttonSave;
     private TextView tableTitle;
     private TableLayout leetTable;
     private TextView appTitle;
     private TextView navHeaderTitle;
     private MaterialButton buttonExpandTable;
     private MaterialCardView tableContainer;
+    private Toolbar toolbar;
 
     // Für About-Ansicht
     private View mainContentView;
@@ -83,7 +83,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         setContentView(R.layout.activity_main);
 
         // Initialize Toolbar
-        Toolbar toolbar = findViewById(R.id.toolbar);
+        toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         if (getSupportActionBar() != null) {
             getSupportActionBar().setTitle("");
@@ -108,13 +108,12 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         inputPlainText = findViewById(R.id.inputPlainText);
         outputLeetText = findViewById(R.id.outputLeetText);
         buttonCopy = findViewById(R.id.buttonCopy);
-        buttonEdit = findViewById(R.id.buttonEdit);
-        buttonSave = findViewById(R.id.buttonSave);
         tableTitle = findViewById(R.id.tableTitle);
         leetTable = findViewById(R.id.leetTable);
         appTitle = findViewById(R.id.appTitle);
         buttonExpandTable = findViewById(R.id.buttonExpandTable);
         tableContainer = findViewById(R.id.tableContainer);
+        fabAddLeet = findViewById(R.id.fabAddLeet);
 
         // Initialisiere Views für den Hauptinhalt und About-Ansicht
         mainContentView = findViewById(R.id.main_content);
@@ -141,44 +140,66 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         });
 
         // Set up button click listeners
-        buttonCopy.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                copyToClipboard();
-            }
-        });
+        buttonCopy.setOnClickListener(v -> copyToClipboard());
 
-        buttonEdit.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                switchToEditMode();
-            }
-        });
+        buttonExpandTable.setOnClickListener(v -> toggleTableVisibility());
 
-        buttonSave.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                saveCustomTranslations();
-            }
-        });
-
-        buttonExpandTable.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                toggleTableVisibility();
-            }
-        });
+        // Neuer FAB-ClickListener
+        fabAddLeet.setOnClickListener(v -> showNewProfileDialog());
 
         // Set initial mode and update UI
         setActiveMode(SIMPLE);
         updateNavigationView();
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Toolbar-Menü aufblasen
+        getMenuInflater().inflate(R.menu.toolbar_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        // Aktualisiere Sichtbarkeit der Menüpunkte basierend auf dem aktiven Modus
+        MenuItem editItem = menu.findItem(R.id.action_edit);
+        MenuItem saveItem = menu.findItem(R.id.action_save);
+        MenuItem deleteItem = menu.findItem(R.id.action_delete);
+
+        if (editItem != null && saveItem != null && deleteItem != null) {
+            boolean isCustomMode = activeMode == CUSTOM;
+            boolean isCustomAndNotDefault = isCustomMode && profileManager.getCurrentProfileIndex() > 0;
+
+            editItem.setVisible(isCustomMode && !isEditMode);
+            saveItem.setVisible(isCustomMode && isEditMode);
+            deleteItem.setVisible(isCustomAndNotDefault);
+        }
+
+        return super.onPrepareOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int itemId = item.getItemId();
+
+        if (itemId == R.id.action_edit) {
+            switchToEditMode();
+            return true;
+        } else if (itemId == R.id.action_save) {
+            saveCustomTranslations();
+            return true;
+        } else if (itemId == R.id.action_delete) {
+            showDeleteProfileConfirmDialog();
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
     private void toggleTableVisibility() {
         isTableExpanded = !isTableExpanded;
         tableContainer.setVisibility(isTableExpanded ? View.VISIBLE : View.GONE);
     }
-
 
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
@@ -193,18 +214,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             profileManager.setCurrentProfileIndex(0); // Standard-Leet auswählen
             updateTableTitle();
             updateOutput();
-        } else if (itemId == R.id.nav_new_custom) {
-            showNewProfileDialog();
-        } else if (itemId == R.id.nav_save_custom) {
-            if (activeMode == CUSTOM) {
-                saveCurrentCustomProfile();
-            }
-        } else if (itemId == R.id.nav_delete_custom) {
-            if (activeMode == CUSTOM && profileManager.canDeleteCurrentProfile()) {
-                showDeleteProfileConfirmDialog();
-            } else {
-                Toast.makeText(this, R.string.default_profile_no_delete, Toast.LENGTH_SHORT).show();
-            }
         } else if (itemId == R.id.nav_about) {
             showAboutView();
             item.setChecked(true);
@@ -259,12 +268,18 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         mainContentView.setVisibility(View.GONE);
         aboutView.setVisibility(View.VISIBLE);
 
+        // FAB ausblenden
+        fabAddLeet.hide();
+
         // App-Titel ändern
         if (getSupportActionBar() != null) {
             getSupportActionBar().setTitle(R.string.about);
         }
 
         activeMode = ABOUT;
+
+        // Toolbar-Menü aktualisieren
+        invalidateOptionsMenu();
     }
 
     // Angepasste Methode, um zurück zur Hauptansicht zu wechseln
@@ -273,6 +288,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             aboutView.setVisibility(View.GONE);
         }
         mainContentView.setVisibility(View.VISIBLE);
+
+        // FAB wieder anzeigen
+        fabAddLeet.show();
 
         // App-Titel zurücksetzen
         if (getSupportActionBar() != null) {
@@ -294,17 +312,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     private void updateNavigationView() {
         // Update visibility of save/delete options
-        MenuItem saveItem = navigationView.getMenu().findItem(R.id.nav_save_custom);
-        MenuItem deleteItem = navigationView.getMenu().findItem(R.id.nav_delete_custom);
-
-        if (saveItem != null) {
-            saveItem.setVisible(activeMode == CUSTOM);
-        }
-
-        if (deleteItem != null) {
-            deleteItem.setVisible(activeMode == CUSTOM && profileManager.canDeleteCurrentProfile());
-        }
-
         // Update checkmarks for current mode
         MenuItem simpleItem = navigationView.getMenu().findItem(R.id.nav_simple);
         MenuItem extendedItem = navigationView.getMenu().findItem(R.id.nav_extended);
@@ -329,6 +336,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         // Update custom profiles in menu
         updateCustomProfilesInMenu();
+
+        // Aktualisiere Toolbar-Menü
+        invalidateOptionsMenu();
     }
 
     private void updateCustomProfilesInMenu() {
@@ -479,9 +489,12 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private void setActiveMode(int mode) {
         activeMode = mode;
 
-        // Zeige Hauptansicht und verstecke About-Ansicht (falls vorhanden)
+        // Zeige FAB nur in normalen Modi, nicht im About Modus
         if (mode != ABOUT) {
             showMainView();
+            fabAddLeet.show();
+        } else {
+            fabAddLeet.hide();
         }
 
         // Update app title based on mode
@@ -492,8 +505,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     navHeaderTitle.setText(R.string.simple);
                 }
                 tableTitle.setText(R.string.simple_table_title);
-                buttonEdit.setVisibility(View.GONE);
-                buttonSave.setVisibility(View.GONE);
                 break;
             case EXTENDED:
                 appTitle.setText(R.string.extended);
@@ -501,8 +512,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     navHeaderTitle.setText(R.string.extended);
                 }
                 tableTitle.setText(R.string.extended_table_title);
-                buttonEdit.setVisibility(View.GONE);
-                buttonSave.setVisibility(View.GONE);
                 break;
             case CUSTOM:
                 appTitle.setText(R.string.custom);
@@ -510,8 +519,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     navHeaderTitle.setText(R.string.custom);
                 }
                 updateTableTitle();
-                buttonEdit.setVisibility(View.VISIBLE);
-                buttonSave.setVisibility(isEditMode ? View.VISIBLE : View.GONE);
                 break;
             case ABOUT:
                 // Navigiere zur About-Ansicht
@@ -522,7 +529,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         // Exit edit mode if changing modes
         if (isEditMode) {
             isEditMode = false;
-            buttonSave.setVisibility(View.GONE);
         }
 
         // Update placeholder
@@ -535,6 +541,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         // Update output and table
         updateOutput();
         updateTable();
+
+        // Update Toolbar actions
+        invalidateOptionsMenu();
     }
 
     private void updateTableTitle() {
@@ -680,15 +689,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         if (activeMode != CUSTOM) return;
 
         isEditMode = true;
-        buttonEdit.setVisibility(View.GONE);
-        buttonSave.setVisibility(View.VISIBLE);
         updateTable();
 
-        // Update save option in navigation menu
-        MenuItem saveItem = navigationView.getMenu().findItem(R.id.nav_save_custom);
-        if (saveItem != null) {
-            saveItem.setVisible(true);
-        }
+        // Toolbar-Menü aktualisieren
+        invalidateOptionsMenu();
     }
 
     private void saveCustomTranslations() {
@@ -715,19 +719,14 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         profileManager.updateCurrentProfile(currentProfile);
 
         isEditMode = false;
-        buttonEdit.setVisibility(View.VISIBLE);
-        buttonSave.setVisibility(View.GONE);
 
         Toast.makeText(this, R.string.save_success, Toast.LENGTH_SHORT).show();
 
         updateTable();
         updateOutput();
 
-        // Hide save menu option
-        MenuItem saveItem = navigationView.getMenu().findItem(R.id.nav_save_custom);
-        if (saveItem != null) {
-            saveItem.setVisible(false);
-        }
+        // Toolbar-Menü aktualisieren
+        invalidateOptionsMenu();
     }
 
     private void copyToClipboard() {

@@ -146,6 +146,7 @@
                             style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                             android:fontFamily="@font/raleway" />
 
+                        <!-- Diese Buttons werden jetzt in der Toolbar platziert und können hier entfernt werden -->
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/buttonEdit"
                             android:layout_width="wrap_content"
@@ -243,6 +244,20 @@
                 </LinearLayout>
             </LinearLayout>
         </ScrollView>
+
+        <!-- Floating Action Button für "Neuen Leet erstellen" -->
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/fabAddLeet"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|end"
+            android:layout_margin="16dp"
+            android:contentDescription="@string/new_custom"
+            app:srcCompat="@drawable/ic_fab_add"
+            app:backgroundTint="?attr/colorSecondary"
+            app:tint="?attr/colorOnSecondary"
+            app:fabSize="normal"
+            app:elevation="6dp" />
 
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
