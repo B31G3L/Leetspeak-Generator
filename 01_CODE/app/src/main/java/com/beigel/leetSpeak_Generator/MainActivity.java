@@ -46,10 +46,10 @@ import java.util.Map;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
-    private static final int SIMPLE = 0;
-    private static final int EXTENDED = 1;
-    private static final int CUSTOM = 2;
-    private static final int ABOUT = 3;
+    private static final int SIMPLE = ProfileManager.MODE_SIMPLE;
+    private static final int EXTENDED = ProfileManager.MODE_EXTENDED;
+    private static final int CUSTOM = ProfileManager.MODE_CUSTOM;
+    private static final int ABOUT = ProfileManager.MODE_ABOUT;
 
     private final char[] plaintextAlphabet = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'};
 
@@ -168,27 +168,37 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         navHeaderTitle = headerView.findViewById(R.id.navHeaderTitle);
     }
 
-    // Favoriten-Modus laden
     private void loadFavoriteMode() {
-        int favoriteIndex = profileManager.getFavoriteLeetIndex();
-        if (favoriteIndex >= 0) {
-            // Wenn ein Favorit gesetzt ist, diesen aktivieren
-            if (favoriteIndex >= profileManager.getProfiles().size()) {
-                // Falls der Favoriten-Index ungültig ist (z.B. nach Löschen)
-                favoriteIndex = 0; // Zurück zu Simple
-                profileManager.setFavoriteLeet(favoriteIndex);
-            }
+        int favoriteMode = profileManager.getFavoriteMode();
+        int favoriteCustomIndex = profileManager.getFavoriteCustomIndex();
 
-            if (favoriteIndex == 0) {
+        // Debug-Logging
+        Log.d("MainActivity", "loadFavoriteMode: FavoriteMode: " + favoriteMode +
+                ", favoriteCustomIndex: " + favoriteCustomIndex);
+
+        if (favoriteMode >= 0) {
+            // Wenn ein Favorit gesetzt ist, diesen aktivieren
+            if (favoriteMode == ProfileManager.MODE_SIMPLE) {
+                Log.d("MainActivity", "Favorit ist Simple-Modus");
                 setActiveMode(SIMPLE);
-            } else if (favoriteIndex == 1) {
+            } else if (favoriteMode == ProfileManager.MODE_EXTENDED) {
+                Log.d("MainActivity", "Favorit ist Extended-Modus");
                 setActiveMode(EXTENDED);
-            } else {
-                setActiveMode(CUSTOM);
-                profileManager.setCurrentProfileIndex(favoriteIndex);
+            } else if (favoriteMode == ProfileManager.MODE_CUSTOM && favoriteCustomIndex >= 0) {
+                if (favoriteCustomIndex < profileManager.getProfiles().size()) {
+                    Log.d("MainActivity", "Favorit ist Custom-Modus mit Index: " + favoriteCustomIndex);
+                    setActiveMode(CUSTOM);
+                    profileManager.setCurrentProfileIndex(favoriteCustomIndex);
+                } else {
+                    // Falls der Custom-Index ungültig ist
+                    Log.w("MainActivity", "Ungültiger Custom-Index: " + favoriteCustomIndex +
+                            ", setze auf Simple-Modus");
+                    setActiveMode(SIMPLE);
+                }
             }
         } else {
             // Standard: Simple-Modus
+            Log.d("MainActivity", "Kein Favorit gesetzt, verwende Simple-Modus");
             setActiveMode(SIMPLE);
         }
     }
@@ -216,16 +226,18 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             saveItem.setVisible(isCustomMode && isEditMode);
             deleteItem.setVisible(isCustomAndNotDefault);
         }
+
+        // Aktualisiere Favoriten-Icon
         MenuItem favoriteItem = menu.findItem(R.id.action_favorite);
         if (favoriteItem != null) {
-            boolean isFavorite = profileManager.isFavorite(activeMode == CUSTOM
-                    ? profileManager.getCurrentProfileIndex()
-                    : activeMode);
+            int customIndex = activeMode == CUSTOM ? profileManager.getCurrentProfileIndex() : 0;
+            boolean isFavorite = profileManager.isFavorite(activeMode, customIndex);
 
             favoriteItem.setIcon(isFavorite
                     ? R.drawable.ic_favorite
                     : R.drawable.ic_favorite_border);
         }
+
         return super.onPrepareOptionsMenu(menu);
     }
 
@@ -249,28 +261,36 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         return super.onOptionsItemSelected(item);
     }
-    private void toggleFavorite() {
-        int index;
 
-        // Erhalte den aktuellen Index basierend auf dem Modus
-        if (activeMode == SIMPLE) {
-            index = SIMPLE; // Wir verwenden die Konstante als Index für SIMPLE (0)
-        } else if (activeMode == EXTENDED) {
-            index = EXTENDED; // Wir verwenden die Konstante als Index für EXTENDED (1)
-        } else if (activeMode == CUSTOM) {
-            index = profileManager.getCurrentProfileIndex();
-        } else {
-            return; // Ignoriere About oder andere Modi
+
+    private void toggleFavorite() {
+        int customIndex = 0;
+
+        // Für den Custom-Modus den aktuellen Profil-Index verwenden
+        if (activeMode == CUSTOM) {
+            customIndex = profileManager.getCurrentProfileIndex();
         }
 
+        // Debug-Logging vor dem Umschalten
+        Log.d("MainActivity", "toggleFavorite: Aktueller Modus: " + activeMode +
+                ", customIndex: " + customIndex +
+                ", Aktueller Favorit: " + profileManager.getFavoriteLeetIndex());
+
         // Favoriten-Status umschalten
-        profileManager.toggleFavorite(index);
+        profileManager.toggleFavorite(activeMode, customIndex);
+
+        // Debug-Logging nach dem Umschalten
+        Log.d("MainActivity", "toggleFavorite: Neuer Favorit nach dem Umschalten: " +
+                profileManager.getFavoriteLeetIndex());
 
         // Menü aktualisieren
         invalidateOptionsMenu();
 
+        // Navigationsmenu aktualisieren
+        updateNavigationView();
+
         // Feedback für den Benutzer
-        boolean isFavorite = profileManager.isFavorite(index);
+        boolean isFavorite = profileManager.isFavorite(activeMode, customIndex);
 
         try {
             String name;
@@ -448,10 +468,16 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         MenuItem customDefaultItem = navigationView.getMenu().findItem(R.id.nav_custom_default);
         MenuItem aboutItem = navigationView.getMenu().findItem(R.id.nav_about);
 
+        // Debug-Log für Favoriten-Status
+        Log.d("MainActivity", "updateNavigationView: Aktueller Favoriten-Index: " +
+                profileManager.getFavoriteLeetIndex());
+
         if (simpleItem != null) {
             simpleItem.setChecked(activeMode == SIMPLE);
             // Icon basierend auf Favoriten-Status
-            simpleItem.setIcon(profileManager.isFavorite(SIMPLE) ?
+            boolean isSimpleFavorite = profileManager.isFavorite(SIMPLE, 0);
+            Log.d("MainActivity", "Simple ist Favorit: " + isSimpleFavorite);
+            simpleItem.setIcon(isSimpleFavorite ?
                     R.drawable.ic_simple_mode_favorite :
                     R.drawable.ic_simple_mode);
         }
@@ -459,7 +485,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         if (extendedItem != null) {
             extendedItem.setChecked(activeMode == EXTENDED);
             // Icon basierend auf Favoriten-Status
-            extendedItem.setIcon(profileManager.isFavorite(EXTENDED) ?
+            boolean isExtendedFavorite = profileManager.isFavorite(EXTENDED, 0);
+            Log.d("MainActivity", "Extended ist Favorit: " + isExtendedFavorite);
+            extendedItem.setIcon(isExtendedFavorite ?
                     R.drawable.ic_extended_mode_favorite :
                     R.drawable.ic_extended_mode);
         }
@@ -467,7 +495,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         if (customDefaultItem != null) {
             customDefaultItem.setChecked(activeMode == CUSTOM && profileManager.getCurrentProfileIndex() == 0);
             // Icon basierend auf Favoriten-Status
-            customDefaultItem.setIcon(profileManager.isFavorite(0) ?
+            boolean isCustomDefaultFavorite = profileManager.isFavorite(CUSTOM, 0);
+            Log.d("MainActivity", "Custom Default ist Favorit: " + isCustomDefaultFavorite);
+            customDefaultItem.setIcon(isCustomDefaultFavorite ?
                     R.drawable.ic_custom_mode_favorite :
                     R.drawable.ic_custom_mode);
         }
@@ -482,6 +512,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         // Aktualisiere Toolbar-Menü
         invalidateOptionsMenu();
     }
+
+
 
     private void updateCustomProfilesInMenu() {
         try {
@@ -521,7 +553,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     MenuItem item = customSubMenu.add(Menu.NONE, 100 + i, Menu.NONE, leet.getName());
 
                     // Setze Icon basierend auf dem Favoriten-Status
-                    if (profileManager.isFavorite(i)) {
+                    if (profileManager.isFavorite(CUSTOM, i)) {
                         // Wenn dieser Leet ein Favorit ist
                         item.setIcon(R.drawable.ic_custom_mode_favorite);
                     } else {
@@ -536,7 +568,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 // Aktualisiere auch das Standard-Custom-Item
                 MenuItem customDefaultItem = customSubMenu.findItem(R.id.nav_custom_default);
                 if (customDefaultItem != null) {
-                    if (profileManager.isFavorite(0)) {
+                    if (profileManager.isFavorite(CUSTOM, 0)) {
                         customDefaultItem.setIcon(R.drawable.ic_custom_mode_favorite);
                     } else {
                         customDefaultItem.setIcon(R.drawable.ic_custom_mode);
@@ -547,7 +579,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             // Aktualisiere auch die Hauptmodi-Icons
             MenuItem simpleItem = menu.findItem(R.id.nav_simple);
             if (simpleItem != null) {
-                if (profileManager.isFavorite(SIMPLE)) {
+                if (profileManager.isFavorite(SIMPLE, 0)) {
                     simpleItem.setIcon(R.drawable.ic_simple_mode_favorite);
                 } else {
                     simpleItem.setIcon(R.drawable.ic_simple_mode);
@@ -556,7 +588,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
             MenuItem extendedItem = menu.findItem(R.id.nav_extended);
             if (extendedItem != null) {
-                if (profileManager.isFavorite(EXTENDED)) {
+                if (profileManager.isFavorite(EXTENDED, 0)) {
                     extendedItem.setIcon(R.drawable.ic_extended_mode_favorite);
                 } else {
                     extendedItem.setIcon(R.drawable.ic_extended_mode);
@@ -569,6 +601,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             Toast.makeText(this, "Fehler beim Aktualisieren des Menüs: " + e.getMessage(), Toast.LENGTH_SHORT).show();
         }
     }
+
 
     private void showNewProfileDialog() {
         // Erstelle einen MaterialAlertDialogBuilder
@@ -658,7 +691,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        boolean wasFavorite = profileManager.isFavorite(profileManager.getCurrentProfileIndex());
+                        // Hier den Fix: Richtig prüfen, ob das zu löschende Profil ein Favorit ist
+                        boolean wasFavorite = profileManager.isFavorite(CUSTOM, profileManager.getCurrentProfileIndex());
                         profileManager.deleteCurrentProfile();
 
                         // Wenn der gelöschte Leet ein Favorit war, zeige spezielle Nachricht an
