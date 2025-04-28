@@ -53,7 +53,7 @@
     <string name="default_custom_name">Custom</string>
     <string name="create_new_profile">Create new leet</string>
     <string name="enter_profile_name">Enter leet name</string>
-    <string name="delete_confirm">Delete this leet?</string>
+    <string name="delete_confirm">Delete this leet?</string>1
     <string name="delete_confirm_message">This action cannot be undone.</string>
     <string name="default_profile_no_delete">Cannot delete default leet</string>
     <string name="new_profile_description">Ein neues Leet-Profil wird mit den aktuellen Einstellungen erstellt. Sie können es später jederzeit anpassen.</string>
@@ -64,7 +64,16 @@
     <string name="about">Über die App</string>
     <string name="about_description">Leetspeak Generator wandelt normalen Text in Leetspeak-Text um. Verfügbar in verschiedenen Modi: Simple, Extended und benutzerdefinierte Leets.</string>
     <string name="made_with">Erstellt mit Material Design für Android</string>
-
     <string name="version">Version: 1337.00_8374_1</string>
     <string name="copyright">© B31G3L 2025</string>
+    <string name="default_profile_reset">Standard-Profil wurde zurückgesetzt</string>
+
+    <!-- Neue Strings für Profil-Bearbeitung -->
+    <string name="edit_profile">Profil bearbeiten</string>
+    <string name="profile_name">Profilname</string>
+    <string name="profile_updated">Profil wurde aktualisiert</string>
+    <string name="profile_update_error">Fehler beim Aktualisieren: %1$s</string>
+    <string name="profile_info">Profil-Information</string>
+    <string name="translation_table">Übersetzungstabelle</string>
+    <string name="all_changes_saved">Alle Änderungen wurden gespeichert</string>
 </resources>
