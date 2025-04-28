@@ -15,6 +15,7 @@ import android.view.SubMenu;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
@@ -33,6 +34,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.LayerDrawable;
 
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
@@ -515,6 +518,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
 
 
+    // Keine direkten Änderungen am Code erforderlich, da die Gson-Bibliothek
+// automatisch die neuen Felder in der CustomProfile-Klasse serialisiert/deserialisiert
+
+// Wir müssen jedoch die Methode zum Aktualisieren der benutzerdefinierten Profile im Menü aktualisieren:
+
     private void updateCustomProfilesInMenu() {
         try {
             // Hole die benutzerdefinierten Leets
@@ -552,13 +560,39 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     CustomProfile leet = leets.get(i);
                     MenuItem item = customSubMenu.add(Menu.NONE, 100 + i, Menu.NONE, leet.getName());
 
-                    // Setze Icon basierend auf dem Favoriten-Status
-                    if (profileManager.isFavorite(CUSTOM, i)) {
-                        // Wenn dieser Leet ein Favorit ist
-                        item.setIcon(R.drawable.ic_custom_mode_favorite);
+                    // Verwende das benutzerdefinierte Icon, falls vorhanden
+                    int iconResId = leet.getIconResId();
+                    if (iconResId != 0) {
+                        // Setze Icon basierend auf dem Favoriten-Status
+                        if (profileManager.isFavorite(CUSTOM, i)) {
+                            // Für Favoriten das benutzerdefinierte Icon mit Stern-Overlay erstellen
+                            Drawable originalIcon = getResources().getDrawable(iconResId, getTheme());
+                            Drawable starIcon = getResources().getDrawable(R.drawable.ic_favorite_star, getTheme());
+
+                            // Erstelle ein LayerDrawable (ähnlich wie ic_custom_mode_favorite.xml)
+                            Drawable[] layers = new Drawable[2];
+                            layers[0] = originalIcon;
+                            layers[1] = starIcon;
+
+                            LayerDrawable layerDrawable = new LayerDrawable(layers);
+
+                            // Konfiguriere die Position des Stern-Icons (oben rechts)
+                            int starSize = (int) getResources().getDimension(R.dimen.star_indicator_size);
+                            layerDrawable.setLayerInset(1, originalIcon.getIntrinsicWidth() - starSize,
+                                    0, 0, originalIcon.getIntrinsicHeight() - starSize);
+
+                            item.setIcon(layerDrawable);
+                        } else {
+                            // Standard-Icon verwenden
+                            item.setIcon(iconResId);
+                        }
                     } else {
-                        // Standard-Icon
-                        item.setIcon(R.drawable.ic_custom_mode);
+                        // Fallback zum Standard-Icon, wenn kein benutzerdefiniertes Icon gesetzt ist
+                        if (profileManager.isFavorite(CUSTOM, i)) {
+                            item.setIcon(R.drawable.ic_custom_mode_favorite);
+                        } else {
+                            item.setIcon(R.drawable.ic_custom_mode);
+                        }
                     }
 
                     item.setCheckable(true);
@@ -602,6 +636,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }
     }
 
+// In der showNewProfileDialog-Methode aktualisierte Implementierung:
 
     private void showNewProfileDialog() {
         // Erstelle einen MaterialAlertDialogBuilder
@@ -616,8 +651,25 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         // UI-Elemente im Dialog finden
         TextInputEditText editTextProfileName = dialogView.findViewById(R.id.editTextProfileName);
+        ImageView selectedIcon = dialogView.findViewById(R.id.selectedIcon);
         Button buttonCancel = dialogView.findViewById(R.id.buttonCancel);
         Button buttonCreate = dialogView.findViewById(R.id.buttonCreate);
+
+        // Variable für die ausgewählte Icon-Ressourcen-ID
+        final int[] selectedIconResId = {R.drawable.ic_custom_mode}; // Standard-Icon
+
+        // Event-Handler für Icon-Klick
+        selectedIcon.setOnClickListener(v -> {
+            IconSelectorDialog iconDialog = new IconSelectorDialog(
+                    MainActivity.this,
+                    (iconResId) -> {
+                        selectedIconResId[0] = iconResId;
+                        selectedIcon.setImageResource(iconResId);
+                    },
+                    selectedIconResId[0]
+            );
+            iconDialog.show();
+        });
 
         // Event-Handler für Abbrechen-Button
         buttonCancel.setOnClickListener(v -> dialog.dismiss());
@@ -629,8 +681,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 leetName = getString(R.string.default_custom_name);
             }
 
-            // Erstelle neuen Leet mit aktuellen Buchstaben als Standard
+            // Erstelle neuen Leet mit aktuellen Buchstaben als Standard und dem ausgewählten Icon
             CustomProfile newLeet = new CustomProfile(leetName);
+            newLeet.setIconResId(selectedIconResId[0]); // Setze das ausgewählte Icon
 
             // Initialisiere mit aktuellen Buchstaben vom aktiven Modus
             for (char c : plaintextAlphabet) {

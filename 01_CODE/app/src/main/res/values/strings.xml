@@ -18,9 +18,13 @@
 
     <string name="plain">Plain</string>
     <string name="leet">Leed</string>
-
+    <string name="selected_icon">Ausgewähltes Icon</string>
+    <string name="select_icon">Icon ändern</string>
+    <string name="icon_selection">Wähle ein Icon</string>
+    <string name="confirm">Bestätigen</string>
     <string name="edit">Edit</string>
     <string name="save">Save</string>
+    <string name="tap_icon_to_change">Tippe auf das Icon, um es zu ändern</string>
 
     <string name="copy_success">Copied to clipboard</string>
     <string name="save_success">Saved to storage</string>
