@@ -13,7 +13,8 @@
     <string name="simple_table_title">Simple Translate Table</string>
     <string name="extended_table_title">Extended Translate Table</string>
     <string name="custom_table_title">Custom Translate Table</string>
-    <string name="table_expand">Show/Hide Table</string>
+    <string name="table_expand">Tabelle anzeigen</string>
+    <string name="table_hide">Tabelle ausblenden</string>
 
     <string name="plain">Plain</string>
     <string name="leet">Leed</string>
@@ -32,7 +33,10 @@
     <string name="profile_actions">Leet Actions</string>
     <string name="open_drawer">Open navigation</string>
     <string name="close_drawer">Close navigation</string>
-
+    <string name="favorite">Als Favorit markieren</string>
+    <string name="favorite_added">%1$s als Favorit markiert</string>
+    <string name="favorite_removed">%1$s von Favoriten entfernt</string>
+    <string name="favorite_deleted">Favorit wurde gelöscht, Simple Leet wird angezeigt</string>
     <!-- Leet management -->
     <string name="new_custom">Create new leet</string>
     <string name="save_current_custom">Save current leet</string>
@@ -48,7 +52,10 @@
     <string name="delete_confirm">Delete this leet?</string>
     <string name="delete_confirm_message">This action cannot be undone.</string>
     <string name="default_profile_no_delete">Cannot delete default leet</string>
-
+    <string name="new_profile_description">Ein neues Leet-Profil wird mit den aktuellen Einstellungen erstellt. Sie können es später jederzeit anpassen.</string>
+    <string name="create">Erstellen</string>
+    <string name="profile_created">Leet \"%1$s\" wurde erstellt</string>
+    <string name="profile_creation_error">Fehler beim Erstellen: %1$s</string>
     <!-- About section -->
     <string name="about">Über die App</string>
     <string name="about_description">Leetspeak Generator wandelt normalen Text in Leetspeak-Text um. Verfügbar in verschiedenen Modi: Simple, Extended und benutzerdefinierte Leets.</string>
