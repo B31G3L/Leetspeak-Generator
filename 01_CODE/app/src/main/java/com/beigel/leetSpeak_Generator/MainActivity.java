@@ -862,10 +862,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             isEditMode = false;
         }
 
-        // Update placeholder
-        String placeholder = getString(R.string.plaintext_placeholder);
-        inputPlainText.setHint(placeholder);
-
         // Update navigation view
         updateNavigationView();
 
