@@ -46,33 +46,12 @@ public class ProfileManager {
         favoriteLeetIndex = prefs.getInt(FAVORITE_LEET_KEY, FAV_NONE);
 
         if (leetsJson == null) {
-            // Erstelle Standard-Leet, wenn keines existiert
+            // Erstelle eine leere Liste, ohne Standard-Leet
             leets = new ArrayList<>();
-            CustomProfile defaultLeet = new CustomProfile("Custom");
-            // Initialisiere mit Standard-Übersetzungen (identische Zuordnung)
-            for (char c = 'A'; c <= 'Z'; c++) {
-                defaultLeet.setTranslation(String.valueOf(c), String.valueOf(c));
-            }
-            leets.add(defaultLeet);
             saveLeets();
         } else {
             Type type = new TypeToken<ArrayList<CustomProfile>>(){}.getType();
             leets = gson.fromJson(leetsJson, type);
-
-            // Stelle sicher, dass wir mindestens ein Leet haben
-            if (leets.isEmpty()) {
-                CustomProfile defaultLeet = new CustomProfile("Custom");
-                for (char c = 'A'; c <= 'Z'; c++) {
-                    defaultLeet.setTranslation(String.valueOf(c), String.valueOf(c));
-                }
-                leets.add(defaultLeet);
-                saveLeets();
-            }
-
-            // Stelle sicher, dass currentLeetIndex gültig ist
-            if (currentLeetIndex < 0 || currentLeetIndex >= leets.size()) {
-                currentLeetIndex = 0;
-            }
         }
 
         // Migration von alten Favoriten-Werten
@@ -109,8 +88,19 @@ public class ProfileManager {
         String leetsJson = gson.toJson(leets);
         prefs.edit()
                 .putString(LEETS_KEY, leetsJson)
-                .putInt(CURRENT_LEET_KEY, currentLeetIndex)
                 .apply();
+
+        // Wenn die Liste leer ist, setze den currentLeetIndex auf 0
+        if (leets.isEmpty()) {
+            currentLeetIndex = 0;
+            prefs.edit().putInt(CURRENT_LEET_KEY, currentLeetIndex).apply();
+        } else {
+            // Stellt sicher, dass der aktuelle Index gültig ist
+            if (currentLeetIndex >= leets.size()) {
+                currentLeetIndex = leets.size() - 1;
+                prefs.edit().putInt(CURRENT_LEET_KEY, currentLeetIndex).apply();
+            }
+        }
 
         // Achten Sie darauf, dass der Favoriten-Index separat gespeichert wird
         saveFavoriteIndex();
@@ -120,15 +110,13 @@ public class ProfileManager {
         return leets;
     }
 
+    public boolean hasProfiles() {
+        return !leets.isEmpty();
+    }
+
     public CustomProfile getCurrentProfile() {
-        if (leets.isEmpty()) {
-            // Dies sollte nicht passieren, aber für die Sicherheit
-            CustomProfile defaultLeet = new CustomProfile("Custom");
-            for (char c = 'A'; c <= 'Z'; c++) {
-                defaultLeet.setTranslation(String.valueOf(c), String.valueOf(c));
-            }
-            leets.add(defaultLeet);
-            saveLeets();
+        if (leets.isEmpty() || currentLeetIndex >= leets.size() || currentLeetIndex < 0) {
+            return null;
         }
         return leets.get(currentLeetIndex);
     }
@@ -141,6 +129,10 @@ public class ProfileManager {
     }
 
     public int getCurrentProfileIndex() {
+        // Stelle sicher, dass der Index gültig ist
+        if (leets.isEmpty() || currentLeetIndex >= leets.size()) {
+            return 0;
+        }
         return currentLeetIndex;
     }
 
@@ -151,7 +143,7 @@ public class ProfileManager {
     }
 
     public void updateCurrentProfile(CustomProfile profile) {
-        if (currentLeetIndex >= 0 && currentLeetIndex < leets.size()) {
+        if (!leets.isEmpty() && currentLeetIndex >= 0 && currentLeetIndex < leets.size()) {
             leets.set(currentLeetIndex, profile);
             saveLeets();
         }
@@ -245,7 +237,7 @@ public class ProfileManager {
     }
 
     public void deleteCurrentProfile() {
-        if (leets.size() > 1 && currentLeetIndex > 0 && currentLeetIndex < leets.size()) {
+        if (!leets.isEmpty() && currentLeetIndex >= 0 && currentLeetIndex < leets.size()) {
             // Wenn der zu löschende Leet ein Favorit ist
             if (currentLeetIndex == favoriteLeetIndex) {
                 // Favorit zurücksetzen (kein Favorit)
@@ -259,15 +251,15 @@ public class ProfileManager {
 
             leets.remove(currentLeetIndex);
             if (currentLeetIndex >= leets.size()) {
-                currentLeetIndex = leets.size() - 1;
+                currentLeetIndex = Math.max(0, leets.size() - 1);
             }
             saveLeets();
         }
     }
 
+    // Keine Einschränkung mehr beim Löschen, da es kein Standard-Leet mehr gibt
     public boolean canDeleteCurrentProfile() {
-        // Erlaube nicht das Löschen des letzten Leets oder des Standard-Leets (Index 0)
-        return leets.size() > 1 && currentLeetIndex > 0;
+        return !leets.isEmpty() && currentLeetIndex >= 0 && currentLeetIndex < leets.size();
     }
 
     // Kompatibilitätsmethoden für alte Aufrufe

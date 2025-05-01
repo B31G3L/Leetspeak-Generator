@@ -67,8 +67,12 @@
     <string name="version">Version: 1337.00_8374_1</string>
     <string name="copyright">© B31G3L 2025</string>
     <string name="default_profile_reset">Standard-Profil wurde zurückgesetzt</string>
-
-    <!-- Neue Strings für Profil-Bearbeitung -->
+  <!-- Neue Strings, die in die strings.xml Datei hinzugefügt werden müssen -->
+    <string name="no_custom_profiles">Keine benutzerdefinierten Leets vorhanden</string>
+    <string name="create_first_custom_profile">Erstelle dein erstes benutzerdefiniertes Leet</string>
+    <string name="no_custom_profiles_available">Keine Custom Leets verfügbar.\nTippe auf + um ein neues zu erstellen.</string>
+    <string name="delete_confirm_message_named">Möchtest du \"%1$s\" wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.</string>
+    <string name="last_profile_deleted">Letztes Custom-Profil gelöscht</string>
     <string name="edit_profile">Profil bearbeiten</string>
     <string name="profile_name">Profilname</string>
     <string name="profile_updated">Profil wurde aktualisiert</string>
