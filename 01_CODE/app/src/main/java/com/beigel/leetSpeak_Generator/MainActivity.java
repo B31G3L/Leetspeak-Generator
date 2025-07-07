@@ -31,18 +31,13 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.LayerDrawable;
 
-import com.google.android.material.button.MaterialButton;
-import com.google.android.material.card.MaterialCardView;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.beigel.leetSpeak_Generator.databinding.ActivityMainBinding;
 import com.google.android.material.navigation.NavigationView;
-import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -54,32 +49,20 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private static final int CUSTOM = ProfileManager.MODE_CUSTOM;
     private static final int ABOUT = ProfileManager.MODE_ABOUT;
 
-    private final char[] plaintextAlphabet = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'};
-
-    private final String[] simpleLeetAlphabet = {"4", "8", "C", "D", "3", "F", "6", "#", "1", "J", "K", "L", "M", "N", "0", "P", "Q", "R", "5", "7", "U", "V", "W", "X", "Y", "2"};
-
-    private final String[] extendedLeetAlphabet = {"4", "8", "(", "|)", "3", "|=", "6", "#", "!", "_|", "|<", "1", "/\\/\\", "|\\|", "0", "9", "0_", "2", "5", "7", "|_|", "\\/", "\\/\\/", "><", "`/", "Z"};
-
     private int activeMode = SIMPLE;
 
-    private DrawerLayout drawerLayout;
-    private NavigationView navigationView;
-    private FloatingActionButton fabAddLeet;
-    private EditText inputPlainText;
-    private TextView outputLeetText;
-    private Button buttonCopy;
-    private TableLayout leetTable;
-    private TextView appTitle;
+    // ViewBinding - nur für ActivityMain
+    private ActivityMainBinding binding;
+
+    // Navigation Header Views (manuell referenziert)
     private TextView navHeaderTitle;
-    private MaterialButton buttonExpandTable;
-    private MaterialCardView tableContainer;
-    private Toolbar toolbar;
+
+    // Repository Pattern
+    private ProfileRepository profileRepository;
 
     // Für About-Ansicht
-    private View mainContentView;
     private View aboutView;
 
-    private ProfileManager profileManager;
     private EditText[][] editableFields = new EditText[13][2];
     private TextView[][] displayFields = new TextView[13][2];
     private boolean isEditMode = false;
@@ -88,162 +71,120 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
 
-        // Zuerst alle View-Elemente initialisieren
+        // ViewBinding Setup
+        binding = ActivityMainBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
+
+        // Navigation Header manuell referenzieren
+        View headerView = binding.navView.getHeaderView(0);
+        navHeaderTitle = headerView.findViewById(R.id.navHeaderTitle);
+
+        // Repository initialisieren
+        profileRepository = new ProfileRepository(this);
+
+        // UI Setup
         initializeViews();
-
-        // Dann die Navigation und den ProfileManager konfigurieren
         setupNavigation();
 
-        // ProfileManager initialisieren
-        profileManager = new ProfileManager(this);
-
-        // Zuletzt den Favoriten laden und aktivieren
+        // Favoriten laden - jetzt asynchron!
         loadFavoriteMode();
 
-        // Setze den App-Namen im Navigation Header
+        // App-Name im Navigation Header setzen
         if (navHeaderTitle != null) {
             navHeaderTitle.setText(R.string.app_name);
         }
     }
 
-    // View-Initialisierung in eine separate Methode auslagern
     private void initializeViews() {
-        // Initialize Toolbar
-        toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+        // Toolbar Setup
+        setSupportActionBar(binding.toolbar);
         if (getSupportActionBar() != null) {
             getSupportActionBar().setTitle("");
         }
 
-        // UI-Elemente finden
-        inputPlainText = findViewById(R.id.inputPlainText);
-        outputLeetText = findViewById(R.id.outputLeetText);
-        buttonCopy = findViewById(R.id.buttonCopy);
-        leetTable = findViewById(R.id.leetTable);
-        appTitle = findViewById(R.id.appTitle);
-        buttonExpandTable = findViewById(R.id.buttonExpandTable);
-        tableContainer = findViewById(R.id.tableContainer);
-        fabAddLeet = findViewById(R.id.fabAddLeet);
-
-        // Initialisiere Views für den Hauptinhalt und About-Ansicht
-        mainContentView = findViewById(R.id.main_content);
-        // About-View wird dynamisch geladen, wenn benötigt
-
-        // Set up text change listener
-        inputPlainText.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-            }
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
-                updateOutput();
-            }
-        });
-
-        // Set up button click listeners
-        buttonCopy.setOnClickListener(v -> copyToClipboard());
-        buttonExpandTable.setOnClickListener(v -> toggleTableVisibility());
-        fabAddLeet.setOnClickListener(v -> showNewProfileDialog());
+        // Event Listeners mit ViewBinding
+        binding.inputPlainText.addTextChangedListener(textWatcher);
+        binding.buttonCopy.setOnClickListener(v -> copyToClipboard());
+        binding.buttonExpandTable.setOnClickListener(v -> toggleTableVisibility());
+        binding.fabAddLeet.setOnClickListener(v -> showNewProfileDialog());
     }
 
     private void setupNavigation() {
-        // Initialize DrawerLayout
-        drawerLayout = findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
-                this, drawerLayout, toolbar,
+                this, binding.drawerLayout, binding.toolbar,
                 R.string.open_drawer, R.string.close_drawer);
-        drawerLayout.addDrawerListener(toggle);
+        binding.drawerLayout.addDrawerListener(toggle);
         toggle.syncState();
 
-        // Initialize NavigationView
-        navigationView = findViewById(R.id.nav_view);
-        navigationView.setNavigationItemSelectedListener(this);
-
-        // Get the navigation header view
-        View headerView = navigationView.getHeaderView(0);
-        navHeaderTitle = headerView.findViewById(R.id.navHeaderTitle);
+        binding.navView.setNavigationItemSelectedListener(this);
     }
 
     private void loadFavoriteMode() {
-        int favoriteMode = profileManager.getFavoriteMode();
-        int favoriteCustomIndex = profileManager.getFavoriteCustomIndex();
-
-        // Debug-Logging
-        Log.d("MainActivity", "loadFavoriteMode: FavoriteMode: " + favoriteMode +
-                ", favoriteCustomIndex: " + favoriteCustomIndex);
-
-        if (favoriteMode >= 0) {
-            // Wenn ein Favorit gesetzt ist, diesen aktivieren
-            if (favoriteMode == ProfileManager.MODE_SIMPLE) {
-                Log.d("MainActivity", "Favorit ist Simple-Modus");
-                setActiveMode(SIMPLE);
-            } else if (favoriteMode == ProfileManager.MODE_EXTENDED) {
-                Log.d("MainActivity", "Favorit ist Extended-Modus");
-                setActiveMode(EXTENDED);
-            } else if (favoriteMode == ProfileManager.MODE_CUSTOM && favoriteCustomIndex >= 0) {
-                // Prüfe, ob Custom-Profile überhaupt existieren
-                if (profileManager.hasProfiles() && favoriteCustomIndex < profileManager.getProfiles().size()) {
-                    Log.d("MainActivity", "Favorit ist Custom-Modus mit Index: " + favoriteCustomIndex);
-                    setActiveMode(CUSTOM);
-                    profileManager.setCurrentProfileIndex(favoriteCustomIndex);
-                } else {
-                    // Falls keine Custom-Profile existieren oder der Index ungültig ist
-                    Log.w("MainActivity", "Kein gültiges Custom-Profil verfügbar, setze auf Simple-Modus");
-                    setActiveMode(SIMPLE);
+        profileRepository.loadFavoriteMode(new ProfileRepository.FavoriteModeCallback() {
+            @Override
+            public void onSuccess(ProfileRepository.FavoriteModeResult result) {
+                switch (result.getMode()) {
+                    case ProfileManager.MODE_SIMPLE:
+                        setActiveMode(SIMPLE);
+                        break;
+                    case ProfileManager.MODE_EXTENDED:
+                        setActiveMode(EXTENDED);
+                        break;
+                    case ProfileManager.MODE_CUSTOM:
+                        setActiveMode(CUSTOM);
+                        profileRepository.setCurrentProfileIndex(result.getCustomIndex());
+                        break;
                 }
-            }
-        } else {
-            // Standard: Simple-Modus
-            Log.d("MainActivity", "Kein Favorit gesetzt, verwende Simple-Modus");
-            setActiveMode(SIMPLE);
-        }
-    }
 
+                // UI nach dem Laden aktualisieren
+                updateOutput();
+                updateTable();
+                updateNavigationView();
+            }
+
+            @Override
+            public void onError(Exception e) {
+                ErrorHandler.handleError(MainActivity.this, e,
+                        "Fehler beim Laden der Favoriten",
+                        ErrorHandler.ErrorSeverity.WARNING);
+
+                // Fallback zu Simple Mode
+                setActiveMode(SIMPLE);
+            }
+        });
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Toolbar-Menü aufblasen
         getMenuInflater().inflate(R.menu.toolbar_menu, menu);
         return true;
     }
+
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
-        // Aktualisiere Sichtbarkeit der Menüpunkte basierend auf dem aktiven Modus
         MenuItem editItem = menu.findItem(R.id.action_edit);
         MenuItem saveItem = menu.findItem(R.id.action_save);
         MenuItem deleteItem = menu.findItem(R.id.action_delete);
 
         if (editItem != null && saveItem != null && deleteItem != null) {
             boolean isCustomMode = activeMode == CUSTOM;
-            boolean hasCustomProfile = isCustomMode && profileManager.getCurrentProfile() != null;
+            boolean hasCustomProfile = isCustomMode && profileRepository.getCurrentProfile() != null;
 
-            // Bearbeiten und Löschen nur anzeigen, wenn wir im Custom-Modus sind und ein Profil existiert
             editItem.setVisible(hasCustomProfile);
             deleteItem.setVisible(hasCustomProfile);
-
-            // "Speichern"-Button ist nicht mehr erforderlich, da im Dialog gespeichert wird
             saveItem.setVisible(false);
         }
 
-        // Aktualisiere Favoriten-Icon
         MenuItem favoriteItem = menu.findItem(R.id.action_favorite);
         if (favoriteItem != null) {
-            // Favoriten-Button nur anzeigen, wenn wir nicht im About-Modus sind
             favoriteItem.setVisible(activeMode != ABOUT);
 
-            // Nur wenn wir im Custom-Modus sind, überprüfen, ob ein Profil existiert
-            if (activeMode == CUSTOM && profileManager.getCurrentProfile() == null) {
+            if (activeMode == CUSTOM && profileRepository.getCurrentProfile() == null) {
                 favoriteItem.setVisible(false);
             } else {
-                int customIndex = activeMode == CUSTOM ? profileManager.getCurrentProfileIndex() : 0;
-                boolean isFavorite = profileManager.isFavorite(activeMode, customIndex);
+                int customIndex = activeMode == CUSTOM ? profileRepository.getCurrentProfileIndex() : 0;
+                boolean isFavorite = profileRepository.getProfileManager().isFavorite(activeMode, customIndex);
 
                 favoriteItem.setIcon(isFavorite
                         ? R.drawable.ic_favorite
@@ -275,95 +216,70 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         return super.onOptionsItemSelected(item);
     }
 
-
     private void toggleFavorite() {
         int customIndex = 0;
-
-        // Für den Custom-Modus den aktuellen Profil-Index verwenden
         if (activeMode == CUSTOM) {
-            customIndex = profileManager.getCurrentProfileIndex();
+            customIndex = profileRepository.getCurrentProfileIndex();
         }
 
-        // Debug-Logging vor dem Umschalten
-        Log.d("MainActivity", "toggleFavorite: Aktueller Modus: " + activeMode +
-                ", customIndex: " + customIndex +
-                ", Aktueller Favorit: " + profileManager.getFavoriteLeetIndex());
+        profileRepository.toggleFavorite(activeMode, customIndex,
+                new ProfileRepository.FavoriteToggleCallback() {
+                    @Override
+                    public void onToggleComplete(ProfileRepository.FavoriteToggleResult result) {
+                        // UI aktualisieren
+                        invalidateOptionsMenu();
+                        updateNavigationView();
 
-        // Favoriten-Status umschalten
-        profileManager.toggleFavorite(activeMode, customIndex);
+                        // Benutzer-Feedback
+                        String modeName = getModeDisplayName(result.getMode(), result.getCustomIndex());
 
-        // Debug-Logging nach dem Umschalten
-        Log.d("MainActivity", "toggleFavorite: Neuer Favorit nach dem Umschalten: " +
-                profileManager.getFavoriteLeetIndex());
+                        int messageResId = result.isNowFavorite()
+                                ? R.string.favorite_added
+                                : R.string.favorite_removed;
 
-        // Menü aktualisieren
-        invalidateOptionsMenu();
+                        ErrorHandler.showSnackbar(MainActivity.this,
+                                getString(messageResId, modeName),
+                                Snackbar.LENGTH_SHORT);
+                    }
 
-        // Navigationsmenu aktualisieren
-        updateNavigationView();
+                    @Override
+                    public void onError(Exception e) {
+                        ErrorHandler.handleError(MainActivity.this, e,
+                                "Fehler beim Ändern des Favoriten-Status",
+                                ErrorHandler.ErrorSeverity.WARNING);
+                    }
+                });
+    }
 
-        // Feedback für den Benutzer
-        boolean isFavorite = profileManager.isFavorite(activeMode, customIndex);
-
-        try {
-            String name;
-            if (activeMode == SIMPLE) {
-                name = getString(R.string.simple);
-            } else if (activeMode == EXTENDED) {
-                name = getString(R.string.extended);
-            } else { // CUSTOM
-                name = profileManager.getCurrentProfile().getName();
-            }
-
-            int messageResId = isFavorite
-                    ? R.string.favorite_added
-                    : R.string.favorite_removed;
-
-            View rootView = findViewById(android.R.id.content);
-            if (rootView != null) {
-                Snackbar.make(
-                        rootView,
-                        getString(messageResId, name),
-                        Snackbar.LENGTH_SHORT
-                ).show();
-            } else {
-                // Fallback zu Toast wenn View nicht gefunden
-                Toast.makeText(
-                        this,
-                        getString(messageResId, name),
-                        Toast.LENGTH_SHORT
-                ).show();
-            }
-        } catch (Exception e) {
-            Log.e("MainActivity", "Fehler beim Anzeigen der Favoriten-Nachricht: " + e.getMessage());
+    private String getModeDisplayName(int mode, int customIndex) {
+        switch (mode) {
+            case SIMPLE:
+                return getString(R.string.simple);
+            case EXTENDED:
+                return getString(R.string.extended);
+            case CUSTOM:
+                CustomProfile profile = profileRepository.getCurrentProfile();
+                return profile != null ? profile.getName() : getString(R.string.custom);
+            default:
+                return "Unknown";
         }
     }
+
     private void toggleTableVisibility() {
         isTableExpanded = !isTableExpanded;
 
-        // Update Button text
-        buttonExpandTable.setText(isTableExpanded ? R.string.table_hide : R.string.table_expand);
+        // Button text und Animation
+        binding.buttonExpandTable.setText(isTableExpanded ?
+                R.string.table_hide : R.string.table_expand);
 
-        // Animation für die Tabelle
+        AnimationHelper.scaleButton(binding.buttonExpandTable);
+
         if (isTableExpanded) {
-            // Tabelle einblenden mit Animation
-            tableContainer.setVisibility(View.VISIBLE);
-            tableContainer.setAlpha(0f);
-            tableContainer.animate()
-                    .alpha(1f)
-                    .setDuration(300)
-                    .setListener(null);
+            AnimationHelper.expandCard(binding.tableContainer, () -> {
+                AnimationHelper.staggeredFadeIn(binding.leetTable, 50);
+            });
         } else {
-            // Tabelle ausblenden mit Animation
-            tableContainer.animate()
-                    .alpha(0f)
-                    .setDuration(300)
-                    .setListener(new AnimatorListenerAdapter() {
-                        @Override
-                        public void onAnimationEnd(Animator animation) {
-                            tableContainer.setVisibility(View.GONE);
-                        }
-                    });
+            AnimationHelper.collapseCard(binding.tableContainer, null);
         }
     }
 
@@ -379,98 +295,82 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             showAboutView();
             item.setChecked(true);
         } else if (itemId >= 100) {
-            // Benutzerdefinierte Leets haben IDs ≥ 100
             int leetIndex = itemId - 100;
 
-            // Debug-Logging
-            Log.d("MainActivity", "Ausgewählter benutzerdefinierter Leet ID: " + itemId + ", Index: " + leetIndex);
-
-            if (leetIndex >= 0 && leetIndex < profileManager.getProfiles().size()) {
+            if (leetIndex >= 0 && leetIndex < profileRepository.getProfiles().size()) {
                 try {
                     setActiveMode(CUSTOM);
-                    profileManager.setCurrentProfileIndex(leetIndex);
+                    profileRepository.setCurrentProfileIndex(leetIndex);
 
-                    // Explizit die UI aktualisieren
                     updateOutput();
                     updateTable();
                     updateNavigationView();
 
-                    // Aktualisiere den App-Titel gemäß des ausgewählten Profils
-                    String profileName = profileManager.getCurrentProfile().getName();
-                    appTitle.setText(profileName + " Leet");
+                    String profileName = profileRepository.getCurrentProfile().getName();
+                    binding.appTitle.setText(profileName + " Leet");
 
-                    // Debug-Message für den Benutzer
-                    Toast.makeText(this, "Leet '" + profileManager.getCurrentProfile().getName() +
+                    Toast.makeText(this, "Leet '" + profileRepository.getCurrentProfile().getName() +
                             "' ausgewählt", Toast.LENGTH_SHORT).show();
                 } catch (Exception e) {
-                    Log.e("MainActivity", "Fehler beim Auswählen des Leets: " + e.getMessage());
-                    Toast.makeText(this, "Fehler beim Auswählen des Leets: " + e.getMessage(),
-                            Toast.LENGTH_SHORT).show();
+                    ErrorHandler.handleError(this, e, "Fehler beim Auswählen des Leets",
+                            ErrorHandler.ErrorSeverity.ERROR);
                 }
             }
         }
 
-        drawerLayout.closeDrawer(GravityCompat.START);
+        binding.drawerLayout.closeDrawer(GravityCompat.START);
         return true;
     }
 
-    // Neue Methode zum Anzeigen der About-Ansicht
     private void showAboutView() {
-        // Wenn wir bereits die About-Ansicht anzeigen, nichts tun
         if (activeMode == ABOUT) return;
 
-        // About-View laden, falls es noch nicht existiert
         if (aboutView == null) {
             aboutView = getLayoutInflater().inflate(R.layout.layout_about, null, false);
 
-            // About-View dem Layout hinzufügen mit gleichen Layout-Parametern wie mainContentView
             DrawerLayout.LayoutParams layoutParams = new DrawerLayout.LayoutParams(
                     DrawerLayout.LayoutParams.MATCH_PARENT,
                     DrawerLayout.LayoutParams.MATCH_PARENT
             );
-            drawerLayout.addView(aboutView, layoutParams);
+            binding.drawerLayout.addView(aboutView, layoutParams);
         }
 
-        // Hauptcontent verstecken und About-View anzeigen
-        mainContentView.setVisibility(View.GONE);
-        aboutView.setVisibility(View.VISIBLE);
+        // Smooth Crossfade zwischen Main und About
+        AnimationHelper.crossFade(binding.mainContent, aboutView, 400, () -> {
+            binding.fabAddLeet.hide();
 
-        // FAB ausblenden
-        fabAddLeet.hide();
+            if (getSupportActionBar() != null) {
+                getSupportActionBar().setTitle(R.string.about);
+            }
 
-        // App-Titel ändern
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().setTitle(R.string.about);
-        }
-
-        activeMode = ABOUT;
-
-        // Toolbar-Menü aktualisieren
-        invalidateOptionsMenu();
+            activeMode = ABOUT;
+            invalidateOptionsMenu();
+        });
     }
 
-    // Angepasste Methode, um zurück zur Hauptansicht zu wechseln
     private void showMainView() {
-        if (aboutView != null) {
-            aboutView.setVisibility(View.GONE);
-        }
-        mainContentView.setVisibility(View.VISIBLE);
+        if (aboutView != null && aboutView.getVisibility() == View.VISIBLE) {
+            AnimationHelper.crossFade(aboutView, binding.mainContent, 400, () -> {
+                binding.fabAddLeet.show();
 
-        // FAB wieder anzeigen
-        fabAddLeet.show();
-
-        // App-Titel zurücksetzen
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().setTitle("");
+                if (getSupportActionBar() != null) {
+                    getSupportActionBar().setTitle("");
+                }
+            });
+        } else {
+            if (aboutView != null) {
+                aboutView.setVisibility(View.GONE);
+            }
+            binding.mainContent.setVisibility(View.VISIBLE);
+            binding.fabAddLeet.show();
         }
     }
 
     @Override
     public void onBackPressed() {
-        if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
-            drawerLayout.closeDrawer(GravityCompat.START);
+        if (binding.drawerLayout.isDrawerOpen(GravityCompat.START)) {
+            binding.drawerLayout.closeDrawer(GravityCompat.START);
         } else if (activeMode == ABOUT) {
-            // Zurück zur Hauptansicht, wenn wir in der About-Ansicht sind
             setActiveMode(SIMPLE);
         } else {
             super.onBackPressed();
@@ -478,16 +378,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
     private void updateNavigationView() {
-        // Update checkmarks for current mode
-        MenuItem simpleItem = navigationView.getMenu().findItem(R.id.nav_simple);
-        MenuItem extendedItem = navigationView.getMenu().findItem(R.id.nav_extended);
-        MenuItem aboutItem = navigationView.getMenu().findItem(R.id.nav_about);
+        MenuItem simpleItem = binding.navView.getMenu().findItem(R.id.nav_simple);
+        MenuItem extendedItem = binding.navView.getMenu().findItem(R.id.nav_extended);
+        MenuItem aboutItem = binding.navView.getMenu().findItem(R.id.nav_about);
 
         if (simpleItem != null) {
             simpleItem.setChecked(activeMode == SIMPLE);
-            // Icon basierend auf Favoriten-Status
-            boolean isSimpleFavorite = profileManager.isFavorite(SIMPLE, 0);
-            Log.d("MainActivity", "Simple ist Favorit: " + isSimpleFavorite);
+            boolean isSimpleFavorite = profileRepository.getProfileManager().isFavorite(SIMPLE, 0);
             simpleItem.setIcon(isSimpleFavorite ?
                     R.drawable.ic_simple_mode_favorite :
                     R.drawable.ic_simple_mode);
@@ -495,9 +392,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         if (extendedItem != null) {
             extendedItem.setChecked(activeMode == EXTENDED);
-            // Icon basierend auf Favoriten-Status
-            boolean isExtendedFavorite = profileManager.isFavorite(EXTENDED, 0);
-            Log.d("MainActivity", "Extended ist Favorit: " + isExtendedFavorite);
+            boolean isExtendedFavorite = profileRepository.getProfileManager().isFavorite(EXTENDED, 0);
             extendedItem.setIcon(isExtendedFavorite ?
                     R.drawable.ic_extended_mode_favorite :
                     R.drawable.ic_extended_mode);
@@ -507,30 +402,16 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             aboutItem.setChecked(activeMode == ABOUT);
         }
 
-        // Update custom profiles in menu
         updateCustomProfilesInMenu();
-
-        // Aktualisiere Toolbar-Menü
         invalidateOptionsMenu();
     }
 
-
-
-    // Keine direkten Änderungen am Code erforderlich, da die Gson-Bibliothek
-// automatisch die neuen Felder in der CustomProfile-Klasse serialisiert/deserialisiert
-
-// Wir müssen jedoch die Methode zum Aktualisieren der benutzerdefinierten Profile im Menü aktualisieren:
-
     private void updateCustomProfilesInMenu() {
         try {
-            // Hole die benutzerdefinierten Leets
-            List<CustomProfile> leets = profileManager.getProfiles();
-
-            // Navigationsansicht finden
-            NavigationView navigationView = findViewById(R.id.nav_view);
+            List<CustomProfile> leets = profileRepository.getProfiles();
+            NavigationView navigationView = binding.navView;
             Menu menu = navigationView.getMenu();
 
-            // Finde das "Custom Leets" Menü-Item
             MenuItem customLeetsItem = null;
             for (int i = 0; i < menu.size(); i++) {
                 MenuItem item = menu.getItem(i);
@@ -541,52 +422,39 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             }
 
             if (customLeetsItem != null && customLeetsItem.hasSubMenu()) {
-                // Das Untermenü für benutzerdefinierte Leets
                 SubMenu customSubMenu = customLeetsItem.getSubMenu();
-
-                // Entferne alle alten benutzerdefinierten Leets
                 customSubMenu.clear();
 
-                // Wenn keine benutzerdefinierten Leets existieren, zeige einen Hinweis an
                 if (leets.isEmpty()) {
                     MenuItem noProfilesItem = customSubMenu.add(Menu.NONE, Menu.NONE, Menu.NONE, R.string.no_custom_profiles);
                     noProfilesItem.setIcon(R.drawable.ic_custom_mode);
                     noProfilesItem.setEnabled(false);
                 } else {
-                    // Füge benutzerdefinierte Leets hinzu
                     for (int i = 0; i < leets.size(); i++) {
                         CustomProfile leet = leets.get(i);
                         MenuItem item = customSubMenu.add(Menu.NONE, 100 + i, Menu.NONE, leet.getName());
 
-                        // Verwende das benutzerdefinierte Icon, falls vorhanden
                         int iconResId = leet.getIconResId();
                         if (iconResId != 0) {
-                            // Setze Icon basierend auf dem Favoriten-Status
-                            if (profileManager.isFavorite(CUSTOM, i)) {
-                                // Für Favoriten das benutzerdefinierte Icon mit Stern-Overlay erstellen
+                            if (profileRepository.getProfileManager().isFavorite(CUSTOM, i)) {
                                 Drawable originalIcon = getResources().getDrawable(iconResId, getTheme());
                                 Drawable starIcon = getResources().getDrawable(R.drawable.ic_favorite_star, getTheme());
 
-                                // Erstelle ein LayerDrawable (ähnlich wie ic_custom_mode_favorite.xml)
                                 Drawable[] layers = new Drawable[2];
                                 layers[0] = originalIcon;
                                 layers[1] = starIcon;
 
                                 LayerDrawable layerDrawable = new LayerDrawable(layers);
-
-                                // Konfiguriere die Position des Stern-Icons (oben rechts)
                                 int starSize = (int) getResources().getDimension(R.dimen.star_indicator_size);
                                 layerDrawable.setLayerInset(1, originalIcon.getIntrinsicWidth() - starSize,
                                         0, 0, originalIcon.getIntrinsicHeight() - starSize);
 
                                 item.setIcon(layerDrawable);
                             } else {
-                                // Standard-Icon verwenden
                                 item.setIcon(iconResId);
                             }
                         } else {
-                            // Fallback zum Standard-Icon, wenn kein benutzerdefiniertes Icon gesetzt ist
-                            if (profileManager.isFavorite(CUSTOM, i)) {
+                            if (profileRepository.getProfileManager().isFavorite(CUSTOM, i)) {
                                 item.setIcon(R.drawable.ic_custom_mode_favorite);
                             } else {
                                 item.setIcon(R.drawable.ic_custom_mode);
@@ -594,357 +462,267 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                         }
 
                         item.setCheckable(true);
-                        item.setChecked(activeMode == CUSTOM && profileManager.getCurrentProfileIndex() == i);
+                        item.setChecked(activeMode == CUSTOM && profileRepository.getCurrentProfileIndex() == i);
                     }
                 }
             }
-
-            // Aktualisiere auch die Hauptmodi-Icons
-            MenuItem simpleItem = menu.findItem(R.id.nav_simple);
-            if (simpleItem != null) {
-                if (profileManager.isFavorite(SIMPLE, 0)) {
-                    simpleItem.setIcon(R.drawable.ic_simple_mode_favorite);
-                } else {
-                    simpleItem.setIcon(R.drawable.ic_simple_mode);
-                }
-            }
-
-            MenuItem extendedItem = menu.findItem(R.id.nav_extended);
-            if (extendedItem != null) {
-                if (profileManager.isFavorite(EXTENDED, 0)) {
-                    extendedItem.setIcon(R.drawable.ic_extended_mode_favorite);
-                } else {
-                    extendedItem.setIcon(R.drawable.ic_extended_mode);
-                }
-            }
         } catch (Exception e) {
-            // Falls etwas schiefgeht, loggen wir den Fehler
-            Log.e("MainActivity", "Fehler beim Aktualisieren der benutzerdefinierten Leets: " + e.getMessage());
-            // Toast anzeigen, um den Benutzer zu informieren
-            Toast.makeText(this, "Fehler beim Aktualisieren des Menüs: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            ErrorHandler.handleError(this, e, "Fehler beim Aktualisieren des Menüs",
+                    ErrorHandler.ErrorSeverity.WARNING);
         }
     }
 
-// In der showNewProfileDialog-Methode aktualisierte Implementierung:
-private void showNewProfileDialog() {
-    // Erstelle einen MaterialAlertDialogBuilder
-    MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this);
+    private void showNewProfileDialog() {
+        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this);
+        View dialogView = getLayoutInflater().inflate(R.layout.dialog_new_profile, null);
+        builder.setView(dialogView);
 
-    // Lade das benutzerdefinierte Layout für den Dialog
-    View dialogView = getLayoutInflater().inflate(R.layout.dialog_new_profile, null);
-    builder.setView(dialogView);
+        AlertDialog dialog = builder.create();
 
-    // Erstelle den Dialog
-    AlertDialog dialog = builder.create();
+        TextInputEditText editTextProfileName = dialogView.findViewById(R.id.editTextProfileName);
+        ImageView selectedIcon = dialogView.findViewById(R.id.selectedIcon);
+        Button buttonCancel = dialogView.findViewById(R.id.buttonCancel);
+        Button buttonCreate = dialogView.findViewById(R.id.buttonCreate);
 
-    // UI-Elemente im Dialog finden
-    TextInputEditText editTextProfileName = dialogView.findViewById(R.id.editTextProfileName);
-    ImageView selectedIcon = dialogView.findViewById(R.id.selectedIcon);
-    Button buttonCancel = dialogView.findViewById(R.id.buttonCancel);
-    Button buttonCreate = dialogView.findViewById(R.id.buttonCreate);
+        final int[] selectedIconResId = {R.drawable.ic_custom_mode};
 
-    // Variable für die ausgewählte Icon-Ressourcen-ID
-    final int[] selectedIconResId = {R.drawable.ic_custom_mode}; // Standard-Icon
+        selectedIcon.setOnClickListener(v -> {
+            AnimationHelper.scaleButton(v);
+            IconSelectorDialog iconDialog = new IconSelectorDialog(
+                    MainActivity.this,
+                    (iconResId) -> {
+                        selectedIconResId[0] = iconResId;
+                        selectedIcon.setImageResource(iconResId);
+                        AnimationHelper.pulse(selectedIcon, 1);
+                    },
+                    selectedIconResId[0]
+            );
+            iconDialog.show();
+        });
 
-    // Event-Handler für Icon-Klick
-    selectedIcon.setOnClickListener(v -> {
-        IconSelectorDialog iconDialog = new IconSelectorDialog(
-                MainActivity.this,
-                (iconResId) -> {
-                    selectedIconResId[0] = iconResId;
-                    selectedIcon.setImageResource(iconResId);
-                },
-                selectedIconResId[0]
-        );
-        iconDialog.show();
-    });
+        buttonCancel.setOnClickListener(v -> {
+            AnimationHelper.scaleButton(v);
+            dialog.dismiss();
+        });
 
-    // Event-Handler für Abbrechen-Button
-    buttonCancel.setOnClickListener(v -> dialog.dismiss());
+        buttonCreate.setOnClickListener(v -> {
+            AnimationHelper.scaleButton(v);
 
-    // Event-Handler für Erstellen-Button
-    buttonCreate.setOnClickListener(v -> {
-        String leetName = editTextProfileName.getText().toString().trim();
-        if (leetName.isEmpty()) {
-            leetName = getString(R.string.default_custom_name);
-        }
+            String leetName = editTextProfileName.getText().toString().trim();
+            if (leetName.isEmpty()) {
+                leetName = getString(R.string.default_custom_name);
+            }
 
-        // Erstelle neuen Leet mit den aktiven Buchstaben und dem ausgewählten Icon
-        CustomProfile newLeet = new CustomProfile(leetName);
-        newLeet.setIconResId(selectedIconResId[0]); // Setze das ausgewählte Icon
+            createNewProfileWithRepository(leetName, selectedIconResId[0]);
+            dialog.dismiss();
+        });
 
-        // Initialisiere mit Buchstaben vom aktiven Modus
-        for (char c : plaintextAlphabet) {
+        dialog.show();
+
+        editTextProfileName.requestFocus();
+        InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+        imm.showSoftInput(editTextProfileName, InputMethodManager.SHOW_IMPLICIT);
+    }
+
+    private void createNewProfileWithRepository(String name, int iconResId) {
+        Map<String, String> translations = new HashMap<>();
+
+        LeetTranslator.TranslationMode currentTranslationMode = getCurrentTranslationMode();
+
+        for (char c = 'A'; c <= 'Z'; c++) {
             String plainChar = String.valueOf(c);
-            String leetChar = getTranslatedChar(c);
-            newLeet.setTranslation(plainChar, leetChar);
+            String leetChar = LeetTranslator.translateChar(c, currentTranslationMode, null);
+            translations.put(plainChar, leetChar);
         }
 
-        try {
-            // Leet hinzufügen
-            profileManager.addProfile(newLeet);
+        ProfileRepository.ProfileCreationRequest request =
+                new ProfileRepository.ProfileCreationRequest(name, iconResId, translations);
 
-            // UI aktualisieren
-            setActiveMode(CUSTOM);
-            profileManager.setCurrentProfileIndex(profileManager.getProfiles().size() - 1);
-            updateTable();
+        profileRepository.createProfile(request, new ProfileRepository.ProfileOperationCallback() {
+            @Override
+            public void onComplete(ProfileOperationResult result) {
+                if (result.isSuccess()) {
+                    setActiveMode(CUSTOM);
+                    profileRepository.setCurrentProfileIndex(result.getProfileIndex());
 
-            // Wichtig: Menü aktualisieren, um den neuen Leet anzuzeigen
-            updateNavigationView();
+                    updateTable();
+                    updateNavigationView();
+                    updateAppTitle();
 
-            // Erfolgsmeldung
-            Snackbar.make(
-                    findViewById(android.R.id.content),
-                    getString(R.string.profile_created, leetName),
-                    Snackbar.LENGTH_SHORT
-            ).show();
+                    AnimationHelper.pulse(binding.fabAddLeet, 2);
 
-            // Debug-Log
-            Log.d("MainActivity", "Neuer Leet erstellt: " + leetName + ", Index: " +
-                    (profileManager.getProfiles().size() - 1));
-        } catch (Exception e) {
-            Log.e("MainActivity", "Fehler beim Erstellen des Leets: " + e.getMessage());
+                    ErrorHandler.showSnackbar(MainActivity.this,
+                            getString(R.string.profile_created, name),
+                            Snackbar.LENGTH_SHORT);
 
-            Snackbar.make(
-                    findViewById(android.R.id.content),
-                    getString(R.string.profile_creation_error, e.getMessage()),
-                    Snackbar.LENGTH_LONG
-            ).show();
-        }
-
-        dialog.dismiss();
-    });
-
-    // Dialog anzeigen
-    dialog.show();
-
-    // Fokus auf das Eingabefeld setzen und Tastatur anzeigen
-    editTextProfileName.requestFocus();
-    InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-    imm.showSoftInput(editTextProfileName, InputMethodManager.SHOW_IMPLICIT);
-}
+                } else {
+                    ErrorHandler.handleError(MainActivity.this,
+                            result.getException(),
+                            result.getMessage(),
+                            ErrorHandler.ErrorSeverity.ERROR);
+                }
+            }
+        });
+    }
 
     private void showDeleteProfileConfirmDialog() {
-        // Prüfe zuerst, ob ein Custom-Profil existiert und ausgewählt ist
-        CustomProfile currentProfile = profileManager.getCurrentProfile();
+        CustomProfile currentProfile = profileRepository.getCurrentProfile();
         if (currentProfile == null) {
-            Toast.makeText(this, R.string.no_custom_profiles, Toast.LENGTH_SHORT).show();
+            ErrorHandler.showSnackbar(this, getString(R.string.no_custom_profiles),
+                    Snackbar.LENGTH_SHORT);
             return;
         }
 
-        // Verwende den Standard-Theme anstelle des benutzerdefinierten Themes
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this);
         builder.setTitle(R.string.delete_confirm)
                 .setMessage(getString(R.string.delete_confirm_message_named, currentProfile.getName()))
-                .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        // Hier den Fix: Richtig prüfen, ob das zu löschende Profil ein Favorit ist
-                        boolean wasFavorite = profileManager.isFavorite(CUSTOM, profileManager.getCurrentProfileIndex());
-
-                        // Profil löschen
-                        profileManager.deleteCurrentProfile();
-
-                        // Prüfe, ob noch Profile übrig sind
-                        if (profileManager.hasProfiles()) {
-                            // Wenn der gelöschte Leet ein Favorit war, zeige spezielle Nachricht an
-                            if (wasFavorite) {
-                                Snackbar.make(
-                                        findViewById(android.R.id.content),
-                                        R.string.favorite_deleted,
-                                        Snackbar.LENGTH_LONG
-                                ).show();
-                            } else {
-                                Snackbar.make(
-                                        findViewById(android.R.id.content),
-                                        R.string.profile_deleted,
-                                        Snackbar.LENGTH_SHORT
-                                ).show();
-                            }
-
-                            // Zum Simple Leet wechseln, wenn keine Custom Leets mehr übrig sind
-                            if (!profileManager.hasProfiles()) {
-                                setActiveMode(SIMPLE);
-                            } else {
-                                // Bleibe im Custom-Modus, aber aktualisiere UI
-                                updateOutput();
-                                updateTable();
-                            }
-                        } else {
-                            // Keine Custom-Profile mehr verfügbar
-                            Snackbar.make(
-                                    findViewById(android.R.id.content),
-                                    R.string.last_profile_deleted,
-                                    Snackbar.LENGTH_SHORT
-                            ).show();
-                            // Zum Simple-Modus wechseln
-                            setActiveMode(SIMPLE);
-                        }
-
-                        // UI aktualisieren
-                        updateNavigationView();
-                    }
+                .setPositiveButton(R.string.ok, (dialog, which) -> {
+                    deleteProfileWithRepository(profileRepository.getCurrentProfileIndex());
                 })
                 .setNegativeButton(R.string.cancel, null)
                 .show();
     }
 
-    private void saveCurrentCustomProfile() {
-        if (isEditMode) {
-            saveCustomTranslations();
-        }
-        Toast.makeText(this, R.string.profile_saved, Toast.LENGTH_SHORT).show();
+    private void deleteProfileWithRepository(int profileIndex) {
+        profileRepository.deleteProfile(profileIndex, new ProfileRepository.ProfileOperationCallback() {
+            @Override
+            public void onComplete(ProfileOperationResult result) {
+                if (result.isSuccess()) {
+                    ProfileRepository.ProfileDeletionResult deletionResult = result.getDeletionResult();
+
+                    if (deletionResult.wasLastProfile()) {
+                        setActiveMode(SIMPLE);
+                        ErrorHandler.showSnackbar(MainActivity.this,
+                                getString(R.string.last_profile_deleted),
+                                Snackbar.LENGTH_SHORT);
+                    } else {
+                        if (deletionResult.wasFavorite()) {
+                            ErrorHandler.showSnackbar(MainActivity.this,
+                                    getString(R.string.favorite_deleted),
+                                    Snackbar.LENGTH_LONG);
+                        } else {
+                            ErrorHandler.showSnackbar(MainActivity.this,
+                                    getString(R.string.profile_deleted),
+                                    Snackbar.LENGTH_SHORT);
+                        }
+
+                        updateTable();
+                        updateOutput();
+                    }
+
+                    updateNavigationView();
+                    updateAppTitle();
+
+                } else {
+                    ErrorHandler.handleError(MainActivity.this,
+                            result.getException(),
+                            result.getMessage(),
+                            ErrorHandler.ErrorSeverity.ERROR);
+                }
+            }
+        });
     }
 
     private void setActiveMode(int mode) {
-        // Prüfe, ob wir in den Custom Modus wechseln wollen, aber keine Profile existieren
-        if (mode == CUSTOM && !profileManager.hasProfiles()) {
-            // Wenn keine Custom Profile existieren, zeige einen Hinweis
-            Toast.makeText(this, R.string.no_custom_profiles, Toast.LENGTH_SHORT).show();
-            // Bleibe im aktuellen Modus
+        if (mode == CUSTOM && !profileRepository.hasProfiles()) {
+            ErrorHandler.showSnackbar(this, getString(R.string.no_custom_profiles),
+                    Snackbar.LENGTH_SHORT);
             return;
         }
 
         activeMode = mode;
 
-        // Zeige FAB nur in normalen Modi, nicht im About Modus
         if (mode != ABOUT) {
             showMainView();
-            fabAddLeet.show();
+            binding.fabAddLeet.show();
         } else {
-            fabAddLeet.hide();
+            binding.fabAddLeet.hide();
         }
 
-        // Update app title based on mode
-        switch (mode) {
-            case SIMPLE:
-                appTitle.setText(R.string.simple);
-                break;
-            case EXTENDED:
-                appTitle.setText(R.string.extended);
-                break;
-            case CUSTOM:
-                // Hole den aktuellen Profilnamen und setze ihn als Titel
-                CustomProfile currentProfile = profileManager.getCurrentProfile();
-                if (currentProfile != null) {
-                    String leetName = currentProfile.getName();
-                    String titleText = leetName + " Leet";
-                    appTitle.setText(titleText);
-                } else {
-                    // Fallback, falls kein Profil geladen werden konnte
-                    appTitle.setText(R.string.custom);
-                }
-                break;
-            case ABOUT:
-                showAboutView();
-                break;
-        }
-
-        // Exit edit mode if changing modes
-        if (isEditMode) {
-            isEditMode = false;
-        }
-
-        // Update navigation view
+        updateAppTitle();
         updateNavigationView();
-
-        // Update output and table
         updateOutput();
         updateTable();
-
-        // Update Toolbar actions
         invalidateOptionsMenu();
     }
 
-
-    private void updateOutput() {
-        String input = inputPlainText.getText().toString();
-        String output = translate(input);
-        outputLeetText.setText(output);
-    }
-
-    private String translate(String input) {
-        StringBuilder output = new StringBuilder();
-
-        for (char c : input.toCharArray()) {
-            String outputChar = getTranslatedChar(c);
-            output.append(outputChar);
-        }
-
-        return output.toString();
-    }
-
-    private String getTranslatedChar(char inputChar) {
-        // Convert to uppercase for lookup
-        char upperChar = Character.toUpperCase(inputChar);
-
-        // Find the index in the alphabet
-        int index = -1;
-        for (int i = 0; i < plaintextAlphabet.length; i++) {
-            if (plaintextAlphabet[i] == upperChar) {
-                index = i;
-                break;
-            }
-        }
-
-        // If not found in alphabet, return original character
-        if (index == -1) {
-            return String.valueOf(inputChar);
-        }
-
-        // Translate based on active mode
+    private void updateAppTitle() {
+        String title;
         switch (activeMode) {
             case SIMPLE:
-                return simpleLeetAlphabet[index];
+                title = getString(R.string.simple);
+                break;
             case EXTENDED:
-                return extendedLeetAlphabet[index];
+                title = getString(R.string.extended);
+                break;
             case CUSTOM:
-                CustomProfile currentProfile = profileManager.getCurrentProfile();
-                // Wenn kein Profil vorhanden ist, nutze Original-Charakter
-                if (currentProfile == null) {
-                    // Wenn kein Custom-Profil existiert, wechsle zum Simple-Modus
-                    setActiveMode(SIMPLE);
-                    return simpleLeetAlphabet[index];
+                CustomProfile currentProfile = profileRepository.getCurrentProfile();
+                if (currentProfile != null) {
+                    title = currentProfile.getName() + " Leet";
+                } else {
+                    title = getString(R.string.custom);
                 }
-                return currentProfile.getTranslation(String.valueOf(upperChar));
+                break;
             default:
-                return String.valueOf(inputChar);
+                title = getString(R.string.app_name);
+        }
+        binding.appTitle.setText(title);
+    }
+
+    private void updateOutput() {
+        String input = binding.inputPlainText.getText().toString();
+
+        LeetTranslator.TranslationMode mode = getCurrentTranslationMode();
+        CustomProfile currentProfile = (mode == LeetTranslator.TranslationMode.CUSTOM)
+                ? profileRepository.getCurrentProfile()
+                : null;
+
+        String output = LeetTranslator.translate(input, mode, currentProfile);
+        binding.outputLeetText.setText(output);
+    }
+
+    private LeetTranslator.TranslationMode getCurrentTranslationMode() {
+        switch (activeMode) {
+            case SIMPLE:
+                return LeetTranslator.TranslationMode.SIMPLE;
+            case EXTENDED:
+                return LeetTranslator.TranslationMode.EXTENDED;
+            case CUSTOM:
+                return LeetTranslator.TranslationMode.CUSTOM;
+            default:
+                return LeetTranslator.TranslationMode.SIMPLE;
         }
     }
 
     private void updateTable() {
-        // Clear the table
-        leetTable.removeAllViews();
+        binding.leetTable.removeAllViews();
 
-        // Tabellenzellen-Stil
         int cellPadding = (int) getResources().getDimension(R.dimen.table_cell_padding);
-
-        // Hintergrundfarben für Zeilen
         int colorEven = getResources().getColor(R.color.gray_light, getTheme());
         int colorOdd = getResources().getColor(android.R.color.transparent, getTheme());
 
-        // Add rows to the table
+        char[] alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".toCharArray();
+
         for (int i = 0; i < 13; i++) {
             TableRow row = new TableRow(this);
             row.setBackgroundColor(i % 2 == 0 ? colorEven : colorOdd);
 
-            // Füge Rand und Ripple-Effekt hinzu
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 row.setForeground(ResourcesCompat.getDrawable(getResources(),
                         R.drawable.ripple_effect, getTheme()));
             }
 
             // Left side (letters 0-12)
-            TextView leftPlain = createTableTextView(String.valueOf(plaintextAlphabet[i]), cellPadding);
+            TextView leftPlain = createTableTextView(String.valueOf(alphabet[i]), cellPadding);
             row.addView(leftPlain);
 
             // Left side leet character
             if (isEditMode && activeMode == CUSTOM) {
-                EditText leftLeet = createTableEditText(getTranslatedChar(plaintextAlphabet[i]), cellPadding);
+                EditText leftLeet = createTableEditText(getTranslatedChar(alphabet[i]), cellPadding);
                 editableFields[i][0] = leftLeet;
                 row.addView(leftLeet);
             } else {
-                TextView leftLeet = createTableTextView(getTranslatedChar(plaintextAlphabet[i]), cellPadding);
+                TextView leftLeet = createTableTextView(getTranslatedChar(alphabet[i]), cellPadding);
                 if (!isEditMode) {
                     displayFields[i][0] = leftLeet;
                 }
@@ -952,27 +730,35 @@ private void showNewProfileDialog() {
             }
 
             // Right side (letters 13-25)
-            TextView rightPlain = createTableTextView(String.valueOf(plaintextAlphabet[i + 13]), cellPadding);
+            TextView rightPlain = createTableTextView(String.valueOf(alphabet[i + 13]), cellPadding);
             row.addView(rightPlain);
 
             // Right side leet character
             if (isEditMode && activeMode == CUSTOM) {
-                EditText rightLeet = createTableEditText(getTranslatedChar(plaintextAlphabet[i + 13]), cellPadding);
+                EditText rightLeet = createTableEditText(getTranslatedChar(alphabet[i + 13]), cellPadding);
                 editableFields[i][1] = rightLeet;
                 row.addView(rightLeet);
             } else {
-                TextView rightLeet = createTableTextView(getTranslatedChar(plaintextAlphabet[i + 13]), cellPadding);
+                TextView rightLeet = createTableTextView(getTranslatedChar(alphabet[i + 13]), cellPadding);
                 if (!isEditMode) {
                     displayFields[i][1] = rightLeet;
                 }
                 row.addView(rightLeet);
             }
 
-            leetTable.addView(row);
+            binding.leetTable.addView(row);
         }
     }
 
-    // Hilfsmethode zum Erstellen von TextViews für die Tabelle
+    private String getTranslatedChar(char c) {
+        LeetTranslator.TranslationMode mode = getCurrentTranslationMode();
+        CustomProfile currentProfile = (mode == LeetTranslator.TranslationMode.CUSTOM)
+                ? profileRepository.getCurrentProfile()
+                : null;
+
+        return LeetTranslator.translateChar(c, mode, currentProfile);
+    }
+
     private TextView createTableTextView(String text, int padding) {
         TextView textView = new TextView(this);
         textView.setText(text);
@@ -984,7 +770,6 @@ private void showNewProfileDialog() {
         return textView;
     }
 
-    // Hilfsmethode zum Erstellen von EditTexts für die Tabelle
     private EditText createTableEditText(String text, int padding) {
         EditText editText = new EditText(this);
         editText.setText(text);
@@ -1000,97 +785,96 @@ private void showNewProfileDialog() {
     private void switchToEditMode() {
         if (activeMode != CUSTOM) return;
 
-        // Zeige den umfassenden Bearbeitungsdialog an
         showComprehensiveEditDialog();
-
-        // Wir setzen isEditMode nicht mehr, da die Bearbeitung jetzt vollständig im Dialog stattfindet
-        // Toolbar-Menü aktualisieren
         invalidateOptionsMenu();
     }
 
     private void saveCustomTranslations() {
         if (!isEditMode) return;
 
-        CustomProfile currentProfile = profileManager.getCurrentProfile();
+        CustomProfile currentProfile = profileRepository.getCurrentProfile();
         Map<String, String> translations = new HashMap<>();
+
+        char[] alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".toCharArray();
 
         // Save left column (letters 0-12)
         for (int i = 0; i < 13; i++) {
-            String plainChar = String.valueOf(plaintextAlphabet[i]);
+            String plainChar = String.valueOf(alphabet[i]);
             String leetChar = editableFields[i][0].getText().toString();
             translations.put(plainChar, leetChar);
         }
 
         // Save right column (letters 13-25)
         for (int i = 0; i < 13; i++) {
-            String plainChar = String.valueOf(plaintextAlphabet[i + 13]);
+            String plainChar = String.valueOf(alphabet[i + 13]);
             String leetChar = editableFields[i][1].getText().toString();
             translations.put(plainChar, leetChar);
         }
 
         currentProfile.setTranslations(translations);
-        profileManager.updateCurrentProfile(currentProfile);
 
-        isEditMode = false;
+        profileRepository.updateProfile(profileRepository.getCurrentProfileIndex(), currentProfile,
+                new ProfileRepository.ProfileOperationCallback() {
+                    @Override
+                    public void onComplete(ProfileOperationResult result) {
+                        if (result.isSuccess()) {
+                            isEditMode = false;
+                            updateTable();
+                            updateOutput();
+                            invalidateOptionsMenu();
 
-        Toast.makeText(this, R.string.save_success, Toast.LENGTH_SHORT).show();
-
-        updateTable();
-        updateOutput();
-
-        // Toolbar-Menü aktualisieren
-        invalidateOptionsMenu();
+                            ErrorHandler.showSnackbar(MainActivity.this,
+                                    getString(R.string.save_success),
+                                    Snackbar.LENGTH_SHORT);
+                        } else {
+                            ErrorHandler.handleError(MainActivity.this,
+                                    result.getException(),
+                                    result.getMessage(),
+                                    ErrorHandler.ErrorSeverity.ERROR);
+                        }
+                    }
+                });
     }
 
     private void copyToClipboard() {
-        String text = outputLeetText.getText().toString();
+        String text = binding.outputLeetText.getText().toString();
         ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
         ClipData clip = ClipData.newPlainText("Leetspeak Text", text);
         clipboard.setPrimaryClip(clip);
 
-        Toast.makeText(this, R.string.copy_success, Toast.LENGTH_SHORT).show();
+        ErrorHandler.showSnackbar(this, getString(R.string.copy_success), Snackbar.LENGTH_SHORT);
     }
 
     private void showComprehensiveEditDialog() {
-        // Hole das aktuelle Profil
-        CustomProfile currentProfile = profileManager.getCurrentProfile();
+        CustomProfile currentProfile = profileRepository.getCurrentProfile();
 
-        // Wenn kein Profil vorhanden ist, zeige eine Meldung an und breche ab
         if (currentProfile == null) {
-            Toast.makeText(this, R.string.no_custom_profiles_available, Toast.LENGTH_SHORT).show();
+            ErrorHandler.showSnackbar(this, getString(R.string.no_custom_profiles_available),
+                    Snackbar.LENGTH_SHORT);
             return;
         }
 
-        // Erstelle einen MaterialAlertDialogBuilder
         MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this);
-
-        // Lade das benutzerdefinierte Layout für den Dialog
         View dialogView = getLayoutInflater().inflate(R.layout.dialog_comprehensive_edit, null);
         builder.setView(dialogView);
 
-        // Erstelle den Dialog
         AlertDialog dialog = builder.create();
 
-        // UI-Elemente im Dialog finden
         TextInputEditText editTextProfileName = dialogView.findViewById(R.id.editTextProfileName);
         ImageView selectedIcon = dialogView.findViewById(R.id.selectedIcon);
         TableLayout editTable = dialogView.findViewById(R.id.editTable);
         Button buttonCancel = dialogView.findViewById(R.id.buttonCancel);
         Button buttonSave = dialogView.findViewById(R.id.buttonSave);
 
-        // Fülle die Felder mit den aktuellen Werten
         editTextProfileName.setText(currentProfile.getName());
 
-        // Icon setzen, falls vorhanden
         int iconResId = currentProfile.getIconResId();
         if (iconResId != 0) {
             selectedIcon.setImageResource(iconResId);
         }
 
-        // Variable für die ausgewählte Icon-Ressourcen-ID
         final int[] selectedIconResId = {iconResId};
 
-        // Event-Handler für Icon-Klick
         selectedIcon.setOnClickListener(v -> {
             IconSelectorDialog iconDialog = new IconSelectorDialog(
                     MainActivity.this,
@@ -1103,52 +887,42 @@ private void showNewProfileDialog() {
             iconDialog.show();
         });
 
-        // Initialisiere die Bearbeitungsfelder für die Tabelle
         EditText[][] tableEditFields = new EditText[13][2];
 
-        // Tabellenzellen-Stil
         int cellPadding = (int) getResources().getDimension(R.dimen.table_cell_padding);
-
-        // Hintergrundfarben für Zeilen
         int colorEven = getResources().getColor(R.color.gray_light, getTheme());
         int colorOdd = getResources().getColor(android.R.color.transparent, getTheme());
 
-        // Füge Zeilen zur Tabelle hinzu
+        char[] alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".toCharArray();
+
         for (int i = 0; i < 13; i++) {
             TableRow row = new TableRow(this);
             row.setBackgroundColor(i % 2 == 0 ? colorEven : colorOdd);
 
-            // Füge Rand und Ripple-Effekt hinzu
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 row.setForeground(ResourcesCompat.getDrawable(getResources(),
                         R.drawable.ripple_effect, getTheme()));
             }
 
-            // Linke Seite (Buchstaben 0-12)
-            TextView leftPlain = createTableTextView(String.valueOf(plaintextAlphabet[i]), cellPadding);
+            TextView leftPlain = createTableTextView(String.valueOf(alphabet[i]), cellPadding);
             row.addView(leftPlain);
 
-            // Linke Seite Leet-Zeichen (editierbar)
-            EditText leftLeet = createTableEditText(currentProfile.getTranslation(String.valueOf(plaintextAlphabet[i])), cellPadding);
+            EditText leftLeet = createTableEditText(currentProfile.getTranslation(String.valueOf(alphabet[i])), cellPadding);
             tableEditFields[i][0] = leftLeet;
             row.addView(leftLeet);
 
-            // Rechte Seite (Buchstaben 13-25)
-            TextView rightPlain = createTableTextView(String.valueOf(plaintextAlphabet[i + 13]), cellPadding);
+            TextView rightPlain = createTableTextView(String.valueOf(alphabet[i + 13]), cellPadding);
             row.addView(rightPlain);
 
-            // Rechte Seite Leet-Zeichen (editierbar)
-            EditText rightLeet = createTableEditText(currentProfile.getTranslation(String.valueOf(plaintextAlphabet[i + 13])), cellPadding);
+            EditText rightLeet = createTableEditText(currentProfile.getTranslation(String.valueOf(alphabet[i + 13])), cellPadding);
             tableEditFields[i][1] = rightLeet;
             row.addView(rightLeet);
 
             editTable.addView(row);
         }
 
-        // Event-Handler für Abbrechen-Button
         buttonCancel.setOnClickListener(v -> dialog.dismiss());
 
-        // Event-Handler für Speichern-Button
         buttonSave.setOnClickListener(v -> {
             String profileName = editTextProfileName.getText().toString().trim();
             if (profileName.isEmpty()) {
@@ -1156,58 +930,82 @@ private void showNewProfileDialog() {
             }
 
             try {
-                // Aktualisiere das Profil
                 currentProfile.setName(profileName);
                 currentProfile.setIconResId(selectedIconResId[0]);
 
-                // Aktualisiere die Übersetzungstabelle
                 for (int i = 0; i < 13; i++) {
-                    // Linke Seite (Buchstaben 0-12)
-                    String plainChar = String.valueOf(plaintextAlphabet[i]);
+                    String plainChar = String.valueOf(alphabet[i]);
                     String leetChar = tableEditFields[i][0].getText().toString();
                     currentProfile.setTranslation(plainChar, leetChar);
 
-                    // Rechte Seite (Buchstaben 13-25)
-                    plainChar = String.valueOf(plaintextAlphabet[i + 13]);
+                    plainChar = String.valueOf(alphabet[i + 13]);
                     leetChar = tableEditFields[i][1].getText().toString();
                     currentProfile.setTranslation(plainChar, leetChar);
                 }
 
-                // Speichere die Änderungen
-                profileManager.updateCurrentProfile(currentProfile);
+                String finalProfileName = profileName;
+                profileRepository.updateProfile(profileRepository.getCurrentProfileIndex(), currentProfile,
+                        new ProfileRepository.ProfileOperationCallback() {
+                            @Override
+                            public void onComplete(ProfileOperationResult result) {
+                                if (result.isSuccess()) {
+                                    binding.appTitle.setText(finalProfileName + " Leet");
+                                    updateNavigationView();
+                                    updateOutput();
+                                    updateTable();
 
-                // UI aktualisieren
-                appTitle.setText(profileName + " Leet");
-                updateNavigationView();
-                updateOutput();
-                updateTable();
-
-                // Erfolgsmeldung
-                Snackbar.make(
-                        findViewById(android.R.id.content),
-                        R.string.all_changes_saved,
-                        Snackbar.LENGTH_SHORT
-                ).show();
+                                    ErrorHandler.showSnackbar(MainActivity.this,
+                                            getString(R.string.all_changes_saved),
+                                            Snackbar.LENGTH_SHORT);
+                                } else {
+                                    ErrorHandler.handleError(MainActivity.this,
+                                            result.getException(),
+                                            result.getMessage(),
+                                            ErrorHandler.ErrorSeverity.ERROR);
+                                }
+                            }
+                        });
 
             } catch (Exception e) {
-                Log.e("MainActivity", "Fehler beim Aktualisieren des Profils: " + e.getMessage());
-
-                Snackbar.make(
-                        findViewById(android.R.id.content),
-                        getString(R.string.profile_update_error, e.getMessage()),
-                        Snackbar.LENGTH_LONG
-                ).show();
+                ErrorHandler.handleError(this, e, "Fehler beim Aktualisieren des Profils",
+                        ErrorHandler.ErrorSeverity.ERROR);
             }
 
             dialog.dismiss();
         });
 
-        // Dialog anzeigen
         dialog.show();
 
-        // Fokus auf das Eingabefeld setzen und Tastatur anzeigen
         editTextProfileName.requestFocus();
         InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
         imm.showSoftInput(editTextProfileName, InputMethodManager.SHOW_IMPLICIT);
     }
+
+    // TextWatcher für Live-Updates
+    private final TextWatcher textWatcher = new TextWatcher() {
+        @Override
+        public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+        @Override
+        public void onTextChanged(CharSequence s, int start, int before, int count) {}
+
+        @Override
+        public void afterTextChanged(Editable s) {
+            updateOutput();
+        }
+    };
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        // Cleanup
+        if (profileRepository != null) {
+            profileRepository.cleanup();
+        }
+
+        // ViewBinding cleanup
+        binding = null;
+        navHeaderTitle = null;
     }
+}

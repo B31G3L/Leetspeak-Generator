@@ -6,6 +6,11 @@ android {
     namespace 'com.beigel.leetSpeak_Generator'
     compileSdk 34
 
+    // ViewBinding aktivieren
+    buildFeatures {
+        viewBinding true
+    }
+
     defaultConfig {
         applicationId "com.beigel.leetSpeak_Generator"
         minSdk 26
@@ -30,13 +35,15 @@ android {
 
 dependencies {
     implementation 'androidx.appcompat:appcompat:1.6.1'
-    implementation 'com.google.android.material:material:1.11.0'
+    implementation 'com.google.android.material:material:1.12.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
     implementation 'androidx.drawerlayout:drawerlayout:1.2.0'
     implementation 'androidx.coordinatorlayout:coordinatorlayout:1.2.0'
     implementation 'com.google.code.gson:gson:2.10.1'
 
+    // Testing Dependencies
     testImplementation 'junit:junit:4.13.2'
+    testImplementation 'org.mockito:mockito-core:4.6.1'
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
 }
