@@ -1,10 +1,18 @@
 package com.beigel.leetSpeak_Generator;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.animation.ObjectAnimator;
+import android.animation.ValueAnimator;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.VibrationEffect;
+import android.os.Vibrator;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -12,6 +20,7 @@ import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.animation.DecelerateInterpolator;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -62,6 +71,16 @@ public class MainActivity extends AppCompatActivity {
     private LinearLayout outputSection;
     private View divider;
     private MaterialButton buttonLeetSelector;
+    private TextView characterCounter;
+    private TextView wordCounter;
+    private Handler typingHandler = new Handler(Looper.getMainLooper());
+    private Runnable typingRunnable;
+    private Vibrator vibrator;
+
+    // Undo/Redo functionality
+    private List<String> textHistory = new ArrayList<>();
+    private int historyPosition = -1;
+    private boolean isUpdatingFromHistory = false;
 
     private EditText[][] editableFields = new EditText[13][2];
     private TextView[][] displayFields = new TextView[13][2];
@@ -94,21 +113,33 @@ public class MainActivity extends AppCompatActivity {
             getSupportActionBar().setDisplayShowTitleEnabled(false);
         }
 
+        // Vibrator für Haptic Feedback
+        vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+
         // View-Referenzen
         inputSection = findViewById(R.id.input_section);
         outputSection = findViewById(R.id.output_section);
         divider = findViewById(R.id.divider);
         buttonLeetSelector = findViewById(R.id.buttonLeetSelector);
+        characterCounter = findViewById(R.id.characterCounter);
+        wordCounter = findViewById(R.id.wordCounter);
 
         // Event Listeners mit ViewBinding
-        binding.inputPlainText.addTextChangedListener(textWatcher);
-        binding.buttonCopy.setOnClickListener(v -> copyToClipboard());
+        binding.inputPlainText.addTextChangedListener(enhancedTextWatcher);
+        binding.buttonCopy.setOnClickListener(v -> copyToClipboardWithFeedback());
         binding.buttonExpandTable.setOnClickListener(v -> toggleTableVisibility());
         buttonLeetSelector.setOnClickListener(v -> showLeetSelectorBottomSheet());
+
+        // Neue Button-Listener
+        findViewById(R.id.buttonUndo).setOnClickListener(v -> performUndo());
+        findViewById(R.id.buttonRedo).setOnClickListener(v -> performRedo());
+        findViewById(R.id.buttonReverse).setOnClickListener(v -> performReverseTranslation());
 
         // Initial: Output-Sektion ausblenden
         updateLayoutForOutput("");
         updateLeetSelectorText();
+        updateStatistics("");
+        updateUndoRedoButtons();
     }
 
     private void showLeetSelectorBottomSheet() {
@@ -133,6 +164,11 @@ public class MainActivity extends AppCompatActivity {
                     }
 
                     @Override
+                    public void onLeetPreview(LeetOption leetOption) {
+
+                    }
+
+                    @Override
                     public void onEditLeet(LeetOption leetOption) {
                         if (leetOption.isCustom()) {
                             editCustomProfile(leetOption.getCustomIndex());
@@ -143,6 +179,11 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onToggleFavorite(LeetOption leetOption) {
                         toggleFavoriteFromBottomSheet(leetOption, adapterHolder[0]);
+                    }
+
+                    @Override
+                    public void onQuickTest(LeetOption leetOption) {
+
                     }
                 });
 
@@ -956,8 +997,8 @@ public class MainActivity extends AppCompatActivity {
         showComprehensiveEditDialog();
     }
 
-    // TextWatcher für Live-Updates
-    private final TextWatcher textWatcher = new TextWatcher() {
+    // Enhanced TextWatcher mit Haptic Feedback und History
+    private final TextWatcher enhancedTextWatcher = new TextWatcher() {
         @Override
         public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
 
@@ -966,13 +1007,269 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void afterTextChanged(Editable s) {
-            updateOutput();
+            if (!isUpdatingFromHistory) {
+                addToHistory(s.toString());
+            }
+
+            // Cancel previous typing animation
+            if (typingRunnable != null) {
+                typingHandler.removeCallbacks(typingRunnable);
+            }
+
+            // Start typing animation with delay
+            typingRunnable = () -> {
+                updateOutputWithAnimation();
+                updateStatistics(s.toString());
+
+                // Subtle haptic feedback
+                if (vibrator != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    vibrator.vibrate(VibrationEffect.createOneShot(10, 50));
+                }
+            };
+
+            typingHandler.postDelayed(typingRunnable, 150); // Debounce
         }
     };
+
+    private void addToHistory(String text) {
+        // Remove items after current position
+        while (textHistory.size() > historyPosition + 1) {
+            textHistory.remove(textHistory.size() - 1);
+        }
+
+        // Add new text
+        textHistory.add(text);
+        historyPosition = textHistory.size() - 1;
+
+        // Limit history size
+        if (textHistory.size() > 50) {
+            textHistory.remove(0);
+            historyPosition--;
+        }
+
+        updateUndoRedoButtons();
+    }
+
+    private void updateUndoRedoButtons() {
+        MaterialButton undoButton = findViewById(R.id.buttonUndo);
+        MaterialButton redoButton = findViewById(R.id.buttonRedo);
+
+        boolean canUndo = historyPosition > 0;
+        boolean canRedo = historyPosition < textHistory.size() - 1;
+
+        undoButton.setEnabled(canUndo);
+        undoButton.setAlpha(canUndo ? 1.0f : 0.5f);
+
+        redoButton.setEnabled(canRedo);
+        redoButton.setAlpha(canRedo ? 1.0f : 0.5f);
+    }
+
+    private void performUndo() {
+        if (historyPosition > 0) {
+            historyPosition--;
+            isUpdatingFromHistory = true;
+            binding.inputPlainText.setText(textHistory.get(historyPosition));
+            binding.inputPlainText.setSelection(binding.inputPlainText.getText().length());
+            isUpdatingFromHistory = false;
+            updateUndoRedoButtons();
+
+            // Haptic feedback
+            if (vibrator != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                vibrator.vibrate(VibrationEffect.createOneShot(20, 100));
+            }
+        }
+    }
+
+    private void performRedo() {
+        if (historyPosition < textHistory.size() - 1) {
+            historyPosition++;
+            isUpdatingFromHistory = true;
+            binding.inputPlainText.setText(textHistory.get(historyPosition));
+            binding.inputPlainText.setSelection(binding.inputPlainText.getText().length());
+            isUpdatingFromHistory = false;
+            updateUndoRedoButtons();
+
+            // Haptic feedback
+            if (vibrator != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                vibrator.vibrate(VibrationEffect.createOneShot(20, 100));
+            }
+        }
+    }
+
+    private void updateStatistics(String text) {
+        int charCount = text.length();
+        int wordCount = text.trim().isEmpty() ? 0 : text.trim().split("\\s+").length;
+
+        characterCounter.setText(String.valueOf(charCount));
+        wordCounter.setText(wordCount + " Wörter");
+
+        // Animate counter changes
+        ObjectAnimator scaleX = ObjectAnimator.ofFloat(characterCounter, "scaleX", 1.0f, 1.1f, 1.0f);
+        ObjectAnimator scaleY = ObjectAnimator.ofFloat(characterCounter, "scaleY", 1.0f, 1.1f, 1.0f);
+        scaleX.setDuration(200);
+        scaleY.setDuration(200);
+        scaleX.start();
+        scaleY.start();
+    }
+
+    private void updateOutputWithAnimation() {
+        String input = binding.inputPlainText.getText().toString();
+
+        LeetTranslator.TranslationMode mode = getCurrentTranslationMode();
+        CustomProfile currentProfile = (mode == LeetTranslator.TranslationMode.CUSTOM)
+                ? profileRepository.getCurrentProfile()
+                : null;
+
+        String output = LeetTranslator.translate(input, mode, currentProfile);
+
+        // Typing animation for output
+        animateTyping(binding.outputLeetText, output);
+
+        // Layout entsprechend anpassen mit Animation
+        updateLayoutForOutputWithAnimation(output);
+    }
+
+    private void animateTyping(TextView textView, String fullText) {
+        textView.setText("");
+
+        if (fullText.isEmpty()) return;
+
+        ValueAnimator animator = ValueAnimator.ofInt(0, fullText.length());
+        animator.setDuration(Math.min(fullText.length() * 20, 1000)); // Max 1 second
+        animator.setInterpolator(new DecelerateInterpolator());
+
+        animator.addUpdateListener(animation -> {
+            int progress = (Integer) animation.getAnimatedValue();
+            textView.setText(fullText.substring(0, progress));
+        });
+
+        animator.start();
+    }
+
+    private void updateLayoutForOutputWithAnimation(String outputText) {
+        boolean hasOutput = outputText != null && !outputText.trim().isEmpty();
+
+        if (hasOutput && outputSection.getVisibility() != View.VISIBLE) {
+            // Fade in output section
+            outputSection.setAlpha(0f);
+            outputSection.setVisibility(View.VISIBLE);
+            divider.setVisibility(View.VISIBLE);
+
+            ObjectAnimator fadeIn = ObjectAnimator.ofFloat(outputSection, "alpha", 0f, 1f);
+            fadeIn.setDuration(300);
+            fadeIn.setInterpolator(new DecelerateInterpolator());
+            fadeIn.start();
+
+            // Adjust layout weights
+            LinearLayout.LayoutParams inputParams = (LinearLayout.LayoutParams) inputSection.getLayoutParams();
+            inputParams.weight = 1;
+            inputSection.setLayoutParams(inputParams);
+
+        } else if (!hasOutput && outputSection.getVisibility() == View.VISIBLE) {
+            // Fade out output section
+            ObjectAnimator fadeOut = ObjectAnimator.ofFloat(outputSection, "alpha", 1f, 0f);
+            fadeOut.setDuration(200);
+            fadeOut.addListener(new AnimatorListenerAdapter() {
+                @Override
+                public void onAnimationEnd(Animator animation) {
+                    outputSection.setVisibility(View.GONE);
+                    divider.setVisibility(View.GONE);
+                }
+            });
+            fadeOut.start();
+        }
+    }
+
+    private void copyToClipboardWithFeedback() {
+        String text = binding.outputLeetText.getText().toString();
+        ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+        ClipData clip = ClipData.newPlainText("Leetspeak Text", text);
+        clipboard.setPrimaryClip(clip);
+
+        // Enhanced feedback
+        if (vibrator != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            vibrator.vibrate(VibrationEffect.createOneShot(50, 120));
+        }
+
+        // Animate copy button
+        AnimationHelper.pulse(binding.buttonCopy, 1);
+
+        ErrorHandler.showSnackbar(this, getString(R.string.copy_success), Snackbar.LENGTH_SHORT);
+    }
+
+    private void performReverseTranslation() {
+        // TODO: Implement reverse translation logic
+        // For now, show a placeholder
+        ErrorHandler.showSnackbar(this, "Reverse Translation - Coming Soon!", Snackbar.LENGTH_SHORT);
+
+        // Haptic feedback
+        if (vibrator != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            vibrator.vibrate(VibrationEffect.createOneShot(30, 80));
+        }
+    }
+
+    private void updatePreview(TextView previewText, LeetTranslator.TranslationMode mode, CustomProfile profile) {
+        String preview = LeetTranslator.translate("Hello", mode, profile);
+        previewText.setText(preview);
+
+        // Animate preview change
+        ObjectAnimator fadeOut = ObjectAnimator.ofFloat(previewText, "alpha", 1f, 0.3f);
+        ObjectAnimator fadeIn = ObjectAnimator.ofFloat(previewText, "alpha", 0.3f, 1f);
+
+        fadeOut.setDuration(100);
+        fadeIn.setDuration(100);
+        fadeIn.setStartDelay(100);
+
+        fadeOut.start();
+        fadeIn.start();
+    }
+
+    private LeetTranslator.TranslationMode getTranslationModeFromOption(LeetOption option) {
+        switch (option.getMode()) {
+            case SIMPLE:
+                return LeetTranslator.TranslationMode.SIMPLE;
+            case EXTENDED:
+                return LeetTranslator.TranslationMode.EXTENDED;
+            case CUSTOM:
+                return LeetTranslator.TranslationMode.CUSTOM;
+            default:
+                return LeetTranslator.TranslationMode.SIMPLE;
+        }
+    }
+
+    private void performQuickTest(LeetOption leetOption) {
+        // Set temporary mode for quick test
+        String originalText = binding.inputPlainText.getText().toString();
+        if (originalText.isEmpty()) {
+            originalText = "Hello World Test";
+            binding.inputPlainText.setText(originalText);
+        }
+
+        LeetTranslator.TranslationMode mode = getTranslationModeFromOption(leetOption);
+        CustomProfile profile = leetOption.isCustom() ?
+                profileRepository.getProfiles().get(leetOption.getCustomIndex()) : null;
+
+        String quickResult = LeetTranslator.translate(originalText, mode, profile);
+
+        // Show quick result with animation
+        ErrorHandler.showSnackbar(this,
+                leetOption.getName() + ": " + quickResult,
+                Snackbar.LENGTH_LONG);
+
+        // Haptic feedback
+        if (vibrator != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            vibrator.vibrate(VibrationEffect.createOneShot(25, 60));
+        }
+    }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
+
+        // Cleanup handlers
+        if (typingHandler != null && typingRunnable != null) {
+            typingHandler.removeCallbacks(typingRunnable);
+        }
 
         // Cleanup
         if (profileRepository != null) {

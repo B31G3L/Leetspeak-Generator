@@ -85,6 +85,44 @@
     <string name="leetspeak_translation">Leetspeak Übersetzung</string>
 
 
+    <!-- Enhanced Input/Output -->
+    <string name="character_count">%d Zeichen</string>
+    <string name="word_count">%d Wörter</string>
+    <string name="undo">Rückgängig</string>
+    <string name="redo">Wiederholen</string>
+    <string name="reverse_translation">Rückwärts übersetzen</string>
+    <string name="quick_test">Schnelltest</string>
+
+    <!-- Bottom Sheet Enhancements -->
+    <string name="search_leets">Leet suchen...</string>
+    <string name="preview_label">Vorschau:</string>
+    <string name="favorites_section">★ Favoriten</string>
+    <string name="all_leet_modes">Alle Leet-Modi</string>
+    <string name="no_favorites">Keine Favoriten vorhanden</string>
+
+    <!-- Feedback Messages -->
+    <string name="copy_success_enhanced">Text kopiert! 📋</string>
+    <string name="reverse_coming_soon">Rückwärts-Übersetzung - Bald verfügbar! 🔄</string>
+    <string name="quick_test_result">%1$s: %2$s</string>
+
+    <!-- Animation Labels -->
+    <string name="typing_animation">Schreibt...</string>
+    <string name="loading_preview">Lädt Vorschau...</string>
+
+    <!-- Accessibility -->
+    <string name="undo_button_description">Text rückgängig machen</string>
+    <string name="redo_button_description">Text wiederholen</string>
+    <string name="reverse_button_description">Übersetzung umkehren</string>
+    <string name="quick_test_description">Schnellen Test durchführen</string>
+    <string name="character_counter_description">Anzahl der Zeichen</string>
+    <string name="word_counter_description">Anzahl der Wörter</string>
+
+    <!-- Enhanced Features -->
+    <string name="haptic_feedback_enabled">Haptisches Feedback aktiviert</string>
+    <string name="typing_delay_ms">150</string>
+    <string name="animation_duration_fast">200</string>
+    <string name="animation_duration_normal">300</string>
+    <string name="animation_duration_slow">500</string>
     <!-- Füge diese neuen Strings zu deiner values/strings.xml hinzu: -->
 
     <!-- Neue Strings für Bottom Sheet -->

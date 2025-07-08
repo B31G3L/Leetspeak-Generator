@@ -40,12 +40,112 @@
             android:paddingHorizontal="12dp" />
     </LinearLayout>
 
+    <!-- Search Bar -->
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/searchContainer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Leet suchen..."
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        app:boxStrokeColor="?attr/colorSecondary"
+        app:hintTextColor="?attr/colorSecondary"
+        android:layout_marginBottom="16dp">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/searchEditText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="text"
+            android:fontFamily="@font/raleway"
+            android:drawableStart="@drawable/ic_search"
+            android:drawablePadding="8dp" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <!-- Preview Section -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:background="@color/gray_light"
+        android:padding="12dp"
+        android:layout_marginBottom="16dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Preview: "
+            android:textSize="14sp"
+            android:textColor="?android:attr/textColorSecondary"
+            android:fontFamily="@font/raleway" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Hello"
+            android:textSize="14sp"
+            android:textColor="?android:attr/textColorPrimary"
+            android:fontFamily="@font/raleway"
+            android:layout_marginEnd="8dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="→"
+            android:textSize="14sp"
+            android:textColor="?attr/colorSecondary"
+            android:layout_marginEnd="8dp" />
+
+        <TextView
+            android:id="@+id/previewText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="H3110"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:textColor="?attr/colorSecondary"
+            android:fontFamily="@font/raleway" />
+    </LinearLayout>
+
+    <!-- Favorites Section -->
+    <TextView
+        android:id="@+id/favoritesHeader"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="★ Favoriten"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:textColor="?android:attr/textColorPrimary"
+        android:fontFamily="@font/raleway"
+        android:layout_marginBottom="8dp"
+        android:visibility="gone" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerViewFavorites"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:maxHeight="150dp"
+        android:nestedScrollingEnabled="false"
+        android:layout_marginBottom="16dp"
+        android:visibility="gone" />
+
+    <!-- All Leets Section -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Alle Leet-Modi"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:textColor="?android:attr/textColorPrimary"
+        android:fontFamily="@font/raleway"
+        android:layout_marginBottom="8dp" />
+
     <!-- Leet Options List -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerViewLeets"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:maxHeight="400dp"
+        android:maxHeight="300dp"
         android:nestedScrollingEnabled="false" />
 
 </LinearLayout>
