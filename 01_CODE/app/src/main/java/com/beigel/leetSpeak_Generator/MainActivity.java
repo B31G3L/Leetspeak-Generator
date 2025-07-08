@@ -11,11 +11,11 @@ import android.util.Log;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.SubMenu;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
@@ -28,21 +28,21 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputEditText;
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.view.GravityCompat;
-import androidx.drawerlayout.widget.DrawerLayout;
-import android.graphics.drawable.Drawable;
-import android.graphics.drawable.LayerDrawable;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.beigel.leetSpeak_Generator.databinding.ActivityMainBinding;
+import com.google.android.material.bottomsheet.BottomSheetDialog;
+import com.google.android.material.button.MaterialButton;
 import com.google.android.material.navigation.NavigationView;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
+public class MainActivity extends AppCompatActivity {
 
     private static final int SIMPLE = ProfileManager.MODE_SIMPLE;
     private static final int EXTENDED = ProfileManager.MODE_EXTENDED;
@@ -54,14 +54,14 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     // ViewBinding - nur für ActivityMain
     private ActivityMainBinding binding;
 
-    // Navigation Header Views (manuell referenziert)
-    private TextView navHeaderTitle;
-
     // Repository Pattern
     private ProfileRepository profileRepository;
 
-    // Für About-Ansicht
-    private View aboutView;
+    // UI Components
+    private LinearLayout inputSection;
+    private LinearLayout outputSection;
+    private View divider;
+    private MaterialButton buttonLeetSelector;
 
     private EditText[][] editableFields = new EditText[13][2];
     private TextView[][] displayFields = new TextView[13][2];
@@ -76,48 +76,168 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        // Navigation Header manuell referenzieren
-        View headerView = binding.navView.getHeaderView(0);
-        navHeaderTitle = headerView.findViewById(R.id.navHeaderTitle);
-
         // Repository initialisieren
         profileRepository = new ProfileRepository(this);
 
         // UI Setup
         initializeViews();
-        setupNavigation();
 
         // Favoriten laden - jetzt asynchron!
         loadFavoriteMode();
-
-        // App-Name im Navigation Header setzen
-        if (navHeaderTitle != null) {
-            navHeaderTitle.setText(R.string.app_name);
-        }
     }
 
     private void initializeViews() {
-        // Toolbar Setup
+        // Toolbar Setup ohne Drawer
         setSupportActionBar(binding.toolbar);
         if (getSupportActionBar() != null) {
             getSupportActionBar().setTitle("");
+            getSupportActionBar().setDisplayShowTitleEnabled(false);
         }
+
+        // View-Referenzen
+        inputSection = findViewById(R.id.input_section);
+        outputSection = findViewById(R.id.output_section);
+        divider = findViewById(R.id.divider);
+        buttonLeetSelector = findViewById(R.id.buttonLeetSelector);
 
         // Event Listeners mit ViewBinding
         binding.inputPlainText.addTextChangedListener(textWatcher);
         binding.buttonCopy.setOnClickListener(v -> copyToClipboard());
         binding.buttonExpandTable.setOnClickListener(v -> toggleTableVisibility());
-        binding.fabAddLeet.setOnClickListener(v -> showNewProfileDialog());
+        buttonLeetSelector.setOnClickListener(v -> showLeetSelectorBottomSheet());
+
+        // Initial: Output-Sektion ausblenden
+        updateLayoutForOutput("");
+        updateLeetSelectorText();
     }
 
-    private void setupNavigation() {
-        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
-                this, binding.drawerLayout, binding.toolbar,
-                R.string.open_drawer, R.string.close_drawer);
-        binding.drawerLayout.addDrawerListener(toggle);
-        toggle.syncState();
+    private void showLeetSelectorBottomSheet() {
+        BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(this);
+        View bottomSheetView = getLayoutInflater().inflate(R.layout.bottom_sheet_leet_selector, null);
 
-        binding.navView.setNavigationItemSelectedListener(this);
+        RecyclerView recyclerView = bottomSheetView.findViewById(R.id.recyclerViewLeets);
+        MaterialButton buttonAddNewLeet = bottomSheetView.findViewById(R.id.buttonAddNewLeet);
+
+        // RecyclerView Setup
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+
+        // Adapter-Referenz in einem Array speichern, damit sie von der anonymen Klasse zugänglich ist
+        final LeetSelectorAdapter[] adapterHolder = new LeetSelectorAdapter[1];
+
+        LeetSelectorAdapter adapter = new LeetSelectorAdapter(createLeetOptionsList(),
+                new LeetSelectorAdapter.OnLeetSelectedListener() {
+                    @Override
+                    public void onLeetSelected(LeetOption leetOption) {
+                        selectLeet(leetOption);
+                        bottomSheetDialog.dismiss();
+                    }
+
+                    @Override
+                    public void onEditLeet(LeetOption leetOption) {
+                        if (leetOption.isCustom()) {
+                            editCustomProfile(leetOption.getCustomIndex());
+                        }
+                        bottomSheetDialog.dismiss();
+                    }
+
+                    @Override
+                    public void onToggleFavorite(LeetOption leetOption) {
+                        toggleFavoriteFromBottomSheet(leetOption, adapterHolder[0]);
+                    }
+                });
+
+        // Adapter in das Array speichern
+        adapterHolder[0] = adapter;
+        recyclerView.setAdapter(adapter);
+
+        // "Neu" Button
+        buttonAddNewLeet.setOnClickListener(v -> {
+            bottomSheetDialog.dismiss();
+            showNewProfileDialog();
+        });
+
+        bottomSheetDialog.setContentView(bottomSheetView);
+        bottomSheetDialog.show();
+    }
+
+    private List<LeetOption> createLeetOptionsList() {
+        List<LeetOption> options = new ArrayList<>();
+
+        // Simple Leet
+        options.add(new LeetOption(
+                SIMPLE,
+                getString(R.string.simple),
+                "Einfache Leetspeak-Übersetzung",
+                R.drawable.ic_simple_mode,
+                false,
+                -1,
+                activeMode == SIMPLE,
+                profileRepository.getProfileManager().isFavorite(SIMPLE, 0)
+        ));
+
+        // Extended Leet
+        options.add(new LeetOption(
+                EXTENDED,
+                getString(R.string.extended),
+                "Erweiterte Leetspeak-Übersetzung",
+                R.drawable.ic_extended_mode,
+                false,
+                -1,
+                activeMode == EXTENDED,
+                profileRepository.getProfileManager().isFavorite(EXTENDED, 0)
+        ));
+
+        // Custom Leets
+        List<CustomProfile> customProfiles = profileRepository.getProfiles();
+        for (int i = 0; i < customProfiles.size(); i++) {
+            CustomProfile profile = customProfiles.get(i);
+            options.add(new LeetOption(
+                    CUSTOM,
+                    profile.getName(),
+                    "Benutzerdefiniertes Leet",
+                    profile.getIconResId(),
+                    true,
+                    i,
+                    activeMode == CUSTOM && profileRepository.getCurrentProfileIndex() == i,
+                    profileRepository.getProfileManager().isFavorite(CUSTOM, i)
+            ));
+        }
+
+        return options;
+    }
+
+    private void selectLeet(LeetOption leetOption) {
+        activeMode = leetOption.getMode();
+
+        if (leetOption.isCustom()) {
+            profileRepository.setCurrentProfileIndex(leetOption.getCustomIndex());
+        }
+
+        updateLeetSelectorText();
+        updateAppTitle();
+        updateOutput();
+        updateTable();
+        invalidateOptionsMenu();
+    }
+
+    private void updateLeetSelectorText() {
+        String leetName;
+        switch (activeMode) {
+            case SIMPLE:
+                leetName = getString(R.string.simple);
+                break;
+            case EXTENDED:
+                leetName = getString(R.string.extended);
+                break;
+            case CUSTOM:
+                CustomProfile currentProfile = profileRepository.getCurrentProfile();
+                leetName = currentProfile != null ? currentProfile.getName() : getString(R.string.custom);
+                break;
+            default:
+                leetName = getString(R.string.simple);
+        }
+
+        buttonLeetSelector.setText("Plain → " + leetName);
     }
 
     private void loadFavoriteMode() {
@@ -140,7 +260,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 // UI nach dem Laden aktualisieren
                 updateOutput();
                 updateTable();
-                updateNavigationView();
+                updateLeetSelectorText();
             }
 
             @Override
@@ -228,7 +348,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     public void onToggleComplete(ProfileRepository.FavoriteToggleResult result) {
                         // UI aktualisieren
                         invalidateOptionsMenu();
-                        updateNavigationView();
 
                         // Benutzer-Feedback
                         String modeName = getModeDisplayName(result.getMode(), result.getCustomIndex());
@@ -240,6 +359,41 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                         ErrorHandler.showSnackbar(MainActivity.this,
                                 getString(messageResId, modeName),
                                 Snackbar.LENGTH_SHORT);
+                    }
+
+                    @Override
+                    public void onError(Exception e) {
+                        ErrorHandler.handleError(MainActivity.this, e,
+                                "Fehler beim Ändern des Favoriten-Status",
+                                ErrorHandler.ErrorSeverity.WARNING);
+                    }
+                });
+    }
+
+    private void toggleFavoriteFromBottomSheet(LeetOption leetOption, LeetSelectorAdapter adapter) {
+        int mode = leetOption.getMode();
+        int customIndex = leetOption.isCustom() ? leetOption.getCustomIndex() : 0;
+
+        profileRepository.toggleFavorite(mode, customIndex,
+                new ProfileRepository.FavoriteToggleCallback() {
+                    @Override
+                    public void onToggleComplete(ProfileRepository.FavoriteToggleResult result) {
+                        invalidateOptionsMenu();
+
+                        String modeName = leetOption.getName();
+                        int messageResId = result.isNowFavorite()
+                                ? R.string.favorite_added
+                                : R.string.favorite_removed;
+
+                        ErrorHandler.showSnackbar(MainActivity.this,
+                                getString(messageResId, modeName),
+                                Snackbar.LENGTH_SHORT);
+
+                        // Update the option object
+                        leetOption.setFavorite(result.isNowFavorite());
+
+                        // Update RecyclerView
+                        adapter.notifyDataSetChanged();
                     }
 
                     @Override
@@ -280,195 +434,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             });
         } else {
             AnimationHelper.collapseCard(binding.tableContainer, null);
-        }
-    }
-
-    @Override
-    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-        int itemId = item.getItemId();
-
-        if (itemId == R.id.nav_simple) {
-            setActiveMode(SIMPLE);
-        } else if (itemId == R.id.nav_extended) {
-            setActiveMode(EXTENDED);
-        } else if (itemId == R.id.nav_about) {
-            showAboutView();
-            item.setChecked(true);
-        } else if (itemId >= 100) {
-            int leetIndex = itemId - 100;
-
-            if (leetIndex >= 0 && leetIndex < profileRepository.getProfiles().size()) {
-                try {
-                    setActiveMode(CUSTOM);
-                    profileRepository.setCurrentProfileIndex(leetIndex);
-
-                    updateOutput();
-                    updateTable();
-                    updateNavigationView();
-
-                    String profileName = profileRepository.getCurrentProfile().getName();
-                    binding.appTitle.setText(profileName + " Leet");
-
-                    Toast.makeText(this, "Leet '" + profileRepository.getCurrentProfile().getName() +
-                            "' ausgewählt", Toast.LENGTH_SHORT).show();
-                } catch (Exception e) {
-                    ErrorHandler.handleError(this, e, "Fehler beim Auswählen des Leets",
-                            ErrorHandler.ErrorSeverity.ERROR);
-                }
-            }
-        }
-
-        binding.drawerLayout.closeDrawer(GravityCompat.START);
-        return true;
-    }
-
-    private void showAboutView() {
-        if (activeMode == ABOUT) return;
-
-        if (aboutView == null) {
-            aboutView = getLayoutInflater().inflate(R.layout.layout_about, null, false);
-
-            DrawerLayout.LayoutParams layoutParams = new DrawerLayout.LayoutParams(
-                    DrawerLayout.LayoutParams.MATCH_PARENT,
-                    DrawerLayout.LayoutParams.MATCH_PARENT
-            );
-            binding.drawerLayout.addView(aboutView, layoutParams);
-        }
-
-        // Smooth Crossfade zwischen Main und About
-        AnimationHelper.crossFade(binding.mainContent, aboutView, 400, () -> {
-            binding.fabAddLeet.hide();
-
-            if (getSupportActionBar() != null) {
-                getSupportActionBar().setTitle(R.string.about);
-            }
-
-            activeMode = ABOUT;
-            invalidateOptionsMenu();
-        });
-    }
-
-    private void showMainView() {
-        if (aboutView != null && aboutView.getVisibility() == View.VISIBLE) {
-            AnimationHelper.crossFade(aboutView, binding.mainContent, 400, () -> {
-                binding.fabAddLeet.show();
-
-                if (getSupportActionBar() != null) {
-                    getSupportActionBar().setTitle("");
-                }
-            });
-        } else {
-            if (aboutView != null) {
-                aboutView.setVisibility(View.GONE);
-            }
-            binding.mainContent.setVisibility(View.VISIBLE);
-            binding.fabAddLeet.show();
-        }
-    }
-
-    @Override
-    public void onBackPressed() {
-        if (binding.drawerLayout.isDrawerOpen(GravityCompat.START)) {
-            binding.drawerLayout.closeDrawer(GravityCompat.START);
-        } else if (activeMode == ABOUT) {
-            setActiveMode(SIMPLE);
-        } else {
-            super.onBackPressed();
-        }
-    }
-
-    private void updateNavigationView() {
-        MenuItem simpleItem = binding.navView.getMenu().findItem(R.id.nav_simple);
-        MenuItem extendedItem = binding.navView.getMenu().findItem(R.id.nav_extended);
-        MenuItem aboutItem = binding.navView.getMenu().findItem(R.id.nav_about);
-
-        if (simpleItem != null) {
-            simpleItem.setChecked(activeMode == SIMPLE);
-            boolean isSimpleFavorite = profileRepository.getProfileManager().isFavorite(SIMPLE, 0);
-            simpleItem.setIcon(isSimpleFavorite ?
-                    R.drawable.ic_simple_mode_favorite :
-                    R.drawable.ic_simple_mode);
-        }
-
-        if (extendedItem != null) {
-            extendedItem.setChecked(activeMode == EXTENDED);
-            boolean isExtendedFavorite = profileRepository.getProfileManager().isFavorite(EXTENDED, 0);
-            extendedItem.setIcon(isExtendedFavorite ?
-                    R.drawable.ic_extended_mode_favorite :
-                    R.drawable.ic_extended_mode);
-        }
-
-        if (aboutItem != null) {
-            aboutItem.setChecked(activeMode == ABOUT);
-        }
-
-        updateCustomProfilesInMenu();
-        invalidateOptionsMenu();
-    }
-
-    private void updateCustomProfilesInMenu() {
-        try {
-            List<CustomProfile> leets = profileRepository.getProfiles();
-            NavigationView navigationView = binding.navView;
-            Menu menu = navigationView.getMenu();
-
-            MenuItem customLeetsItem = null;
-            for (int i = 0; i < menu.size(); i++) {
-                MenuItem item = menu.getItem(i);
-                if (item.getTitle().equals(getString(R.string.custom_profiles))) {
-                    customLeetsItem = item;
-                    break;
-                }
-            }
-
-            if (customLeetsItem != null && customLeetsItem.hasSubMenu()) {
-                SubMenu customSubMenu = customLeetsItem.getSubMenu();
-                customSubMenu.clear();
-
-                if (leets.isEmpty()) {
-                    MenuItem noProfilesItem = customSubMenu.add(Menu.NONE, Menu.NONE, Menu.NONE, R.string.no_custom_profiles);
-                    noProfilesItem.setIcon(R.drawable.ic_custom_mode);
-                    noProfilesItem.setEnabled(false);
-                } else {
-                    for (int i = 0; i < leets.size(); i++) {
-                        CustomProfile leet = leets.get(i);
-                        MenuItem item = customSubMenu.add(Menu.NONE, 100 + i, Menu.NONE, leet.getName());
-
-                        int iconResId = leet.getIconResId();
-                        if (iconResId != 0) {
-                            if (profileRepository.getProfileManager().isFavorite(CUSTOM, i)) {
-                                Drawable originalIcon = getResources().getDrawable(iconResId, getTheme());
-                                Drawable starIcon = getResources().getDrawable(R.drawable.ic_favorite_star, getTheme());
-
-                                Drawable[] layers = new Drawable[2];
-                                layers[0] = originalIcon;
-                                layers[1] = starIcon;
-
-                                LayerDrawable layerDrawable = new LayerDrawable(layers);
-                                int starSize = (int) getResources().getDimension(R.dimen.star_indicator_size);
-                                layerDrawable.setLayerInset(1, originalIcon.getIntrinsicWidth() - starSize,
-                                        0, 0, originalIcon.getIntrinsicHeight() - starSize);
-
-                                item.setIcon(layerDrawable);
-                            } else {
-                                item.setIcon(iconResId);
-                            }
-                        } else {
-                            if (profileRepository.getProfileManager().isFavorite(CUSTOM, i)) {
-                                item.setIcon(R.drawable.ic_custom_mode_favorite);
-                            } else {
-                                item.setIcon(R.drawable.ic_custom_mode);
-                            }
-                        }
-
-                        item.setCheckable(true);
-                        item.setChecked(activeMode == CUSTOM && profileRepository.getCurrentProfileIndex() == i);
-                    }
-                }
-            }
-        } catch (Exception e) {
-            ErrorHandler.handleError(this, e, "Fehler beim Aktualisieren des Menüs",
-                    ErrorHandler.ErrorSeverity.WARNING);
         }
     }
 
@@ -546,10 +511,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     profileRepository.setCurrentProfileIndex(result.getProfileIndex());
 
                     updateTable();
-                    updateNavigationView();
+                    updateLeetSelectorText();
                     updateAppTitle();
-
-                    AnimationHelper.pulse(binding.fabAddLeet, 2);
 
                     ErrorHandler.showSnackbar(MainActivity.this,
                             getString(R.string.profile_created, name),
@@ -610,7 +573,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                         updateOutput();
                     }
 
-                    updateNavigationView();
+                    updateLeetSelectorText();
                     updateAppTitle();
 
                 } else {
@@ -632,41 +595,46 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         activeMode = mode;
 
-        if (mode != ABOUT) {
-            showMainView();
-            binding.fabAddLeet.show();
-        } else {
-            binding.fabAddLeet.hide();
-        }
-
         updateAppTitle();
-        updateNavigationView();
+        updateLeetSelectorText();
         updateOutput();
         updateTable();
         invalidateOptionsMenu();
     }
 
     private void updateAppTitle() {
-        String title;
-        switch (activeMode) {
-            case SIMPLE:
-                title = getString(R.string.simple);
-                break;
-            case EXTENDED:
-                title = getString(R.string.extended);
-                break;
-            case CUSTOM:
-                CustomProfile currentProfile = profileRepository.getCurrentProfile();
-                if (currentProfile != null) {
-                    title = currentProfile.getName() + " Leet";
-                } else {
-                    title = getString(R.string.custom);
-                }
-                break;
-            default:
-                title = getString(R.string.app_name);
+        String title = getString(R.string.app_name);
+        TextView toolbarTitle = findViewById(R.id.appTitle);
+        if (toolbarTitle != null) {
+            toolbarTitle.setText(title);
         }
-        binding.appTitle.setText(title);
+    }
+
+    private void updateLayoutForOutput(String outputText) {
+        boolean hasOutput = outputText != null && !outputText.trim().isEmpty();
+
+        if (hasOutput) {
+            // Text vorhanden: Beide Sektionen anzeigen (50/50 Split)
+            LinearLayout.LayoutParams inputParams = (LinearLayout.LayoutParams) inputSection.getLayoutParams();
+            inputParams.weight = 1;
+            inputSection.setLayoutParams(inputParams);
+
+            outputSection.setVisibility(View.VISIBLE);
+            divider.setVisibility(View.VISIBLE);
+
+            // Smooth Animation
+            if (outputSection.getVisibility() != View.VISIBLE) {
+                AnimationHelper.slideInFromBottom(outputSection);
+            }
+        } else {
+            // Kein Text: Nur Input-Sektion (100% Höhe)
+            outputSection.setVisibility(View.GONE);
+            divider.setVisibility(View.GONE);
+
+            LinearLayout.LayoutParams inputParams = (LinearLayout.LayoutParams) inputSection.getLayoutParams();
+            inputParams.weight = 1;
+            inputSection.setLayoutParams(inputParams);
+        }
     }
 
     private void updateOutput() {
@@ -679,6 +647,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         String output = LeetTranslator.translate(input, mode, currentProfile);
         binding.outputLeetText.setText(output);
+
+        // Layout entsprechend anpassen
+        updateLayoutForOutput(output);
     }
 
     private LeetTranslator.TranslationMode getCurrentTranslationMode() {
@@ -949,8 +920,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                             @Override
                             public void onComplete(ProfileOperationResult result) {
                                 if (result.isSuccess()) {
-                                    binding.appTitle.setText(finalProfileName + " Leet");
-                                    updateNavigationView();
+                                    updateLeetSelectorText();
                                     updateOutput();
                                     updateTable();
 
@@ -981,6 +951,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         imm.showSoftInput(editTextProfileName, InputMethodManager.SHOW_IMPLICIT);
     }
 
+    private void editCustomProfile(int profileIndex) {
+        profileRepository.setCurrentProfileIndex(profileIndex);
+        showComprehensiveEditDialog();
+    }
+
     // TextWatcher für Live-Updates
     private final TextWatcher textWatcher = new TextWatcher() {
         @Override
@@ -1006,6 +981,5 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         // ViewBinding cleanup
         binding = null;
-        navHeaderTitle = null;
     }
 }

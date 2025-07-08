@@ -80,4 +80,20 @@
     <string name="profile_info">Profil-Information</string>
     <string name="translation_table">Übersetzungstabelle</string>
     <string name="all_changes_saved">Alle Änderungen wurden gespeichert</string>
+    <!-- Füge diese Zeilen zu deiner values/strings.xml hinzu: -->
+    <string name="input_hint">Hier deinen Text eingeben...</string>
+    <string name="leetspeak_translation">Leetspeak Übersetzung</string>
+
+
+    <!-- Füge diese neuen Strings zu deiner values/strings.xml hinzu: -->
+
+    <!-- Neue Strings für Bottom Sheet -->
+    <string name="select_leet_mode">Leet-Modus auswählen</string>
+    <string name="simple_leet_description">Einfache Leetspeak-Übersetzung</string>
+    <string name="extended_leet_description">Erweiterte Leetspeak-Übersetzung</string>
+    <string name="custom_leet_description">Benutzerdefiniertes Leet</string>
+    <string name="new_leet">Neu</string>
+
+    <!-- Layout-bezogene Strings -->
+    <string name="plain_arrow">Plain → %1$s</string>
 </resources>

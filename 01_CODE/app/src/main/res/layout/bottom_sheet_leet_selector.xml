@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@drawable/bottom_sheet_background"
+    android:padding="16dp">
+
+    <!-- Header -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginBottom="16dp">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Leet-Modus auswählen"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:textColor="?android:attr/textColorPrimary"
+            android:fontFamily="@font/raleway" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/buttonAddNewLeet"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Neu"
+            style="@style/Widget.MaterialComponents.Button.TextButton"
+            android:textColor="?attr/colorSecondary"
+            android:fontFamily="@font/raleway"
+            android:drawableStart="@drawable/ic_add_profile"
+            android:drawablePadding="4dp"
+            android:minHeight="0dp"
+            android:paddingVertical="8dp"
+            android:paddingHorizontal="12dp" />
+    </LinearLayout>
+
+    <!-- Leet Options List -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerViewLeets"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:maxHeight="400dp"
+        android:nestedScrollingEnabled="false" />
+
+</LinearLayout>
