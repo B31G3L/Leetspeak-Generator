@@ -66,120 +66,30 @@
                     android:orientation="vertical"
                     android:padding="16dp">
 
-                    <!-- Header mit Statistics -->
-                    <LinearLayout
+                    <!-- Vereinfachter Header ohne Counter -->
+                    <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical"
-                        android:layout_marginBottom="8dp">
+                        android:text="Plaintext"
+                        android:textSize="14sp"
+                        android:textColor="?android:attr/textColorSecondary"
+                        android:fontFamily="@font/raleway"
+                        android:layout_marginBottom="8dp" />
 
-                        <TextView
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:text="@string/plaintext_placeholder"
-                            android:textSize="14sp"
-                            android:textColor="?android:attr/textColorSecondary"
-                            android:fontFamily="@font/raleway" />
-
-                        <!-- Statistics -->
-                        <LinearLayout
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:orientation="horizontal"
-                            android:gravity="center_vertical">
-
-                            <TextView
-                                android:id="@+id/characterCounter"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="0"
-                                android:textSize="12sp"
-                                android:textColor="?android:attr/textColorSecondary"
-                                android:fontFamily="@font/raleway"
-                                android:layout_marginEnd="8dp" />
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="•"
-                                android:textSize="12sp"
-                                android:textColor="?android:attr/textColorSecondary"
-                                android:layout_marginEnd="8dp" />
-
-                            <TextView
-                                android:id="@+id/wordCounter"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="0 Wörter"
-                                android:textSize="12sp"
-                                android:textColor="?android:attr/textColorSecondary"
-                                android:fontFamily="@font/raleway" />
-                        </LinearLayout>
-                    </LinearLayout>
-
-                    <!-- Input Field mit Undo/Redo Buttons -->
-                    <RelativeLayout
+                    <!-- Input Field ohne Undo/Redo Buttons -->
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/inputPlainText"
                         android:layout_width="match_parent"
-                        android:layout_height="match_parent">
-
-                        <com.google.android.material.textfield.TextInputEditText
-                            android:id="@+id/inputPlainText"
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:inputType="textMultiLine"
-                            android:gravity="top|start"
-                            android:background="@android:color/transparent"
-                            android:textSize="16sp"
-                            android:fontFamily="@font/raleway"
-                            android:textColor="?android:attr/textColorPrimary"
-                            android:hint="Hier deinen Text eingeben..."
-                            android:textColorHint="?android:attr/textColorTertiary"
-                            android:layout_above="@+id/undoRedoButtons" />
-
-                        <!-- Undo/Redo Buttons -->
-                        <LinearLayout
-                            android:id="@+id/undoRedoButtons"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_alignParentEnd="true"
-                            android:layout_alignParentBottom="true"
-                            android:orientation="horizontal"
-                            android:layout_margin="8dp">
-
-                            <com.google.android.material.button.MaterialButton
-                                android:id="@+id/buttonUndo"
-                                android:layout_width="36dp"
-                                android:layout_height="36dp"
-                                android:insetTop="0dp"
-                                android:insetBottom="0dp"
-                                android:insetLeft="0dp"
-                                android:insetRight="0dp"
-                                style="@style/Widget.MaterialComponents.Button.TextButton"
-                                android:text="↶"
-                                android:textSize="16sp"
-                                android:textColor="?attr/colorSecondary"
-                                android:alpha="0.5"
-                                android:enabled="false"
-                                android:layout_marginEnd="4dp" />
-
-                            <com.google.android.material.button.MaterialButton
-                                android:id="@+id/buttonRedo"
-                                android:layout_width="36dp"
-                                android:layout_height="36dp"
-                                android:insetTop="0dp"
-                                android:insetBottom="0dp"
-                                android:insetLeft="0dp"
-                                android:insetRight="0dp"
-                                style="@style/Widget.MaterialComponents.Button.TextButton"
-                                android:text="↷"
-                                android:textSize="16sp"
-                                android:textColor="?attr/colorSecondary"
-                                android:alpha="0.5"
-                                android:enabled="false" />
-                        </LinearLayout>
-                    </RelativeLayout>
+                        android:layout_height="match_parent"
+                        android:inputType="textMultiLine"
+                        android:gravity="top|start"
+                        android:background="@android:color/transparent"
+                        android:textSize="18sp"
+                        android:fontFamily="@font/raleway"
+                        android:textColor="?android:attr/textColorPrimary"
+                        android:hint="Hier deinen Text eingeben..."
+                        android:textColorHint="?android:attr/textColorTertiary"
+                        android:lineSpacingMultiplier="1.2" />
 
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
@@ -217,7 +127,7 @@
                     android:orientation="vertical"
                     android:padding="16dp">
 
-                    <!-- Header mit Copy Button und Actions -->
+                    <!-- Header mit dynamischem Leet-Namen -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -226,51 +136,28 @@
                         android:layout_marginBottom="8dp">
 
                         <TextView
+                            android:id="@+id/outputModeTitle"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="Leetspeak Übersetzung"
+                            android:text="Simple Leet"
                             android:textSize="14sp"
                             android:textColor="?android:attr/textColorSecondary"
                             android:fontFamily="@font/raleway" />
 
-                        <!-- Action Buttons -->
-                        <LinearLayout
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:orientation="horizontal">
-
-                            <com.google.android.material.button.MaterialButton
-                                android:id="@+id/buttonReverse"
-                                android:layout_width="36dp"
-                                android:layout_height="36dp"
-                                android:insetTop="0dp"
-                                android:insetBottom="0dp"
-                                android:insetLeft="0dp"
-                                android:insetRight="0dp"
-                                style="@style/Widget.MaterialComponents.Button.TextButton"
-                                android:text="⇄"
-                                android:textSize="14sp"
-                                android:textColor="?attr/colorSecondary"
-                                android:layout_marginEnd="4dp"
-                                android:tooltipText="Reverse Translation" />
-
-                            <com.google.android.material.button.MaterialButton
-                                android:id="@+id/buttonCopy"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="@string/copy_text"
-                                style="@style/Widget.MaterialComponents.Button.TextButton"
-                                android:textColor="?attr/colorSecondary"
-                                android:fontFamily="@font/raleway"
-                                android:textSize="12sp"
-                                android:minHeight="0dp"
-                                android:paddingVertical="4dp"
-                                android:paddingHorizontal="8dp" />
-                        </LinearLayout>
+                        <!-- Copy Button als Icon in der rechten Ecke -->
+                        <ImageView
+                            android:id="@+id/buttonCopy"
+                            android:layout_width="32dp"
+                            android:layout_height="32dp"
+                            android:src="@drawable/ic_copy"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:padding="4dp"
+                            android:contentDescription="@string/copy_text"
+                            android:tint="?attr/colorSecondary" />
                     </LinearLayout>
 
-                    <!-- Scrollbarer Output Text mit Live Preview -->
+                    <!-- Scrollbarer Output Text mit größerer Schrift -->
                     <ScrollView
                         android:layout_width="match_parent"
                         android:layout_height="match_parent">
@@ -279,12 +166,13 @@
                             android:id="@+id/outputLeetText"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:textSize="16sp"
+                            android:textSize="18sp"
                             android:fontFamily="@font/raleway"
                             android:textColor="?android:attr/textColorPrimary"
                             android:textIsSelectable="true"
                             android:padding="8dp"
-                            android:background="?attr/selectableItemBackground" />
+                            android:background="?attr/selectableItemBackground"
+                            android:lineSpacingMultiplier="1.2" />
                     </ScrollView>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
