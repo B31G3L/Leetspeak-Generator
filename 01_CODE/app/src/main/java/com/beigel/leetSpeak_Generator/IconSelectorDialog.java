@@ -32,7 +32,6 @@ public class IconSelectorDialog extends AppCompatDialog {
             R.drawable.ic_about,
             R.drawable.ic_add_profile,
             R.drawable.ic_edit,
-            R.drawable.ic_fab_add,
             R.drawable.ic_favorite_border,
             R.drawable.ic_favorite
             // Weitere Icons können hier hinzugefügt werden
