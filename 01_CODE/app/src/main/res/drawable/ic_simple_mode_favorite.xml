@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:drawable="@drawable/ic_simple_mode" />
-    <item android:drawable="@drawable/ic_favorite_star"
-        android:width="12dp"
-        android:height="12dp"
-        android:gravity="top|end" />
-</layer-list>

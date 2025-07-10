@@ -17,6 +17,7 @@ import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
@@ -221,70 +222,6 @@ public class MainActivity extends AppCompatActivity {
                 .show();
     }
 
-    private void showLeetSelectorBottomSheet() {
-        BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(this);
-        View bottomSheetView = getLayoutInflater().inflate(R.layout.bottom_sheet_leet_selector, null);
-
-        RecyclerView recyclerView = bottomSheetView.findViewById(R.id.recyclerViewLeets);
-        MaterialButton buttonAddNewLeet = bottomSheetView.findViewById(R.id.buttonAddNewLeet);
-
-        // RecyclerView Setup
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
-
-        // Adapter-Referenz in einem Array speichern, damit sie von der anonymen Klasse zugänglich ist
-        final LeetSelectorAdapter[] adapterHolder = new LeetSelectorAdapter[1];
-
-        LeetSelectorAdapter adapter = new LeetSelectorAdapter(createLeetOptionsList(),
-                new LeetSelectorAdapter.OnLeetSelectedListener() {
-                    @Override
-                    public void onLeetSelected(LeetOption leetOption) {
-                        selectLeet(leetOption);
-                        bottomSheetDialog.dismiss();
-                    }
-
-                    @Override
-                    public void onLeetPreview(LeetOption leetOption) {
-
-                    }
-
-                    @Override
-                    public void onEditLeet(LeetOption leetOption) {
-                        if (leetOption.isCustom()) {
-                            editCustomProfile(leetOption.getCustomIndex());
-                        }
-                        bottomSheetDialog.dismiss();
-                    }
-
-                    @Override
-                    public void onToggleFavorite(LeetOption leetOption) {
-                        toggleFavoriteFromBottomSheet(leetOption, adapterHolder[0]);
-                    }
-
-                    @Override
-                    public void onQuickTest(LeetOption leetOption) {
-                        // Quick test implementation
-                    }
-
-                    @Override
-                    public void onShowTable(LeetOption leetOption) {
-                        showTableDialog(leetOption);
-                        bottomSheetDialog.dismiss();
-                    }
-                });
-
-        // Adapter in das Array speichern
-        adapterHolder[0] = adapter;
-        recyclerView.setAdapter(adapter);
-
-        // "Neu" Button
-        buttonAddNewLeet.setOnClickListener(v -> {
-            bottomSheetDialog.dismiss();
-            showNewProfileDialog();
-        });
-
-        bottomSheetDialog.setContentView(bottomSheetView);
-        bottomSheetDialog.show();
-    }
 
     private List<LeetOption> createLeetOptionsList() {
         List<LeetOption> options = new ArrayList<>();
@@ -829,6 +766,8 @@ public class MainActivity extends AppCompatActivity {
                 });
     }
 
+    // Ersetze die showNewProfileDialog() Methode in MainActivity.java mit dieser:
+
     private void showNewProfileDialog() {
         CustomProfile currentProfile = profileRepository.getCurrentProfile();
 
@@ -838,18 +777,34 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
-        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this);
+        // Erstelle Fullscreen Dialog
+        AlertDialog.Builder builder = new MaterialAlertDialogBuilder(this);
         View dialogView = getLayoutInflater().inflate(R.layout.dialog_comprehensive_edit, null);
+
+        // Setze das Layout als Content View
         builder.setView(dialogView);
 
+        // Erstelle Dialog und mache ihn Fullscreen
         AlertDialog dialog = builder.create();
 
+        // Fullscreen Dialog Setup
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setLayout(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.MATCH_PARENT
+            );
+            // Entferne Standard Dialog Padding/Margin
+            dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+        }
+
+        // UI Elemente finden
         TextInputEditText editTextProfileName = dialogView.findViewById(R.id.editTextProfileName);
         ImageView selectedIcon = dialogView.findViewById(R.id.selectedIcon);
         TableLayout editTable = dialogView.findViewById(R.id.editTable);
         Button buttonCancel = dialogView.findViewById(R.id.buttonCancel);
         Button buttonSave = dialogView.findViewById(R.id.buttonSave);
 
+        // Profil-Daten setzen
         editTextProfileName.setText(currentProfile.getName());
 
         int iconResId = currentProfile.getIconResId();
@@ -859,6 +814,7 @@ public class MainActivity extends AppCompatActivity {
 
         final int[] selectedIconResId = {iconResId};
 
+        // Icon Click Listener
         selectedIcon.setOnClickListener(v -> {
             IconSelectorDialog iconDialog = new IconSelectorDialog(
                     MainActivity.this,
@@ -871,8 +827,31 @@ public class MainActivity extends AppCompatActivity {
             iconDialog.show();
         });
 
+        // Tabelle erstellen (gleiche Logik wie vorher)
         EditText[][] tableEditFields = new EditText[13][2];
+        buildEditTable(editTable, tableEditFields, currentProfile);
 
+        // Button Listeners
+        buttonCancel.setOnClickListener(v -> dialog.dismiss());
+
+        buttonSave.setOnClickListener(v -> {
+            saveProfileChanges(currentProfile, editTextProfileName, selectedIconResId[0],
+                    tableEditFields, dialog);
+        });
+
+        // Dialog anzeigen
+        dialog.show();
+
+        // Fokus setzen
+        editTextProfileName.requestFocus();
+        InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+        if (imm != null) {
+            imm.showSoftInput(editTextProfileName, InputMethodManager.SHOW_IMPLICIT);
+        }
+    }
+
+    // Hilfsmethode für Tabellenerstellung
+    private void buildEditTable(TableLayout editTable, EditText[][] tableEditFields, CustomProfile currentProfile) {
         int cellPadding = (int) getResources().getDimension(R.dimen.table_cell_padding);
         int colorEven = getResources().getColor(R.color.gray_light, getTheme());
         int colorOdd = getResources().getColor(android.R.color.transparent, getTheme());
@@ -883,84 +862,80 @@ public class MainActivity extends AppCompatActivity {
             TableRow row = new TableRow(this);
             row.setBackgroundColor(i % 2 == 0 ? colorEven : colorOdd);
 
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                row.setForeground(ResourcesCompat.getDrawable(getResources(),
-                        R.drawable.ripple_effect, getTheme()));
-            }
-
+            // Left side (letters 0-12)
             TextView leftPlain = createTableTextView(String.valueOf(alphabet[i]), cellPadding);
             row.addView(leftPlain);
 
-            EditText leftLeet = createTableEditText(currentProfile.getTranslation(String.valueOf(alphabet[i])), cellPadding);
+            EditText leftLeet = createTableEditText(
+                    currentProfile.getTranslation(String.valueOf(alphabet[i])), cellPadding);
             tableEditFields[i][0] = leftLeet;
             row.addView(leftLeet);
 
+            // Right side (letters 13-25)
             TextView rightPlain = createTableTextView(String.valueOf(alphabet[i + 13]), cellPadding);
             row.addView(rightPlain);
 
-            EditText rightLeet = createTableEditText(currentProfile.getTranslation(String.valueOf(alphabet[i + 13])), cellPadding);
+            EditText rightLeet = createTableEditText(
+                    currentProfile.getTranslation(String.valueOf(alphabet[i + 13])), cellPadding);
             tableEditFields[i][1] = rightLeet;
             row.addView(rightLeet);
 
             editTable.addView(row);
         }
+    }
 
-        buttonCancel.setOnClickListener(v -> dialog.dismiss());
+    // Hilfsmethode zum Speichern
+    private void saveProfileChanges(CustomProfile currentProfile, TextInputEditText editTextProfileName,
+                                    int selectedIconResId, EditText[][] tableEditFields, AlertDialog dialog) {
+        String profileName = editTextProfileName.getText().toString().trim();
+        if (profileName.isEmpty()) {
+            profileName = getString(R.string.default_custom_name);
+        }
 
-        buttonSave.setOnClickListener(v -> {
-            String profileName = editTextProfileName.getText().toString().trim();
-            if (profileName.isEmpty()) {
-                profileName = getString(R.string.default_custom_name);
+        try {
+            currentProfile.setName(profileName);
+            currentProfile.setIconResId(selectedIconResId);
+
+            // Speichere alle Übersetzungen
+            char[] alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".toCharArray();
+            for (int i = 0; i < 13; i++) {
+                String plainChar = String.valueOf(alphabet[i]);
+                String leetChar = tableEditFields[i][0].getText().toString();
+                currentProfile.setTranslation(plainChar, leetChar);
+
+                plainChar = String.valueOf(alphabet[i + 13]);
+                leetChar = tableEditFields[i][1].getText().toString();
+                currentProfile.setTranslation(plainChar, leetChar);
             }
 
-            try {
-                currentProfile.setName(profileName);
-                currentProfile.setIconResId(selectedIconResId[0]);
+            // Repository Update
+            profileRepository.updateProfile(profileRepository.getCurrentProfileIndex(), currentProfile,
+                    new ProfileRepository.ProfileOperationCallback() {
+                        @Override
+                        public void onComplete(ProfileOperationResult result) {
+                            if (result.isSuccess()) {
+                                updateButtonTexts();
+                                updateOutput();
+                                updateOutputModeTitle();
 
-                for (int i = 0; i < 13; i++) {
-                    String plainChar = String.valueOf(alphabet[i]);
-                    String leetChar = tableEditFields[i][0].getText().toString();
-                    currentProfile.setTranslation(plainChar, leetChar);
-
-                    plainChar = String.valueOf(alphabet[i + 13]);
-                    leetChar = tableEditFields[i][1].getText().toString();
-                    currentProfile.setTranslation(plainChar, leetChar);
-                }
-
-                profileRepository.updateProfile(profileRepository.getCurrentProfileIndex(), currentProfile,
-                        new ProfileRepository.ProfileOperationCallback() {
-                            @Override
-                            public void onComplete(ProfileOperationResult result) {
-                                if (result.isSuccess()) {
-                                    updateButtonTexts();
-                                    updateOutput();
-                                    updateOutputModeTitle();
-
-                                    ErrorHandler.showSnackbar(MainActivity.this,
-                                            getString(R.string.all_changes_saved),
-                                            Snackbar.LENGTH_SHORT);
-                                } else {
-                                    ErrorHandler.handleError(MainActivity.this,
-                                            result.getException(),
-                                            result.getMessage(),
-                                            ErrorHandler.ErrorSeverity.ERROR);
-                                }
+                                ErrorHandler.showSnackbar(MainActivity.this,
+                                        getString(R.string.all_changes_saved),
+                                        Snackbar.LENGTH_SHORT);
+                            } else {
+                                ErrorHandler.handleError(MainActivity.this,
+                                        result.getException(),
+                                        result.getMessage(),
+                                        ErrorHandler.ErrorSeverity.ERROR);
                             }
-                        });
+                        }
+                    });
 
-            } catch (Exception e) {
-                ErrorHandler.handleError(this, e, "Fehler beim Aktualisieren des Profils",
-                        ErrorHandler.ErrorSeverity.ERROR);
-            }
+        } catch (Exception e) {
+            ErrorHandler.handleError(this, e, "Fehler beim Aktualisieren des Profils",
+                    ErrorHandler.ErrorSeverity.ERROR);
+        }
 
-            dialog.dismiss();
-        });
-
-        dialog.show();
-
-        editTextProfileName.requestFocus();
-        InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-        imm.showSoftInput(editTextProfileName, InputMethodManager.SHOW_IMPLICIT);
+        dialog.dismiss();
     }
 
     private void editCustomProfile(int profileIndex) {
@@ -1009,5 +984,134 @@ public class MainActivity extends AppCompatActivity {
 
         // ViewBinding cleanup
         binding = null;
+    }
+
+
+    private void showLeetSelectorBottomSheet() {
+        BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(this);
+        View bottomSheetView = getLayoutInflater().inflate(R.layout.bottom_sheet_leet_selector, null);
+
+        RecyclerView recyclerViewLeets = bottomSheetView.findViewById(R.id.recyclerViewLeets);
+        RecyclerView recyclerViewFavorites = bottomSheetView.findViewById(R.id.recyclerViewFavorites);
+        TextView favoritesHeader = bottomSheetView.findViewById(R.id.favoritesHeader);
+        MaterialButton buttonAddNewLeet = bottomSheetView.findViewById(R.id.buttonAddNewLeet);
+
+        // Setup für alle Leets
+        recyclerViewLeets.setLayoutManager(new LinearLayoutManager(this));
+
+        // Setup für Favoriten
+        recyclerViewFavorites.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+
+        // Adapter-Referenz für Updates
+        final LeetSelectorAdapter[] mainAdapterHolder = new LeetSelectorAdapter[1];
+        final LeetSelectorAdapter[] favoritesAdapterHolder = new LeetSelectorAdapter[1];
+
+        // Listener für beide Listen
+        LeetSelectorAdapter.OnLeetSelectedListener listener = new LeetSelectorAdapter.OnLeetSelectedListener() {
+            @Override
+            public void onLeetSelected(LeetOption leetOption) {
+                selectLeet(leetOption);
+                bottomSheetDialog.dismiss();
+            }
+
+            @Override
+            public void onLeetPreview(LeetOption leetOption) {
+                // Nicht mehr benötigt
+            }
+
+            @Override
+            public void onEditLeet(LeetOption leetOption) {
+                if (leetOption.isCustom()) {
+                    editCustomProfile(leetOption.getCustomIndex());
+                }
+                bottomSheetDialog.dismiss();
+            }
+
+            @Override
+            public void onToggleFavorite(LeetOption leetOption) {
+                toggleFavoriteFromBottomSheet(leetOption, mainAdapterHolder[0]);
+                // Update auch die Favoriten-Liste
+                updateFavoritesList(recyclerViewFavorites, favoritesHeader, favoritesAdapterHolder[0]);
+            }
+
+            @Override
+            public void onQuickTest(LeetOption leetOption) {
+                // Quick test implementation
+            }
+
+            @Override
+            public void onShowTable(LeetOption leetOption) {
+                showTableDialog(leetOption);
+                bottomSheetDialog.dismiss();
+            }
+        };
+
+        // Hauptliste erstellen
+        List<LeetOption> allOptions = createLeetOptionsList();
+        LeetSelectorAdapter mainAdapter = new LeetSelectorAdapter(allOptions, listener);
+        mainAdapterHolder[0] = mainAdapter;
+        recyclerViewLeets.setAdapter(mainAdapter);
+
+        // Favoriten-Liste erstellen und anzeigen
+        updateFavoritesList(recyclerViewFavorites, favoritesHeader, favoritesAdapterHolder[0]);
+
+        // "Neu" Button
+        buttonAddNewLeet.setOnClickListener(v -> {
+            bottomSheetDialog.dismiss();
+            showNewProfileDialog();
+        });
+
+        bottomSheetDialog.setContentView(bottomSheetView);
+        bottomSheetDialog.show();
+    }
+
+    // Neue Hilfsmethode für Favoriten-Update
+    private void updateFavoritesList(RecyclerView recyclerViewFavorites, TextView favoritesHeader, LeetSelectorAdapter favoritesAdapter) {
+        List<LeetOption> favoriteOptions = getFavoriteOptions();
+
+        if (favoriteOptions.isEmpty()) {
+            // Keine Favoriten: Header und Liste verstecken
+            favoritesHeader.setVisibility(View.GONE);
+            recyclerViewFavorites.setVisibility(View.GONE);
+        } else {
+            // Favoriten vorhanden: Header und Liste anzeigen
+            favoritesHeader.setVisibility(View.VISIBLE);
+            recyclerViewFavorites.setVisibility(View.VISIBLE);
+
+            // Adapter erstellen oder updaten
+            if (favoritesAdapter == null) {
+                LeetSelectorAdapter newFavoritesAdapter = new LeetSelectorAdapter(favoriteOptions,
+                        new LeetSelectorAdapter.OnLeetSelectedListener() {
+                            @Override
+                            public void onLeetSelected(LeetOption leetOption) {
+                                selectLeet(leetOption);
+                                // Bottom sheet wird vom Parent-Listener geschlossen
+                            }
+                            // Andere Methoden können leer bleiben oder delegieren
+                            @Override public void onLeetPreview(LeetOption leetOption) {}
+                            @Override public void onEditLeet(LeetOption leetOption) {}
+                            @Override public void onToggleFavorite(LeetOption leetOption) {}
+                            @Override public void onQuickTest(LeetOption leetOption) {}
+                            @Override public void onShowTable(LeetOption leetOption) {}
+                        });
+                recyclerViewFavorites.setAdapter(newFavoritesAdapter);
+            } else {
+                favoritesAdapter.updateOptions(favoriteOptions);
+            }
+        }
+    }
+
+    // Neue Hilfsmethode um nur Favoriten zu finden
+    private List<LeetOption> getFavoriteOptions() {
+        List<LeetOption> favorites = new ArrayList<>();
+        List<LeetOption> allOptions = createLeetOptionsList();
+
+        for (LeetOption option : allOptions) {
+            if (option.isFavorite()) {
+                favorites.add(option);
+            }
+        }
+
+        return favorites;
     }
 }
