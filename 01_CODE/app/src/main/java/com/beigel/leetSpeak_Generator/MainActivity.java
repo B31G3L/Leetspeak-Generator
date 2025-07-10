@@ -65,13 +65,13 @@ public class MainActivity extends AppCompatActivity {
     private LinearLayout outputSection;
     private View divider;
     private MaterialButton buttonLeetSelector;
+    private MaterialButton buttonPlainSelector;
     private TextView outputModeTitle;
     private Vibrator vibrator;
 
+    // Entferne alle Tabellen-Methoden und Variablen
     private EditText[][] editableFields = new EditText[13][2];
-    private TextView[][] displayFields = new TextView[13][2];
     private boolean isEditMode = false;
-    private boolean isTableExpanded = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -91,6 +91,93 @@ public class MainActivity extends AppCompatActivity {
         loadFavoriteMode();
     }
 
+    private void showTableDialog(LeetOption leetOption) {
+        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this);
+        View dialogView = getLayoutInflater().inflate(R.layout.dialog_translation_table, null);
+        builder.setView(dialogView);
+
+        AlertDialog dialog = builder.create();
+
+        TextView tableTitle = dialogView.findViewById(R.id.tableTitle);
+        TableLayout tableLayout = dialogView.findViewById(R.id.translationTable);
+        Button buttonClose = dialogView.findViewById(R.id.buttonClose);
+
+        // Set title based on leet option
+        String title = "Übersetzungstabelle - " + leetOption.getName();
+        tableTitle.setText(title);
+
+        // Build table content
+        buildTableContent(tableLayout, leetOption);
+
+        buttonClose.setOnClickListener(v -> dialog.dismiss());
+
+        dialog.show();
+    }
+
+    private void buildTableContent(TableLayout tableLayout, LeetOption leetOption) {
+        tableLayout.removeAllViews();
+
+        int cellPadding = (int) getResources().getDimension(R.dimen.table_cell_padding);
+        int colorEven = getResources().getColor(R.color.gray_light, getTheme());
+        int colorOdd = getResources().getColor(android.R.color.transparent, getTheme());
+
+        char[] alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".toCharArray();
+
+        for (int i = 0; i < 13; i++) {
+            TableRow row = new TableRow(this);
+            row.setBackgroundColor(i % 2 == 0 ? colorEven : colorOdd);
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                row.setForeground(ResourcesCompat.getDrawable(getResources(),
+                        R.drawable.ripple_effect, getTheme()));
+            }
+
+            // Left side (letters 0-12)
+            TextView leftPlain = createTableTextView(String.valueOf(alphabet[i]), cellPadding);
+            row.addView(leftPlain);
+
+            TextView leftLeet = createTableTextView(getTranslatedCharForOption(alphabet[i], leetOption), cellPadding);
+            row.addView(leftLeet);
+
+            // Right side (letters 13-25)
+            TextView rightPlain = createTableTextView(String.valueOf(alphabet[i + 13]), cellPadding);
+            row.addView(rightPlain);
+
+            TextView rightLeet = createTableTextView(getTranslatedCharForOption(alphabet[i + 13], leetOption), cellPadding);
+            row.addView(rightLeet);
+
+            tableLayout.addView(row);
+        }
+    }
+
+    private String getTranslatedCharForOption(char c, LeetOption leetOption) {
+        LeetTranslator.TranslationMode mode;
+        CustomProfile profile = null;
+
+        switch (leetOption.getMode()) {
+            case SIMPLE:
+                mode = LeetTranslator.TranslationMode.SIMPLE;
+                break;
+            case EXTENDED:
+                mode = LeetTranslator.TranslationMode.EXTENDED;
+                break;
+            case CUSTOM:
+                mode = LeetTranslator.TranslationMode.CUSTOM;
+                if (leetOption.getCustomIndex() >= 0) {
+                    List<CustomProfile> profiles = profileRepository.getProfiles();
+                    if (leetOption.getCustomIndex() < profiles.size()) {
+                        profile = profiles.get(leetOption.getCustomIndex());
+                    }
+                }
+                break;
+            default:
+                mode = LeetTranslator.TranslationMode.SIMPLE;
+        }
+
+        return LeetTranslator.translateChar(c, mode, profile);
+    }
+
+
     private void initializeViews() {
         // Toolbar Setup ohne Drawer
         setSupportActionBar(binding.toolbar);
@@ -107,18 +194,31 @@ public class MainActivity extends AppCompatActivity {
         outputSection = findViewById(R.id.output_section);
         divider = findViewById(R.id.divider);
         buttonLeetSelector = findViewById(R.id.buttonLeetSelector);
+        buttonPlainSelector = findViewById(R.id.buttonPlainSelector);
         outputModeTitle = findViewById(R.id.outputModeTitle);
 
         // Event Listeners mit ViewBinding
         binding.inputPlainText.addTextChangedListener(simpleTextWatcher);
         binding.buttonCopy.setOnClickListener(v -> copyToClipboardWithFeedback());
-        binding.buttonExpandTable.setOnClickListener(v -> toggleTableVisibility());
+
+        // Neue Button-Event Listeners
         buttonLeetSelector.setOnClickListener(v -> showLeetSelectorBottomSheet());
+        buttonPlainSelector.setOnClickListener(v -> showPlainModeDialog());
 
         // Initial: Output-Sektion ausblenden
         updateLayoutForOutput("");
-        updateLeetSelectorText();
+        updateButtonTexts();
         updateOutputModeTitle();
+    }
+
+    private void showPlainModeDialog() {
+        // Für zukünftige Erweiterungen - momentan zeigen wir nur eine Info
+        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this);
+        builder.setTitle("Plain Text Modus")
+                .setMessage("Plain Text ist der Eingabemodus für normalen Text. " +
+                        "Hier können Sie verschiedene Eingabeoptionen konfigurieren.")
+                .setPositiveButton("OK", null)
+                .show();
     }
 
     private void showLeetSelectorBottomSheet() {
@@ -162,7 +262,13 @@ public class MainActivity extends AppCompatActivity {
 
                     @Override
                     public void onQuickTest(LeetOption leetOption) {
+                        // Quick test implementation
+                    }
 
+                    @Override
+                    public void onShowTable(LeetOption leetOption) {
+                        showTableDialog(leetOption);
+                        bottomSheetDialog.dismiss();
                     }
                 });
 
@@ -233,15 +339,18 @@ public class MainActivity extends AppCompatActivity {
             profileRepository.setCurrentProfileIndex(leetOption.getCustomIndex());
         }
 
-        updateLeetSelectorText();
+        updateButtonTexts();
         updateAppTitle();
         updateOutput();
-        updateTable();
         updateOutputModeTitle();
         invalidateOptionsMenu();
     }
 
-    private void updateLeetSelectorText() {
+    private void updateButtonTexts() {
+        // Plain Button bleibt konstant
+        buttonPlainSelector.setText("Plain");
+
+        // Leet Button je nach Modus
         String leetName;
         switch (activeMode) {
             case SIMPLE:
@@ -258,7 +367,7 @@ public class MainActivity extends AppCompatActivity {
                 leetName = getString(R.string.simple);
         }
 
-        buttonLeetSelector.setText("Plain → " + leetName);
+        buttonLeetSelector.setText(leetName);
     }
 
     private void updateOutputModeTitle() {
@@ -301,8 +410,7 @@ public class MainActivity extends AppCompatActivity {
 
                 // UI nach dem Laden aktualisieren
                 updateOutput();
-                updateTable();
-                updateLeetSelectorText();
+                updateButtonTexts();
                 updateOutputModeTitle();
             }
 
@@ -462,75 +570,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void toggleTableVisibility() {
-        isTableExpanded = !isTableExpanded;
-
-        // Button text und Animation
-        binding.buttonExpandTable.setText(isTableExpanded ?
-                R.string.table_hide : R.string.table_expand);
-
-        AnimationHelper.scaleButton(binding.buttonExpandTable);
-
-        if (isTableExpanded) {
-            AnimationHelper.expandCard(binding.tableContainer, () -> {
-                AnimationHelper.staggeredFadeIn(binding.leetTable, 50);
-            });
-        } else {
-            AnimationHelper.collapseCard(binding.tableContainer, null);
-        }
-    }
-
-    private void showNewProfileDialog() {
-        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this);
-        View dialogView = getLayoutInflater().inflate(R.layout.dialog_new_profile, null);
-        builder.setView(dialogView);
-
-        AlertDialog dialog = builder.create();
-
-        TextInputEditText editTextProfileName = dialogView.findViewById(R.id.editTextProfileName);
-        ImageView selectedIcon = dialogView.findViewById(R.id.selectedIcon);
-        Button buttonCancel = dialogView.findViewById(R.id.buttonCancel);
-        Button buttonCreate = dialogView.findViewById(R.id.buttonCreate);
-
-        final int[] selectedIconResId = {R.drawable.ic_custom_mode};
-
-        selectedIcon.setOnClickListener(v -> {
-            AnimationHelper.scaleButton(v);
-            IconSelectorDialog iconDialog = new IconSelectorDialog(
-                    MainActivity.this,
-                    (iconResId) -> {
-                        selectedIconResId[0] = iconResId;
-                        selectedIcon.setImageResource(iconResId);
-                        AnimationHelper.pulse(selectedIcon, 1);
-                    },
-                    selectedIconResId[0]
-            );
-            iconDialog.show();
-        });
-
-        buttonCancel.setOnClickListener(v -> {
-            AnimationHelper.scaleButton(v);
-            dialog.dismiss();
-        });
-
-        buttonCreate.setOnClickListener(v -> {
-            AnimationHelper.scaleButton(v);
-
-            String leetName = editTextProfileName.getText().toString().trim();
-            if (leetName.isEmpty()) {
-                leetName = getString(R.string.default_custom_name);
-            }
-
-            createNewProfileWithRepository(leetName, selectedIconResId[0]);
-            dialog.dismiss();
-        });
-
-        dialog.show();
-
-        editTextProfileName.requestFocus();
-        InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-        imm.showSoftInput(editTextProfileName, InputMethodManager.SHOW_IMPLICIT);
-    }
 
     private void createNewProfileWithRepository(String name, int iconResId) {
         Map<String, String> translations = new HashMap<>();
@@ -553,8 +592,7 @@ public class MainActivity extends AppCompatActivity {
                     setActiveMode(CUSTOM);
                     profileRepository.setCurrentProfileIndex(result.getProfileIndex());
 
-                    updateTable();
-                    updateLeetSelectorText();
+                    updateButtonTexts();
                     updateAppTitle();
                     updateOutputModeTitle();
                     updateOutputModeTitle();
@@ -613,12 +651,9 @@ public class MainActivity extends AppCompatActivity {
                                     getString(R.string.profile_deleted),
                                     Snackbar.LENGTH_SHORT);
                         }
-
-                        updateTable();
-                        updateOutput();
                     }
 
-                    updateLeetSelectorText();
+                    updateButtonTexts();
                     updateAppTitle();
 
                 } else {
@@ -641,9 +676,8 @@ public class MainActivity extends AppCompatActivity {
         activeMode = mode;
 
         updateAppTitle();
-        updateLeetSelectorText();
+        updateButtonTexts();
         updateOutput();
-        updateTable();
         updateOutputModeTitle();
         invalidateOptionsMenu();
     }
@@ -711,62 +745,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void updateTable() {
-        binding.leetTable.removeAllViews();
-
-        int cellPadding = (int) getResources().getDimension(R.dimen.table_cell_padding);
-        int colorEven = getResources().getColor(R.color.gray_light, getTheme());
-        int colorOdd = getResources().getColor(android.R.color.transparent, getTheme());
-
-        char[] alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".toCharArray();
-
-        for (int i = 0; i < 13; i++) {
-            TableRow row = new TableRow(this);
-            row.setBackgroundColor(i % 2 == 0 ? colorEven : colorOdd);
-
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                row.setForeground(ResourcesCompat.getDrawable(getResources(),
-                        R.drawable.ripple_effect, getTheme()));
-            }
-
-            // Left side (letters 0-12)
-            TextView leftPlain = createTableTextView(String.valueOf(alphabet[i]), cellPadding);
-            row.addView(leftPlain);
-
-            // Left side leet character
-            if (isEditMode && activeMode == CUSTOM) {
-                EditText leftLeet = createTableEditText(getTranslatedChar(alphabet[i]), cellPadding);
-                editableFields[i][0] = leftLeet;
-                row.addView(leftLeet);
-            } else {
-                TextView leftLeet = createTableTextView(getTranslatedChar(alphabet[i]), cellPadding);
-                if (!isEditMode) {
-                    displayFields[i][0] = leftLeet;
-                }
-                row.addView(leftLeet);
-            }
-
-            // Right side (letters 13-25)
-            TextView rightPlain = createTableTextView(String.valueOf(alphabet[i + 13]), cellPadding);
-            row.addView(rightPlain);
-
-            // Right side leet character
-            if (isEditMode && activeMode == CUSTOM) {
-                EditText rightLeet = createTableEditText(getTranslatedChar(alphabet[i + 13]), cellPadding);
-                editableFields[i][1] = rightLeet;
-                row.addView(rightLeet);
-            } else {
-                TextView rightLeet = createTableTextView(getTranslatedChar(alphabet[i + 13]), cellPadding);
-                if (!isEditMode) {
-                    displayFields[i][1] = rightLeet;
-                }
-                row.addView(rightLeet);
-            }
-
-            binding.leetTable.addView(row);
-        }
-    }
-
     private String getTranslatedChar(char c) {
         LeetTranslator.TranslationMode mode = getCurrentTranslationMode();
         CustomProfile currentProfile = (mode == LeetTranslator.TranslationMode.CUSTOM)
@@ -802,7 +780,6 @@ public class MainActivity extends AppCompatActivity {
     private void switchToEditMode() {
         if (activeMode != CUSTOM) return;
 
-        showComprehensiveEditDialog();
         invalidateOptionsMenu();
     }
 
@@ -836,7 +813,6 @@ public class MainActivity extends AppCompatActivity {
                     public void onComplete(ProfileOperationResult result) {
                         if (result.isSuccess()) {
                             isEditMode = false;
-                            updateTable();
                             updateOutput();
                             invalidateOptionsMenu();
 
@@ -853,7 +829,7 @@ public class MainActivity extends AppCompatActivity {
                 });
     }
 
-    private void showComprehensiveEditDialog() {
+    private void showNewProfileDialog() {
         CustomProfile currentProfile = profileRepository.getCurrentProfile();
 
         if (currentProfile == null) {
@@ -956,9 +932,8 @@ public class MainActivity extends AppCompatActivity {
                             @Override
                             public void onComplete(ProfileOperationResult result) {
                                 if (result.isSuccess()) {
-                                    updateLeetSelectorText();
+                                    updateButtonTexts();
                                     updateOutput();
-                                    updateTable();
                                     updateOutputModeTitle();
 
                                     ErrorHandler.showSnackbar(MainActivity.this,
@@ -990,7 +965,6 @@ public class MainActivity extends AppCompatActivity {
 
     private void editCustomProfile(int profileIndex) {
         profileRepository.setCurrentProfileIndex(profileIndex);
-        showComprehensiveEditDialog();
     }
 
     // Vereinfachter TextWatcher ohne Counter und Undo/Redo

@@ -25,6 +25,7 @@ public class LeetSelectorAdapter extends RecyclerView.Adapter<LeetSelectorAdapte
         void onEditLeet(LeetOption leetOption);
         void onToggleFavorite(LeetOption leetOption);
         void onQuickTest(LeetOption leetOption);
+        void onShowTable(LeetOption leetOption); // Neue Methode für Tabellen-Anzeige
     }
 
     public LeetSelectorAdapter(List<LeetOption> leetOptions, OnLeetSelectedListener listener) {
@@ -66,6 +67,7 @@ public class LeetSelectorAdapter extends RecyclerView.Adapter<LeetSelectorAdapte
         private final ImageView iconFavorite;
         private final MaterialButton buttonEdit;
         private final MaterialButton buttonQuickTest;
+        private final MaterialButton buttonShowTable; // Neuer Button für Tabelle
         private final View previewSection;
 
         public EnhancedLeetViewHolder(@NonNull View itemView) {
@@ -79,6 +81,7 @@ public class LeetSelectorAdapter extends RecyclerView.Adapter<LeetSelectorAdapte
             iconFavorite = itemView.findViewById(R.id.iconFavorite);
             buttonEdit = itemView.findViewById(R.id.buttonEdit);
             buttonQuickTest = itemView.findViewById(R.id.buttonQuickTest);
+            buttonShowTable = itemView.findViewById(R.id.buttonShowTable); // Neue Referenz
             previewSection = itemView.findViewById(R.id.previewSection);
         }
 
@@ -137,6 +140,14 @@ public class LeetSelectorAdapter extends RecyclerView.Adapter<LeetSelectorAdapte
                 if (listener != null) {
                     listener.onQuickTest(option);
                     AnimationHelper.pulse(buttonQuickTest, 1);
+                }
+            });
+
+            // Neuer Tabellen-Button Click Listener
+            buttonShowTable.setOnClickListener(v -> {
+                if (listener != null) {
+                    listener.onShowTable(option);
+                    AnimationHelper.pulse(buttonShowTable, 1);
                 }
             });
 

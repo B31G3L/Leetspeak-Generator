@@ -13,7 +13,7 @@ android {
 
     defaultConfig {
         applicationId "com.beigel.leetSpeak_Generator"
-        minSdk 26
+        minSdk 27
         targetSdk 34
         versionCode 1501337001
         versionName "1337.00_8374_1"

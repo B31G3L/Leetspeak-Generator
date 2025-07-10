@@ -178,132 +178,85 @@
             </com.google.android.material.card.MaterialCardView>
         </LinearLayout>
 
-        <!-- Bottom Section -->
+        <!-- Neue Bottom Section -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:padding="16dp">
 
-            <!-- Leet Selector Button -->
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/buttonLeetSelector"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Plain → Simple Leet"
-                android:drawableEnd="@drawable/ic_expand_more"
-                android:drawablePadding="8dp"
-                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                android:fontFamily="@font/raleway"
-                android:textAllCaps="false"
-                android:gravity="start|center_vertical"
-                android:paddingStart="16dp"
-                android:paddingEnd="16dp"
-                android:minHeight="56dp"
-                app:strokeColor="?attr/colorSecondary"
-                android:textColor="?android:attr/textColorPrimary" />
-
-            <!-- Table Toggle Button -->
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/buttonExpandTable"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/table_expand"
-                android:drawableEnd="@drawable/ic_expand_more"
-                android:drawablePadding="8dp"
-                style="@style/Widget.MaterialComponents.Button.TextButton"
-                android:fontFamily="@font/raleway"
-                android:layout_gravity="center_horizontal"
-                android:layout_marginTop="8dp"
-                android:textColor="?attr/colorSecondary" />
-
-            <!-- Table Container -->
+            <!-- Translation Mode Selector -->
             <com.google.android.material.card.MaterialCardView
-                android:id="@+id/tableContainer"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:cardCornerRadius="8dp"
-                app:cardElevation="4dp"
-                app:strokeWidth="0dp"
-                android:layout_marginTop="8dp"
-                android:visibility="gone">
+                app:cardCornerRadius="12dp"
+                app:cardElevation="2dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="?attr/colorSecondary">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical">
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:padding="16dp">
 
-                    <!-- Table Header -->
+                    <!-- Plain Text Button -->
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/buttonPlainSelector"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Plain"
+                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                        android:fontFamily="@font/raleway"
+                        android:textAllCaps="false"
+                        android:minHeight="48dp"
+                        app:strokeColor="?attr/colorSecondary"
+                        android:textColor="?android:attr/textColorPrimary"
+                        android:layout_marginEnd="8dp" />
+
+                    <!-- Bidirectional Arrow -->
                     <LinearLayout
-                        android:layout_width="match_parent"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal"
-                        android:background="?attr/colorSecondary"
-                        android:padding="12dp">
+                        android:gravity="center"
+                        android:layout_marginHorizontal="8dp">
 
-                        <TextView
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:text="@string/plain"
-                            android:textStyle="bold"
-                            android:textSize="16sp"
-                            android:textColor="?attr/colorOnSecondary"
-                            android:fontFamily="@font/raleway"
-                            android:gravity="center" />
+                        <ImageView
+                            android:layout_width="16dp"
+                            android:layout_height="16dp"
+                            android:src="@drawable/ic_arrow_left"
+                            android:tint="?attr/colorSecondary"
+                            android:layout_marginEnd="2dp" />
 
-                        <TextView
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:text="@string/leet"
-                            android:textStyle="bold"
-                            android:textSize="16sp"
-                            android:textColor="?attr/colorOnSecondary"
-                            android:fontFamily="@font/raleway"
-                            android:gravity="center" />
-
-                        <TextView
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:text="@string/plain"
-                            android:textStyle="bold"
-                            android:textSize="16sp"
-                            android:textColor="?attr/colorOnSecondary"
-                            android:fontFamily="@font/raleway"
-                            android:gravity="center" />
-
-                        <TextView
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:text="@string/leet"
-                            android:textStyle="bold"
-                            android:textSize="16sp"
-                            android:textColor="?attr/colorOnSecondary"
-                            android:fontFamily="@font/raleway"
-                            android:gravity="center" />
+                        <ImageView
+                            android:layout_width="16dp"
+                            android:layout_height="16dp"
+                            android:src="@drawable/ic_arrow_right"
+                            android:tint="?attr/colorSecondary"
+                            android:layout_marginStart="2dp" />
                     </LinearLayout>
 
-                    <!-- Scrollbare Tabelle -->
-                    <ScrollView
-                        android:layout_width="match_parent"
+                    <!-- Leet Mode Button -->
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/buttonLeetSelector"
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:maxHeight="300dp">
-
-                        <!-- Table Content -->
-                        <TableLayout
-                            android:id="@+id/leetTable"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:padding="8dp"
-                            android:stretchColumns="*">
-                            <!-- Table rows will be added dynamically -->
-                        </TableLayout>
-                    </ScrollView>
+                        android:layout_weight="1"
+                        android:text="Simple Leet"
+                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                        android:fontFamily="@font/raleway"
+                        android:textAllCaps="false"
+                        android:minHeight="48dp"
+                        app:strokeColor="?attr/colorSecondary"
+                        android:textColor="?android:attr/textColorPrimary"
+                        android:layout_marginStart="8dp" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
+
+
         </LinearLayout>
     </LinearLayout>
 

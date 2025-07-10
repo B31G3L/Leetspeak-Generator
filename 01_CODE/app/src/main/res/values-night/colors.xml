@@ -1,17 +1,37 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Dunkles Theme (Dark Mode) -->
-    <color name="primary">#212121</color>
-    <color name="primary_dark">#000000</color>
-    <color name="accent">#BDBDBD</color>
-    <color name="accent_dark">#9E9E9E</color>
-    <color name="background">#121212</color>
-    <color name="surface">#1E1E1E</color>
-    <color name="text_primary">#FFFFFF</color>
-    <color name="text_secondary">#B3FFFFFF</color> <!-- 70% Weiß -->
+    <!-- DUNKLES THEME (DARK MODE) -->
 
-    <color name="black">#FF000000</color>
-    <color name="white">#FFFFFFFF</color>
-    <color name="gray_light">#2C2C2C</color>
-    <color name="gray">#1C1C1C</color>
+    <!-- PRIMARY COLORS -->
+    <color name="primary">#90CAF9</color>              <!-- Material Blue 200 (heller) -->
+    <color name="primary_variant">#1565C0</color>      <!-- Material Blue 800 -->
+    <color name="on_primary">#000000</color>           <!-- Schwarzer Text auf Primary -->
+
+    <!-- SECONDARY COLORS -->
+    <color name="secondary">#FFAB91</color>            <!-- Material Deep Orange 200 (heller) -->
+    <color name="secondary_variant">#FF5722</color>    <!-- Material Deep Orange 500 -->
+    <color name="on_secondary">#000000</color>         <!-- Schwarzer Text auf Secondary -->
+
+    <!-- BACKGROUND COLORS -->
+    <color name="background">#121212</color>           <!-- Material Dark Background -->
+    <color name="surface">#1E1E1E</color>              <!-- Material Dark Surface -->
+    <color name="on_background">#FFFFFF</color>        <!-- Weißer Text auf Background -->
+    <color name="on_surface">#FFFFFF</color>           <!-- Weißer Text auf Surface -->
+
+    <!-- TEXT COLORS -->
+    <color name="text_primary">#FFFFFF</color>         <!-- Haupttext (Weiß) -->
+    <color name="text_secondary">#AAAAAA</color>       <!-- Sekundärtext (Hellgrau) -->
+    <color name="text_hint">#777777</color>            <!-- Hint Text -->
+
+    <!-- STATE COLORS -->
+    <color name="accent">#FFAB91</color>               <!-- Helle Akzentfarbe -->
+    <color name="success">#81C784</color>              <!-- Helleres Grün für Erfolg -->
+    <color name="warning">#FFB74D</color>              <!-- Helleres Orange für Warnung -->
+    <color name="error">#E57373</color>                <!-- Helleres Rot für Fehler -->
+
+    <!-- LEGACY COLORS -->
+    <color name="black">#000000</color>
+    <color name="white">#FFFFFF</color>
+    <color name="gray_light">#2C2C2C</color>           <!-- Dunkler "helles" Grau -->
+    <color name="gray">#3C3C3C</color>                 <!-- Helles Grau für Dark Mode -->
 </resources>

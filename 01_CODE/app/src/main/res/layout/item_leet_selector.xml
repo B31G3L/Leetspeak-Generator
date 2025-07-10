@@ -152,6 +152,22 @@
                 android:layout_height="wrap_content"
                 android:orientation="horizontal">
 
+                <!-- Table Button -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/buttonShowTable"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp"
+                    android:insetLeft="0dp"
+                    android:insetRight="0dp"
+                    style="@style/Widget.MaterialComponents.Button.TextButton"
+                    android:text="📋"
+                    android:textSize="12sp"
+                    android:textColor="?attr/colorSecondary"
+                    android:layout_marginStart="4dp"
+                    android:tooltipText="Tabelle anzeigen" />
+
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/buttonQuickTest"
                     android:layout_width="32dp"
