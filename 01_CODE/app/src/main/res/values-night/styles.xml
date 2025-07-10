@@ -105,4 +105,12 @@
         <item name="hintTextColor">?attr/colorSecondary</item>
         <item name="android:textColorHint">?android:attr/textColorSecondary</item>
     </style>
+
+    <style name="ShapeAppearance.Card.BottomRounded" parent="ShapeAppearance.MaterialComponents.MediumComponent">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSizeTopLeft">0dp</item>
+        <item name="cornerSizeTopRight">0dp</item>
+        <item name="cornerSizeBottomLeft">12dp</item>
+        <item name="cornerSizeBottomRight">12dp</item>
+    </style>
 </resources>

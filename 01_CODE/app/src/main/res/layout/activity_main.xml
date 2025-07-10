@@ -44,29 +44,32 @@
         android:orientation="vertical"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-        <!-- Input Section - nimmt obere Hälfte ein -->
-        <LinearLayout
-            android:id="@+id/input_section"
+        <!-- Hauptkarte mit Input/Output -->
+        <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
-            android:orientation="vertical"
-            android:padding="16dp">
+            android:layout_marginBottom="16dp"
+            app:cardElevation="2dp"
+            app:strokeWidth="1dp"
+            app:strokeColor="?attr/colorSecondary"
+            app:shapeAppearanceOverlay="@style/ShapeAppearance.Card.BottomRounded">
 
-            <com.google.android.material.card.MaterialCardView
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="0dp"
-                app:strokeWidth="0dp">
+                android:orientation="vertical">
 
+                <!-- Input Section -->
                 <LinearLayout
+                    android:id="@+id/input_section"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
                     android:orientation="vertical"
                     android:padding="16dp">
 
-                    <!-- Vereinfachter Header ohne Counter -->
+                    <!-- Input Header -->
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -76,7 +79,7 @@
                         android:fontFamily="@font/raleway"
                         android:layout_marginBottom="8dp" />
 
-                    <!-- Input Field ohne Undo/Redo Buttons -->
+                    <!-- Input Field -->
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/inputPlainText"
                         android:layout_width="match_parent"
@@ -92,42 +95,27 @@
                         android:lineSpacingMultiplier="1.2" />
 
                 </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
-        </LinearLayout>
 
-        <!-- Divider - nur sichtbar wenn Output vorhanden -->
-        <View
-            android:id="@+id/divider"
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="?attr/colorSecondary"
-            android:layout_marginHorizontal="16dp"
-            android:visibility="gone" />
-
-        <!-- Output Section - nimmt untere Hälfte ein, nur sichtbar wenn Text vorhanden -->
-        <LinearLayout
-            android:id="@+id/output_section"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:orientation="vertical"
-            android:padding="16dp"
-            android:visibility="gone">
-
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="0dp"
-                app:strokeWidth="0dp">
-
-                <LinearLayout
+                <!-- Divider - nur sichtbar wenn Output vorhanden -->
+                <View
+                    android:id="@+id/divider"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:orientation="vertical"
-                    android:padding="16dp">
+                    android:layout_height="1dp"
+                    android:background="?attr/colorSecondary"
+                    android:layout_marginHorizontal="16dp"
+                    android:visibility="gone" />
 
-                    <!-- Header mit dynamischem Leet-Namen -->
+                <!-- Output Section - nur sichtbar wenn Text vorhanden -->
+                <LinearLayout
+                    android:id="@+id/output_section"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:padding="16dp"
+                    android:visibility="gone">
+
+                    <!-- Output Header mit Copy Button -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -145,7 +133,7 @@
                             android:textColor="?android:attr/textColorSecondary"
                             android:fontFamily="@font/raleway" />
 
-                        <!-- Copy Button als Icon in der rechten Ecke -->
+                        <!-- Copy Button -->
                         <ImageView
                             android:id="@+id/buttonCopy"
                             android:layout_width="32dp"
@@ -157,7 +145,7 @@
                             android:tint="?attr/colorSecondary" />
                     </LinearLayout>
 
-                    <!-- Scrollbarer Output Text mit größerer Schrift -->
+                    <!-- Scrollbarer Output Text -->
                     <ScrollView
                         android:layout_width="match_parent"
                         android:layout_height="match_parent">
@@ -174,90 +162,77 @@
                             android:background="?attr/selectableItemBackground"
                             android:lineSpacingMultiplier="1.2" />
                     </ScrollView>
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
-        </LinearLayout>
 
-        <!-- Neue Bottom Section -->
+                </LinearLayout>
+
+            </LinearLayout>
+
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Button-Sektion außerhalb der Karte -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="16dp">
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:padding="16dp"
+            android:background="?attr/colorSurface"
+            android:elevation="2dp">
 
-            <!-- Translation Mode Selector -->
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
+            <!-- Plain Text Button -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/buttonPlainSelector"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="2dp"
-                app:strokeWidth="1dp"
-                app:strokeColor="?attr/colorSecondary">
+                android:layout_weight="1"
+                android:text="Plain"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:fontFamily="@font/raleway"
+                android:textAllCaps="false"
+                android:minHeight="48dp"
+                app:strokeColor="?attr/colorSecondary"
+                android:textColor="?android:attr/textColorPrimary"
+                android:layout_marginEnd="8dp" />
 
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical"
-                    android:padding="16dp">
+            <!-- Bidirectional Arrow -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center"
+                android:layout_marginHorizontal="8dp">
 
-                    <!-- Plain Text Button -->
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/buttonPlainSelector"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="Plain"
-                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                        android:fontFamily="@font/raleway"
-                        android:textAllCaps="false"
-                        android:minHeight="48dp"
-                        app:strokeColor="?attr/colorSecondary"
-                        android:textColor="?android:attr/textColorPrimary"
-                        android:layout_marginEnd="8dp" />
+                <ImageView
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
+                    android:src="@drawable/ic_arrow_left"
+                    android:tint="?attr/colorSecondary"
+                    android:layout_marginEnd="2dp" />
 
-                    <!-- Bidirectional Arrow -->
-                    <LinearLayout
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center"
-                        android:layout_marginHorizontal="8dp">
+                <ImageView
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
+                    android:src="@drawable/ic_arrow_right"
+                    android:tint="?attr/colorSecondary"
+                    android:layout_marginStart="2dp" />
+            </LinearLayout>
 
-                        <ImageView
-                            android:layout_width="16dp"
-                            android:layout_height="16dp"
-                            android:src="@drawable/ic_arrow_left"
-                            android:tint="?attr/colorSecondary"
-                            android:layout_marginEnd="2dp" />
-
-                        <ImageView
-                            android:layout_width="16dp"
-                            android:layout_height="16dp"
-                            android:src="@drawable/ic_arrow_right"
-                            android:tint="?attr/colorSecondary"
-                            android:layout_marginStart="2dp" />
-                    </LinearLayout>
-
-                    <!-- Leet Mode Button -->
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/buttonLeetSelector"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="Simple Leet"
-                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                        android:fontFamily="@font/raleway"
-                        android:textAllCaps="false"
-                        android:minHeight="48dp"
-                        app:strokeColor="?attr/colorSecondary"
-                        android:textColor="?android:attr/textColorPrimary"
-                        android:layout_marginStart="8dp" />
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
-
-
+            <!-- Leet Mode Button -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/buttonLeetSelector"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Simple Leet"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:fontFamily="@font/raleway"
+                android:textAllCaps="false"
+                android:minHeight="48dp"
+                app:strokeColor="?attr/colorSecondary"
+                android:textColor="?android:attr/textColorPrimary"
+                android:layout_marginStart="8dp" />
         </LinearLayout>
+
     </LinearLayout>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
