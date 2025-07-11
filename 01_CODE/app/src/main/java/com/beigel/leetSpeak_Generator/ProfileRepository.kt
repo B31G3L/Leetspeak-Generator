@@ -98,6 +98,9 @@ class ProfileRepository(context: Context) {
     /**
      * Loads the favorite mode asynchronously
      */
+    /**
+     * Loads the favorite mode asynchronously
+     */
     suspend fun loadFavoriteMode(): ErrorHandler.Result<FavoriteModeResult> =
         ErrorHandler.safeExecute(errorMessage = "Failed to load favorite mode") {
             val favoriteInfo = profileManager.getFavoriteMode()
@@ -106,14 +109,14 @@ class ProfileRepository(context: Context) {
                 favoriteInfo == null -> FavoriteModeResult.simple()
                 favoriteInfo.mode == ProfileManager.MODE_SIMPLE -> FavoriteModeResult.simple()
                 favoriteInfo.mode == ProfileManager.MODE_EXTENDED -> FavoriteModeResult.extended()
-                if (favoriteInfo.mode == ProfileManager.MODE_CUSTOM) {
+                favoriteInfo.mode == ProfileManager.MODE_CUSTOM -> {
                     if (favoriteInfo.customProfile != null) {
                         FavoriteModeResult.custom(favoriteInfo.customIndex, favoriteInfo.customProfile)
                     } else {
                         FavoriteModeResult.simple() // Fallback
                     }
                 }
-                else -> FavoriteModeResult.simple()
+                else -> FavoriteModeResult.simple() // Fallback für unbekannte Modi
             }
         }
 
