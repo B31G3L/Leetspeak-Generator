@@ -1,37 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- LIGHT THEME - Modernes, sanftes Schema -->
+    <!-- Nur für App Icon -->
 
-    <!-- PRIMARY COLORS - Warmes Blau -->
-    <color name="primary">#2563EB</color>              <!-- Blue 600 - Kräftig aber nicht zu dunkel -->
-    <color name="primary_variant">#1E40AF</color>       <!-- Blue 700 - Etwas dunkler -->
-    <color name="on_primary">#FFFFFF</color>            <!-- Weißer Text auf Primary -->
-
-    <!-- SECONDARY COLORS - Warmes Orange -->
-    <color name="secondary">#F59E0B</color>             <!-- Amber 500 - Warmes Orange -->
-    <color name="secondary_variant">#D97706</color>     <!-- Amber 600 - Dunkler -->
-    <color name="on_secondary">#FFFFFF</color>          <!-- Weißer Text auf Secondary -->
-
-    <!-- BACKGROUND COLORS - Soft White -->
-    <color name="background">#F8FAFC</color>            <!-- Slate 50 - Sehr sanftes Grau -->
-    <color name="surface">#FFFFFF</color>               <!-- Reines Weiß für Cards -->
-    <color name="on_background">#1E293B</color>         <!-- Slate 800 - Warmes Dunkelgrau -->
-    <color name="on_surface">#334155</color>            <!-- Slate 700 - Mittleres Grau -->
-
-    <!-- TEXT COLORS -->
-    <color name="text_primary">#1E293B</color>          <!-- Slate 800 - Haupttext -->
-    <color name="text_secondary">#64748B</color>        <!-- Slate 500 - Sekundärtext -->
-    <color name="text_hint">#94A3B8</color>             <!-- Slate 400 - Hint Text -->
-
-    <!-- STATE COLORS -->
-    <color name="accent">#F59E0B</color>                <!-- Gleich wie Secondary -->
-    <color name="success">#10B981</color>               <!-- Emerald 500 - Sanftes Grün -->
-    <color name="warning">#F59E0B</color>               <!-- Amber 500 - Warmes Orange -->
-    <color name="error">#EF4444</color>                 <!-- Red 500 - Klares Rot -->
-
-    <!-- LEGACY COLORS -->
+    <!-- Legacy Support -->
     <color name="black">#000000</color>
     <color name="white">#FFFFFF</color>
-    <color name="gray_light">#F1F5F9</color>            <!-- Slate 100 -->
-    <color name="gray">#E2E8F0</color>                  <!-- Slate 200 -->
 </resources>
