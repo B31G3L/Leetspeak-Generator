@@ -1,8 +1,4 @@
-@file:OptIn(ExperimentalMaterial3Api::class)
-
-package com.beigel.leetSpeak_Generator.compose
-
-// Erweiterte LeetSelectorBottomSheet mit Dialogen
+package com.beigel.leetSpeak_Generator.ui.components
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -17,14 +13,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import com.beigel.leetSpeak_Generator.CustomLeet
-import com.beigel.leetSpeak_Generator.MainIntent
-import com.beigel.leetSpeak_Generator.MainViewModel
 import com.beigel.leetSpeak_Generator.R
+import com.beigel.leetSpeak_Generator.data.CustomLeet
+import com.beigel.leetSpeak_Generator.viewmodel.MainIntent
+import com.beigel.leetSpeak_Generator.viewmodel.MainViewModel
 
 /**
  * Compose Implementation für Profile Creation Dialog
@@ -34,15 +30,15 @@ import com.beigel.leetSpeak_Generator.R
 fun ProfileCreationDialog(
     viewModel: MainViewModel,
     onDismiss: () -> Unit,
-    existingProfile: CustomLeet? = null,
+    existingLeet: CustomLeet? = null,
     profileIndex: Int = -1
 ) {
     var profileName by remember {
-        mutableStateOf(existingProfile?.name ?: "")
+        mutableStateOf(existingLeet?.name ?: "")
     }
 
     var selectedIconResId by remember {
-        mutableStateOf(existingProfile?.iconResId ?: R.drawable.ic_custom_mode)
+        mutableStateOf(existingLeet?.iconResId ?: R.drawable.ic_custom_mode)
     }
 
     var showIconPicker by remember { mutableStateOf(false) }
@@ -52,12 +48,12 @@ fun ProfileCreationDialog(
     val translationStates = remember {
         alphabet.map { char ->
             mutableStateOf(
-                existingProfile?.getTranslation(char.toString()) ?: char.toString()
+                existingLeet?.getTranslation(char.toString()) ?: char.toString()
             )
         }
     }
 
-    val isNewProfile = existingProfile == null
+    val isNewProfile = existingLeet == null
     val context = LocalContext.current
 
     Dialog(
@@ -271,7 +267,7 @@ private fun TranslationTableCard(
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSecondary,
                     modifier = Modifier.padding(16.dp),
-                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                    textAlign = TextAlign.Center
                 )
             }
 
@@ -288,28 +284,28 @@ private fun TranslationTableCard(
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.weight(1f),
-                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                        textAlign = TextAlign.Center
                     )
                     Text(
                         text = "Leet",
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.weight(1f),
-                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                        textAlign = TextAlign.Center
                     )
                     Text(
                         text = "Plain",
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.weight(1f),
-                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                        textAlign = TextAlign.Center
                     )
                     Text(
                         text = "Leet",
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.weight(1f),
-                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                        textAlign = TextAlign.Center
                     )
                 }
             }
@@ -330,7 +326,7 @@ private fun TranslationTableCard(
                         Text(
                             text = alphabet[i].toString(),
                             modifier = Modifier.weight(1f),
-                            textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                            textAlign = TextAlign.Center,
                             style = MaterialTheme.typography.bodyMedium
                         )
 
@@ -342,7 +338,7 @@ private fun TranslationTableCard(
                                 .padding(horizontal = 4.dp),
                             singleLine = true,
                             textStyle = androidx.compose.ui.text.TextStyle(
-                                textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                                textAlign = TextAlign.Center
                             )
                         )
 
@@ -351,7 +347,7 @@ private fun TranslationTableCard(
                             Text(
                                 text = alphabet[i + 13].toString(),
                                 modifier = Modifier.weight(1f),
-                                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                                textAlign = TextAlign.Center,
                                 style = MaterialTheme.typography.bodyMedium
                             )
 
@@ -363,7 +359,7 @@ private fun TranslationTableCard(
                                     .padding(horizontal = 4.dp),
                                 singleLine = true,
                                 textStyle = androidx.compose.ui.text.TextStyle(
-                                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                                    textAlign = TextAlign.Center
                                 )
                             )
                         } else {

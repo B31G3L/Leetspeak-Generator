@@ -10,4 +10,8 @@ import dagger.hilt.android.HiltAndroidApp
 @HiltAndroidApp
 class LeetSpeakApplication : Application() {
 
+    override fun onCreate() {
+        super.onCreate()
+        // Hier können später weitere Initialisierungen erfolgen
+    }
 }

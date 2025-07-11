@@ -1,30 +1,29 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
-    alias(libs.plugins.kotlin.compose) // ✅ Neues Compose Compiler Plugin
-    alias(libs.plugins.hilt) // ✅ Hilt Plugin
-    id 'kotlin-kapt' // Noch nötig für Hilt
+    alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.hilt)
+    id 'kotlin-kapt'
+    id 'kotlin-parcelize'
 }
 
 android {
     namespace 'com.beigel.leetSpeak_Generator'
-    compileSdk 34
+    compileSdk 35
 
-    // ViewBinding und Compose aktivieren
     buildFeatures {
-        viewBinding true
+        viewBinding false // Nur Compose verwenden
         compose true
     }
 
     defaultConfig {
         applicationId "com.beigel.leetSpeak_Generator"
         minSdk 27
-        targetSdk 34
-        versionCode 1501337001
-        versionName "1337.00_8374_1"
+        targetSdk 35
+        versionCode 1501337002
+        versionName "2.0.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-
         vectorDrawables {
             useSupportLibrary true
         }
@@ -32,18 +31,28 @@ android {
 
     buildTypes {
         release {
-            minifyEnabled false
+            minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            debuggable false
+        }
+        debug {
+            minifyEnabled false
+            debuggable true
         }
     }
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
     }
 
     kotlinOptions {
-        jvmTarget = '1.8'
+        jvmTarget = '17'
+        freeCompilerArgs += [
+                '-opt-in=androidx.compose.material3.ExperimentalMaterial3Api',
+                '-opt-in=androidx.compose.animation.ExperimentalAnimationApi',
+                '-opt-in=androidx.compose.foundation.ExperimentalFoundationApi'
+        ]
     }
 
     packaging {
@@ -54,50 +63,42 @@ android {
 }
 
 dependencies {
-    // ✅ Bestehende Dependencies
-    implementation 'androidx.appcompat:appcompat:1.6.1'
+    // Core Android (minimal für Compose-only)
     implementation 'com.google.android.material:material:1.12.0'
-    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
-    implementation 'androidx.drawerlayout:drawerlayout:1.2.0'
-    implementation 'androidx.coordinatorlayout:coordinatorlayout:1.2.0'
-    implementation 'com.google.code.gson:gson:2.10.1'
+    implementation 'com.google.code.gson:gson:2.11.0'
 
-    // Kotlin Dependencies
-    implementation 'org.jetbrains.kotlin:kotlin-stdlib:1.9.10'
+    // Kotlin
     implementation libs.androidx.core.ktx
-    implementation libs.androidx.fragment.ktx // ✅ Mit libs.versions.toml
-    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3'
-    implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0'
-    implementation 'androidx.activity:activity-ktx:1.8.0'
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1'
+    implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.6'
+    implementation 'androidx.activity:activity-ktx:1.9.2'
 
-    // ✅ Compose Dependencies (mit BOM für Versionsverwaltung)
+    // Kotlinx Serialization
+    implementation 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3'
+
+    // Compose BOM
     implementation platform(libs.androidx.compose.bom)
     implementation libs.androidx.ui
     implementation libs.androidx.ui.graphics
     implementation libs.androidx.ui.tooling.preview
     implementation libs.androidx.material3
     implementation 'androidx.compose.material:material-icons-extended'
-
-    // Activity & Lifecycle Compose
     implementation libs.androidx.activity.compose
-    implementation 'androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0'
-    implementation 'androidx.lifecycle:lifecycle-runtime-compose:2.7.0'
+    implementation 'androidx.lifecycle:lifecycle-viewmodel-compose:2.8.6'
+    implementation 'androidx.lifecycle:lifecycle-runtime-compose:2.8.6'
+    implementation 'androidx.navigation:navigation-compose:2.8.2'
 
-    // Navigation Compose (für später)
-    implementation 'androidx.navigation:navigation-compose:2.7.6'
-
-    // ✅ Hilt Dependencies
+    // Hilt
     implementation libs.hilt.android
     kapt libs.hilt.compiler
     implementation libs.hilt.navigation.compose
 
-    // Testing Dependencies
+    // Testing
     testImplementation libs.junit
-    testImplementation 'org.mockito:mockito-core:4.6.1'
+    testImplementation 'org.mockito:mockito-core:5.7.0'
+    testImplementation 'org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.1'
     androidTestImplementation libs.androidx.junit
     androidTestImplementation libs.androidx.espresso.core
-
-    // Compose Testing
     androidTestImplementation platform(libs.androidx.compose.bom)
     androidTestImplementation libs.androidx.ui.test.junit4
     debugImplementation libs.androidx.ui.tooling

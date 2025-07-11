@@ -1,7 +1,7 @@
 package com.beigel.leetSpeak_Generator.di
 
 import android.content.Context
-import com.beigel.leetSpeak_Generator.ProfileRepository
+import com.beigel.leetSpeak_Generator.repository.LeetRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -21,8 +21,8 @@ object AppModule {
     @Singleton
     fun provideProfileRepository(
         @ApplicationContext context: Context
-    ): ProfileRepository {
-        return ProfileRepository(context)
+    ): LeetRepository {
+        return LeetRepository(context)
     }
 
     // Falls später weitere Dependencies benötigt werden:
@@ -34,6 +34,12 @@ object AppModule {
         @ApplicationContext context: Context
     ): SharedPreferences {
         return context.getSharedPreferences("leetspeak_prefs", Context.MODE_PRIVATE)
+    }
+
+    @Provides
+    @Singleton
+    fun provideGson(): Gson {
+        return Gson()
     }
     */
 }

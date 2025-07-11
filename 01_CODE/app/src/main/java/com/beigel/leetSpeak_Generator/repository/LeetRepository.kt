@@ -1,13 +1,21 @@
-package com.beigel.leetSpeak_Generator
+package com.beigel.leetSpeak_Generator.repository
 
 import android.content.Context
+import com.beigel.leetSpeak_Generator.data.CustomLeet
+import com.beigel.leetSpeak_Generator.data.LeetOption
+import com.beigel.leetSpeak_Generator.manager.LeetManager
 import kotlinx.coroutines.flow.*
+import javax.inject.Inject
+import javax.inject.Singleton
 
 /**
  * Modern repository implementing reactive data access with Kotlin Flows
  * Provides clean API for profile management with proper error handling
  */
-class ProfileRepository(context: Context) {
+@Singleton
+class LeetRepository @Inject constructor(
+    context: Context
+) {
 
     private val leetManager = LeetManager(context)
 
@@ -21,86 +29,117 @@ class ProfileRepository(context: Context) {
     /**
      * Creates a new profile with the given configuration
      */
-    suspend fun createProfile(request: ProfileCreationRequest): ErrorHandler.Result<ProfileCreationResult> =
-        ErrorHandler.safeExecute(errorMessage = "Failed to create profile") {
+    suspend fun createProfile(request: ProfileCreationRequest): Result<ProfileCreationResult> {
+        return try {
             val profile = CustomLeet(request.name, request.iconResId)
             profile.setTranslations(request.translations)
 
             when (val indexResult = leetManager.addProfile(profile)) {
-                is ErrorHandler.Result.Success -> {
-                    ProfileCreationResult(profile, indexResult.data, true, "Profile created successfully")
+                is Result.Success -> {
+                    Result.success(
+                        ProfileCreationResult(
+                            profile = profile,
+                            index = indexResult.getOrThrow(),
+                            success = true,
+                            message = "Profile created successfully"
+                        )
+                    )
                 }
-                is ErrorHandler.Result.Error -> {
-                    throw indexResult.exception
+                is Result.Failure -> {
+                    Result.failure(indexResult.exceptionOrNull() ?: Exception("Unknown error"))
                 }
             }
+        } catch (e: Exception) {
+            Result.failure(e)
         }
+    }
 
     /**
      * Updates an existing profile
      */
-    suspend fun updateProfile(index: Int, profile: CustomLeet): ErrorHandler.Result<ProfileUpdateResult> =
-        ErrorHandler.safeExecute(errorMessage = "Failed to update profile") {
-            leetManager.updateProfile(index, profile).getOrNull()
-            ProfileUpdateResult(profile, index, true, "Profile updated successfully")
+    suspend fun updateProfile(index: Int, profile: CustomLeet): Result<ProfileUpdateResult> {
+        return try {
+            leetManager.updateProfile(index, profile).fold(
+                onSuccess = {
+                    Result.success(
+                        ProfileUpdateResult(
+                            profile = profile,
+                            index = index,
+                            success = true,
+                            message = "Profile updated successfully"
+                        )
+                    )
+                },
+                onFailure = { Result.failure(it) }
+            )
+        } catch (e: Exception) {
+            Result.failure(e)
         }
+    }
 
     /**
      * Deletes a profile at the given index
      */
-    suspend fun deleteProfile(index: Int): ErrorHandler.Result<ProfileDeletionResult> =
-        ErrorHandler.safeExecute(errorMessage = "Failed to delete profile") {
-            when (val result = leetManager.deleteProfile(index)) {
-                is ErrorHandler.Result.Success -> {
-                    ProfileDeletionResult(
-                        deletedProfile = result.data.deletedProfile,
-                        wasFavorite = result.data.wasFavorite,
-                        wasLastProfile = result.data.wasLastProfile,
-                        success = true,
-                        message = "Profile deleted successfully"
+    suspend fun deleteProfile(index: Int): Result<ProfileDeletionResult> {
+        return try {
+            leetManager.deleteProfile(index).fold(
+                onSuccess = { result ->
+                    Result.success(
+                        ProfileDeletionResult(
+                            deletedProfile = result.deletedProfile,
+                            wasFavorite = result.wasFavorite,
+                            wasLastProfile = result.wasLastProfile,
+                            success = true,
+                            message = "Profile deleted successfully"
+                        )
                     )
-                }
-                is ErrorHandler.Result.Error -> throw result.exception
-            }
+                },
+                onFailure = { Result.failure(it) }
+            )
+        } catch (e: Exception) {
+            Result.failure(e)
         }
+    }
 
     /**
      * Sets the current profile index
      */
-    suspend fun setCurrentProfileIndex(index: Int): ErrorHandler.Result<Unit> =
+    suspend fun setCurrentProfileIndex(index: Int): Result<Unit> =
         leetManager.setCurrentProfileIndex(index)
 
     /**
      * Toggles favorite status for a mode
      */
-    suspend fun toggleFavorite(mode: Int, customIndex: Int = 0): ErrorHandler.Result<FavoriteToggleResult> =
-        ErrorHandler.safeExecute(errorMessage = "Failed to toggle favorite") {
+    suspend fun toggleFavorite(mode: Int, customIndex: Int = 0): Result<FavoriteToggleResult> {
+        return try {
             val wasAlreadyFavorite = leetManager.isFavorite(mode, customIndex)
-            when (val toggleResult = leetManager.toggleFavorite(mode, customIndex)) {
-                is ErrorHandler.Result.Success -> {
-                    FavoriteToggleResult(
-                        mode = mode,
-                        customIndex = customIndex,
-                        wasAlreadyFavorite = wasAlreadyFavorite,
-                        isNowFavorite = toggleResult.data,
-                        success = true
+            leetManager.toggleFavorite(mode, customIndex).fold(
+                onSuccess = { isNowFavorite ->
+                    Result.success(
+                        FavoriteToggleResult(
+                            mode = mode,
+                            customIndex = customIndex,
+                            wasAlreadyFavorite = wasAlreadyFavorite,
+                            isNowFavorite = isNowFavorite,
+                            success = true
+                        )
                     )
-                }
-                is ErrorHandler.Result.Error -> throw toggleResult.exception
-            }
+                },
+                onFailure = { Result.failure(it) }
+            )
+        } catch (e: Exception) {
+            Result.failure(e)
         }
+    }
 
     /**
      * Loads the favorite mode asynchronously
      */
-    /**
-     * Loads the favorite mode asynchronously
-     */
-    suspend fun loadFavoriteMode(): ErrorHandler.Result<FavoriteModeResult> =
-        ErrorHandler.safeExecute(errorMessage = "Failed to load favorite mode") {
+    suspend fun loadFavoriteMode(): Result<FavoriteModeResult> {
+        return try {
             val favoriteInfo = leetManager.getFavoriteMode()
 
-            when {
+            val result = when {
                 favoriteInfo == null -> FavoriteModeResult.simple()
                 favoriteInfo.mode == LeetManager.MODE_SIMPLE -> FavoriteModeResult.simple()
                 favoriteInfo.mode == LeetManager.MODE_EXTENDED -> FavoriteModeResult.extended()
@@ -113,18 +152,23 @@ class ProfileRepository(context: Context) {
                 }
                 else -> FavoriteModeResult.simple() // Fallback für unbekannte Modi
             }
+
+            Result.success(result)
+        } catch (e: Exception) {
+            Result.failure(e)
         }
+    }
 
     /**
      * Creates a profile with simple defaults
      */
-    suspend fun createProfileWithSimpleDefaults(name: String, iconResId: Int = R.drawable.ic_custom_mode): ErrorHandler.Result<CustomLeet> =
+    suspend fun createProfileWithSimpleDefaults(name: String, iconResId: Int = com.beigel.leetSpeak_Generator.R.drawable.ic_custom_mode): Result<CustomLeet> =
         leetManager.createProfileWithSimpleDefaults(name, iconResId)
 
     /**
      * Creates a profile with extended defaults
      */
-    suspend fun createProfileWithExtendedDefaults(name: String, iconResId: Int = R.drawable.ic_custom_mode): ErrorHandler.Result<CustomLeet> =
+    suspend fun createProfileWithExtendedDefaults(name: String, iconResId: Int = com.beigel.leetSpeak_Generator.R.drawable.ic_custom_mode): Result<CustomLeet> =
         leetManager.createProfileWithExtendedDefaults(name, iconResId)
 
     /**

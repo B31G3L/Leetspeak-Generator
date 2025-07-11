@@ -1,4 +1,7 @@
-package com.beigel.leetSpeak_Generator
+package com.beigel.leetSpeak_Generator.data
+
+import com.beigel.leetSpeak_Generator.manager.LeetManager
+import com.beigel.leetSpeak_Generator.R
 
 /**
  * Represents a leet translation option in the UI

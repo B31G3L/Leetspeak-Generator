@@ -1,8 +1,11 @@
-package com.beigel.leetSpeak_Generator
+package com.beigel.leetSpeak_Generator.manager
 
 import android.content.Context
 import android.content.SharedPreferences
 import android.util.Log
+import com.beigel.leetSpeak_Generator.R
+import com.beigel.leetSpeak_Generator.data.CustomLeet
+import com.beigel.leetSpeak_Generator.utils.ErrorHandler
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.*
@@ -226,6 +229,7 @@ class LeetManager(context: Context) {
                     }
                     customIndex
                 }
+
                 else -> throw IllegalArgumentException("Invalid mode: $mode")
             }
 

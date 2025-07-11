@@ -1,7 +1,11 @@
-package com.beigel.leetSpeak_Generator
+package com.beigel.leetSpeak_Generator.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.beigel.leetSpeak_Generator.data.CustomLeet
+import com.beigel.leetSpeak_Generator.data.LeetOption
+import com.beigel.leetSpeak_Generator.repository.LeetRepository
+import com.beigel.leetSpeak_Generator.translation.LeetTranslator
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -14,7 +18,7 @@ import javax.inject.Inject
  */
 @HiltViewModel
 class MainViewModel @Inject constructor(
-    val repository: ProfileRepository
+    private val repository: LeetRepository
 ) : ViewModel() {
 
     // Input state
@@ -95,20 +99,20 @@ class MainViewModel @Inject constructor(
             repository.loadFavoriteMode()
                 .onSuccess { result ->
                     when (result) {
-                        is ProfileRepository.FavoriteModeResult.Simple -> {
+                        is LeetRepository.FavoriteModeResult.Simple -> {
                             _currentMode.value = LeetTranslator.TranslationMode.SIMPLE
                         }
-                        is ProfileRepository.FavoriteModeResult.Extended -> {
+                        is LeetRepository.FavoriteModeResult.Extended -> {
                             _currentMode.value = LeetTranslator.TranslationMode.EXTENDED
                         }
-                        is ProfileRepository.FavoriteModeResult.Custom -> {
+                        is LeetRepository.FavoriteModeResult.Custom -> {
                             _currentMode.value = LeetTranslator.TranslationMode.CUSTOM
                             repository.setCurrentProfileIndex(result.customIndex)
                         }
                     }
                 }
-                .onError { _, message ->
-                    updateUiState { copy(errorMessage = message) }
+                .onFailure { exception ->
+                    updateUiState { copy(errorMessage = "Failed to load favorite mode: ${exception.message}") }
                 }
         }
     }
@@ -136,13 +140,13 @@ class MainViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 when (leetOption.mode) {
-                    LeetManager.MODE_SIMPLE -> {
+                    com.beigel.leetSpeak_Generator.manager.LeetManager.MODE_SIMPLE -> {
                         _currentMode.value = LeetTranslator.TranslationMode.SIMPLE
                     }
-                    LeetManager.MODE_EXTENDED -> {
+                    com.beigel.leetSpeak_Generator.manager.LeetManager.MODE_EXTENDED -> {
                         _currentMode.value = LeetTranslator.TranslationMode.EXTENDED
                     }
-                    LeetManager.MODE_CUSTOM -> {
+                    com.beigel.leetSpeak_Generator.manager.LeetManager.MODE_CUSTOM -> {
                         if (leetOption.isCustom && leetOption.customIndex >= 0) {
                             repository.setCurrentProfileIndex(leetOption.customIndex)
                             _currentMode.value = LeetTranslator.TranslationMode.CUSTOM
@@ -172,8 +176,8 @@ class MainViewModel @Inject constructor(
                     }
                     updateUiState { copy(successMessage = message) }
                 }
-                .onError { _, message ->
-                    updateUiState { copy(errorMessage = message) }
+                .onFailure { exception ->
+                    updateUiState { copy(errorMessage = "Failed to toggle favorite: ${exception.message}") }
                 }
         }
     }
@@ -181,7 +185,7 @@ class MainViewModel @Inject constructor(
     /**
      * Creates a new profile
      */
-    fun createProfile(name: String, iconResId: Int, useExtendedDefaults: Boolean = false) {
+    fun createLeet(name: String, iconResId: Int, useExtendedDefaults: Boolean = false) {
         viewModelScope.launch {
             updateUiState { copy(isLoading = true) }
 
@@ -201,11 +205,11 @@ class MainViewModel @Inject constructor(
                         )
                     }
                 }
-                .onError { _, message ->
+                .onFailure { exception ->
                     updateUiState {
                         copy(
                             isLoading = false,
-                            errorMessage = message
+                            errorMessage = "Failed to create profile: ${exception.message}"
                         )
                     }
                 }
@@ -215,24 +219,24 @@ class MainViewModel @Inject constructor(
     /**
      * Updates an existing profile
      */
-    fun updateProfile(index: Int, profile: CustomLeet) {
+    fun updateProfile(index: Int, leet: CustomLeet) {
         viewModelScope.launch {
             updateUiState { copy(isLoading = true) }
 
-            repository.updateProfile(index, profile)
+            repository.updateProfile(index, leet)
                 .onSuccess {
                     updateUiState {
                         copy(
                             isLoading = false,
-                            successMessage = "Profile '${profile.name}' updated successfully"
+                            successMessage = "Leet '${leet.name}' updated successfully"
                         )
                     }
                 }
-                .onError { _, message ->
+                .onFailure { exception ->
                     updateUiState {
                         copy(
                             isLoading = false,
-                            errorMessage = message
+                            errorMessage = "Failed to update leet: ${exception.message}"
                         )
                     }
                 }
@@ -268,11 +272,11 @@ class MainViewModel @Inject constructor(
                         )
                     }
                 }
-                .onError { _, message ->
+                .onFailure { exception ->
                     updateUiState {
                         copy(
                             isLoading = false,
-                            errorMessage = message
+                            errorMessage = "Failed to delete profile: ${exception.message}"
                         )
                     }
                 }
@@ -303,9 +307,9 @@ class MainViewModel @Inject constructor(
      */
     fun generatePreview(leetOption: LeetOption, sampleText: String = "Hello"): String {
         val mode = when (leetOption.mode) {
-            LeetManager.MODE_SIMPLE -> LeetTranslator.TranslationMode.SIMPLE
-            LeetManager.MODE_EXTENDED -> LeetTranslator.TranslationMode.EXTENDED
-            LeetManager.MODE_CUSTOM -> LeetTranslator.TranslationMode.CUSTOM
+            com.beigel.leetSpeak_Generator.manager.LeetManager.MODE_SIMPLE -> LeetTranslator.TranslationMode.SIMPLE
+            com.beigel.leetSpeak_Generator.manager.LeetManager.MODE_EXTENDED -> LeetTranslator.TranslationMode.EXTENDED
+            com.beigel.leetSpeak_Generator.manager.LeetManager.MODE_CUSTOM -> LeetTranslator.TranslationMode.CUSTOM
             else -> LeetTranslator.TranslationMode.SIMPLE
         }
 
@@ -324,7 +328,7 @@ class MainViewModel @Inject constructor(
             is MainIntent.UpdateInput -> updateInputText(intent.text)
             is MainIntent.ChangeMode -> changeMode(intent.leetOption)
             is MainIntent.ToggleFavorite -> toggleFavorite(intent.leetOption)
-            is MainIntent.CreateProfile -> createProfile(
+            is MainIntent.CreateProfile -> createLeet(
                 intent.name,
                 intent.iconResId,
                 intent.useExtendedDefaults

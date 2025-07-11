@@ -1,7 +1,4 @@
-// KORRIGIERTE ComposeMainActivity.kt - Final Version ohne Compile-Fehler
-// Ersetze: app/src/main/java/com/beigel/leetSpeak_Generator/compose/ComposeMainActivity.kt
-
-package com.beigel.leetSpeak_Generator.compose
+package com.beigel.leetSpeak_Generator.ui
 
 import android.content.ClipData
 import android.content.ClipboardManager
@@ -23,20 +20,19 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.beigel.leetSpeak_Generator.MainIntent
-import com.beigel.leetSpeak_Generator.MainViewModel
+import com.beigel.leetSpeak_Generator.ui.components.*
 import com.beigel.leetSpeak_Generator.ui.theme.LeetspeakGeneratorTheme
+import com.beigel.leetSpeak_Generator.viewmodel.MainIntent
+import com.beigel.leetSpeak_Generator.viewmodel.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
-
 
 @AndroidEntryPoint
 class ComposeMainActivity : ComponentActivity() {
@@ -51,8 +47,7 @@ class ComposeMainActivity : ComponentActivity() {
 
         setContent {
             LeetspeakGeneratorTheme {
-                // ✅ Enhanced Version mit funktionierendem Bottom Sheet
-                EnhancedComposeMainScreenWithWorkingBottomSheet(
+                MainScreen(
                     viewModel = viewModel,
                     onCopyToClipboard = { text ->
                         copyToClipboardWithFeedback(text)
@@ -78,7 +73,7 @@ class ComposeMainActivity : ComponentActivity() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun EnhancedComposeMainScreenWithWorkingBottomSheet(
+fun MainScreen(
     viewModel: MainViewModel,
     onCopyToClipboard: (String) -> Unit
 ) {
@@ -90,7 +85,7 @@ fun EnhancedComposeMainScreenWithWorkingBottomSheet(
     val shouldShowOutput by viewModel.shouldShowOutput.collectAsStateWithLifecycle()
 
     var showBottomSheet by remember { mutableStateOf(false) }
-    val context = LocalContext.current // ✅ FIX: Innerhalb der Composable
+    val context = LocalContext.current
 
     Scaffold(
         topBar = {
@@ -106,9 +101,7 @@ fun EnhancedComposeMainScreenWithWorkingBottomSheet(
                     titleContentColor = MaterialTheme.colorScheme.onSurface
                 ),
                 actions = {
-                    // Settings/Info Button
                     IconButton(onClick = {
-                        // ✅ FIX: context innerhalb onClick verwenden
                         android.widget.Toast.makeText(
                             context,
                             "Aktueller Modus: $currentModeDisplayName",
@@ -147,7 +140,7 @@ fun EnhancedComposeMainScreenWithWorkingBottomSheet(
                 ) {
 
                     // Input Section
-                    SimpleInputSection(
+                    InputSection(
                         inputText = inputText,
                         onInputChange = { text ->
                             viewModel.handleIntent(MainIntent.UpdateInput(text))
@@ -179,7 +172,7 @@ fun EnhancedComposeMainScreenWithWorkingBottomSheet(
                         ),
                         exit = shrinkVertically() + fadeOut()
                     ) {
-                        SimpleOutputSection(
+                        OutputSection(
                             outputText = outputText,
                             currentMode = currentModeDisplayName,
                             onCopyClick = { onCopyToClipboard(outputText) },
@@ -190,35 +183,33 @@ fun EnhancedComposeMainScreenWithWorkingBottomSheet(
                 }
             }
 
-            // Enhanced Button Section
-            EnhancedButtonSectionWithBottomSheet(
+            // Button Section
+            ButtonSection(
                 currentMode = currentModeDisplayName,
                 onLeetSelectorClick = {
-                    // ✅ Aktiviere das Working Bottom Sheet
                     showBottomSheet = true
                 },
                 onPlainModeClick = {
-                    // Clear Input als Demo-Funktion
                     viewModel.handleIntent(MainIntent.ClearInput)
                 }
             )
         }
 
-        // ✅ Working Bottom Sheet
+        // Bottom Sheet
         if (showBottomSheet) {
-            WorkingBottomSheet(
+            LeetSelectorBottomSheet(
                 viewModel = viewModel,
                 onDismiss = { showBottomSheet = false }
             )
         }
 
-        // UI State Handling mit korrigiertem Context
-        HandleUiStateFixed(uiState, viewModel, context)
+        // UI State Handling
+        HandleUiState(uiState, viewModel, context)
     }
 }
 
 @Composable
-private fun EnhancedButtonSectionWithBottomSheet(
+private fun ButtonSection(
     currentMode: String,
     onLeetSelectorClick: () -> Unit,
     onPlainModeClick: () -> Unit,
@@ -284,8 +275,8 @@ private fun EnhancedButtonSectionWithBottomSheet(
                 }
             }
 
-            // Enhanced Animated Arrows
-            EnhancedAnimatedArrows()
+            // Animated Arrows
+            AnimatedArrows()
 
             // Leet Mode Button
             var leetButtonPressed by remember { mutableStateOf(false) }
@@ -334,7 +325,7 @@ private fun EnhancedButtonSectionWithBottomSheet(
 }
 
 @Composable
-private fun EnhancedAnimatedArrows() {
+private fun AnimatedArrows() {
     val infiniteTransition = rememberInfiniteTransition(label = "arrows")
 
     val arrowAlpha by infiniteTransition.animateFloat(
@@ -370,8 +361,10 @@ private fun EnhancedAnimatedArrows() {
                 contentDescription = null,
                 modifier = Modifier
                     .size(14.dp)
-                    .alpha(arrowAlpha)
-                    .offset(x = arrowOffset.dp),
+                    .graphicsLayer(
+                        alpha = arrowAlpha,
+                        translationX = arrowOffset
+                    ),
                 tint = MaterialTheme.colorScheme.secondary
             )
             Icon(
@@ -379,8 +372,10 @@ private fun EnhancedAnimatedArrows() {
                 contentDescription = null,
                 modifier = Modifier
                     .size(14.dp)
-                    .alpha(arrowAlpha)
-                    .offset(x = (-arrowOffset).dp),
+                    .graphicsLayer(
+                        alpha = arrowAlpha,
+                        translationX = -arrowOffset
+                    ),
                 tint = MaterialTheme.colorScheme.secondary
             )
         }
@@ -395,10 +390,9 @@ private fun EnhancedAnimatedArrows() {
     }
 }
 
-// ✅ FIX: HandleUiState mit Context Parameter
 @Composable
-private fun HandleUiStateFixed(
-    uiState: com.beigel.leetSpeak_Generator.MainUiState,
+private fun HandleUiState(
+    uiState: com.beigel.leetSpeak_Generator.viewmodel.MainUiState,
     viewModel: MainViewModel,
     context: Context
 ) {
@@ -423,114 +417,6 @@ private fun HandleUiStateFixed(
                 android.widget.Toast.LENGTH_LONG
             ).show()
             viewModel.handleIntent(MainIntent.ClearError)
-        }
-    }
-}
-
-// ✅ FALLBACK VERSION - Falls Working Bottom Sheet Probleme macht
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun SimpleBottomSheetVersion(
-    viewModel: MainViewModel,
-    onCopyToClipboard: (String) -> Unit
-) {
-    val inputText by viewModel.inputText.collectAsStateWithLifecycle()
-    val outputText by viewModel.outputText.collectAsStateWithLifecycle()
-    val currentModeDisplayName by viewModel.currentModeDisplayName.collectAsStateWithLifecycle()
-    val shouldShowOutput by viewModel.shouldShowOutput.collectAsStateWithLifecycle()
-
-    var showBottomSheet by remember { mutableStateOf(false) }
-
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Leetspeak Generator") },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimary
-                )
-            )
-        }
-    ) { paddingValues ->
-
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-
-            // Simple Input
-            OutlinedTextField(
-                value = inputText,
-                onValueChange = { viewModel.handleIntent(MainIntent.UpdateInput(it)) },
-                label = { Text("Input") },
-                modifier = Modifier.fillMaxWidth(),
-                shape = MaterialTheme.shapes.large
-            )
-
-            // Simple Output
-            if (shouldShowOutput) {
-                Card(
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.3f)
-                    )
-                ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Text(
-                                "Output ($currentModeDisplayName):",
-                                fontWeight = FontWeight.Bold
-                            )
-                            IconButton(onClick = { onCopyToClipboard(outputText) }) {
-                                Icon(
-                                    Icons.Default.ContentCopy,
-                                    "Copy",
-                                    tint = MaterialTheme.colorScheme.secondary
-                                )
-                            }
-                        }
-                        Text(
-                            outputText,
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.secondary,
-                            fontWeight = FontWeight.Medium
-                        )
-                    }
-                }
-            }
-
-            // Simple Buttons
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                OutlinedButton(
-                    onClick = { viewModel.handleIntent(MainIntent.ClearInput) },
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Text("Clear")
-                }
-
-                Button(
-                    onClick = { showBottomSheet = true },
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Text(currentModeDisplayName)
-                }
-            }
-        }
-
-        // Working Bottom Sheet
-        if (showBottomSheet) {
-            WorkingBottomSheet(
-                viewModel = viewModel,
-                onDismiss = { showBottomSheet = false }
-            )
         }
     }
 }

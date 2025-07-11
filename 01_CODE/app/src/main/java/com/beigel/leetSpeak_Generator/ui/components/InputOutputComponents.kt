@@ -1,7 +1,4 @@
-// KORRIGIERTE DATEI: EnhancedInputOutput.kt
-// Erstelle/Ersetze: app/src/main/java/com/beigel/leetSpeak_Generator/compose/EnhancedInputOutput.kt
-
-package com.beigel.leetSpeak_Generator.compose
+package com.beigel.leetSpeak_Generator.ui.components
 
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
@@ -18,25 +15,23 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
-import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.beigel.leetSpeak_Generator.translation.LeetTranslator
 import kotlinx.coroutines.delay
 
 /**
  * Enhanced Input Section mit modernen Compose Features
  */
 @Composable
-fun EnhancedInputSection(
+fun InputSection(
     inputText: String,
     onInputChange: (String) -> Unit,
     modifier: Modifier = Modifier,
@@ -56,7 +51,7 @@ fun EnhancedInputSection(
         modifier = modifier.padding(16.dp)
     ) {
         // Header mit Statistiken
-        EnhancedInputHeader(
+        InputHeader(
             charCount = charCount,
             wordCount = wordCount,
             onClearText = onClearText,
@@ -99,7 +94,7 @@ fun EnhancedInputSection(
 }
 
 @Composable
-private fun EnhancedInputHeader(
+private fun InputHeader(
     charCount: Int,
     wordCount: Int,
     onClearText: () -> Unit,
@@ -119,8 +114,8 @@ private fun EnhancedInputHeader(
                 fontWeight = FontWeight.Medium
             )
 
-            // ✅ FIX: Standard AnimatedVisibility verwenden
-            androidx.compose.animation.AnimatedVisibility(
+            // Statistics
+            AnimatedVisibility(
                 visible = hasText,
                 enter = fadeIn() + slideInVertically(),
                 exit = fadeOut() + slideOutVertically()
@@ -143,7 +138,7 @@ private fun EnhancedInputHeader(
         }
 
         // Action Buttons
-        androidx.compose.animation.AnimatedVisibility(
+        AnimatedVisibility(
             visible = hasText,
             enter = fadeIn() + scaleIn(),
             exit = fadeOut() + scaleOut()
@@ -217,7 +212,6 @@ private fun AnimatedPlaceholder() {
         }
     }
 
-    // ✅ FIX: Standard AnimatedContent verwenden
     AnimatedContent(
         targetState = placeholders[currentIndex],
         transitionSpec = {
@@ -237,12 +231,12 @@ private fun AnimatedPlaceholder() {
  * Enhanced Output Section mit Animationen und verbesserter UX
  */
 @Composable
-fun EnhancedOutputSection(
+fun OutputSection(
     outputText: String,
     currentMode: String,
     onCopyClick: () -> Unit,
     modifier: Modifier = Modifier,
-    translationStats: com.beigel.leetSpeak_Generator.LeetTranslator.TranslationStats? = null
+    translationStats: LeetTranslator.TranslationStats? = null
 ) {
     var showCopyFeedback by remember { mutableStateOf(false) }
 
@@ -257,7 +251,7 @@ fun EnhancedOutputSection(
         modifier = modifier.padding(16.dp)
     ) {
         // Output Header
-        EnhancedOutputHeader(
+        OutputHeader(
             currentMode = currentMode,
             onCopyClick = {
                 onCopyClick()
@@ -285,7 +279,6 @@ fun EnhancedOutputSection(
                     .padding(16.dp)
             ) {
                 SelectionContainer {
-                    // ✅ FIX: Standard AnimatedContent verwenden
                     AnimatedContent(
                         targetState = outputText,
                         transitionSpec = {
@@ -309,11 +302,11 @@ fun EnhancedOutputSection(
 }
 
 @Composable
-private fun EnhancedOutputHeader(
+private fun OutputHeader(
     currentMode: String,
     onCopyClick: () -> Unit,
     showCopyFeedback: Boolean,
-    translationStats: com.beigel.leetSpeak_Generator.LeetTranslator.TranslationStats?
+    translationStats: LeetTranslator.TranslationStats?
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -331,7 +324,7 @@ private fun EnhancedOutputHeader(
 
             // Translation Stats
             translationStats?.let { stats ->
-                androidx.compose.animation.AnimatedVisibility(
+                AnimatedVisibility(
                     visible = stats.totalChars > 0,
                     enter = fadeIn() + slideInVertically(),
                     exit = fadeOut() + slideOutVertically()
@@ -351,7 +344,6 @@ private fun EnhancedOutputHeader(
                 onClick = onCopyClick,
                 modifier = Modifier.size(40.dp)
             ) {
-                // ✅ FIX: Standard AnimatedContent verwenden
                 AnimatedContent(
                     targetState = showCopyFeedback,
                     transitionSpec = {
@@ -378,7 +370,7 @@ private fun EnhancedOutputHeader(
             }
 
             // Copy Feedback Badge
-            androidx.compose.animation.AnimatedVisibility(
+            AnimatedVisibility(
                 visible = showCopyFeedback,
                 enter = scaleIn() + fadeIn(),
                 exit = scaleOut() + fadeOut()

@@ -1,8 +1,10 @@
-package com.beigel.leetSpeak_Generator
+package com.beigel.leetSpeak_Generator.translation
+
+import com.beigel.leetSpeak_Generator.data.CustomLeet
 
 /**
  * Core translation engine for converting text to leetspeak
- * Migrated to Kotlin object with improved performance and type safety
+ * Optimized Kotlin object with improved performance and type safety
  */
 object LeetTranslator {
 
@@ -37,18 +39,18 @@ object LeetTranslator {
      *
      * @param input The text to translate
      * @param mode The translation mode to use
-     * @param customLeet Optional custom profile for CUSTOM mode
+     * @param customProfile Optional custom profile for CUSTOM mode
      * @return Translated text
      */
     fun translate(
         input: String?,
         mode: TranslationMode,
-        customLeet: CustomLeet? = null
+        customProfile: CustomLeet? = null
     ): String {
         if (input.isNullOrEmpty()) return input.orEmpty()
 
         return input.map { char ->
-            translateChar(char, mode, customLeet)
+            translateChar(char, mode, customProfile)
         }.joinToString("")
     }
 
@@ -57,13 +59,13 @@ object LeetTranslator {
      *
      * @param char The character to translate
      * @param mode The translation mode
-     * @param customLeet Optional custom profile
+     * @param customProfile Optional custom profile
      * @return Translated character as string
      */
     fun translateChar(
         char: Char,
         mode: TranslationMode,
-        customLeet: CustomLeet? = null
+        customProfile: CustomLeet? = null
     ): String {
         val upperChar = char.uppercaseChar()
 
@@ -71,7 +73,7 @@ object LeetTranslator {
             TranslationMode.SIMPLE -> simpleMap[upperChar] ?: char.toString()
             TranslationMode.EXTENDED -> extendedMap[upperChar] ?: char.toString()
             TranslationMode.CUSTOM -> {
-                customLeet?.getTranslation(upperChar.toString())
+                customProfile?.getTranslation(upperChar.toString())
                     ?: simpleMap[upperChar]
                     ?: char.toString()
             }
@@ -83,8 +85,8 @@ object LeetTranslator {
      */
     fun String.toLeet(
         mode: TranslationMode,
-        customLeet: CustomLeet? = null
-    ): String = translate(this, mode, customLeet)
+        customProfile: CustomLeet? = null
+    ): String = translate(this, mode, customProfile)
 
     /**
      * Gets the translation map for a specific mode
@@ -121,9 +123,9 @@ object LeetTranslator {
      */
     fun createPreview(
         mode: TranslationMode,
-        customLeet: CustomLeet? = null,
+        customProfile: CustomLeet? = null,
         sampleText: String = "Hello"
-    ): String = translate(sampleText, mode, customLeet)
+    ): String = translate(sampleText, mode, customProfile)
 
     /**
      * Analyzes text and returns translation statistics
@@ -131,7 +133,7 @@ object LeetTranslator {
     fun analyzeTranslation(
         input: String,
         mode: TranslationMode,
-        customLeet: CustomLeet? = null
+        customProfile: CustomLeet? = null
     ): TranslationStats {
         if (input.isEmpty()) return TranslationStats.empty()
 
@@ -141,7 +143,7 @@ object LeetTranslator {
 
         input.forEach { char ->
             totalChars++
-            val translated = translateChar(char, mode, customLeet)
+            val translated = translateChar(char, mode, customProfile)
             if (translated != char.toString()) {
                 translatedChars++
             } else {

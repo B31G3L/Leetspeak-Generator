@@ -1,4 +1,6 @@
-package com.beigel.leetSpeak_Generator
+package com.beigel.leetSpeak_Generator.data
+
+import com.beigel.leetSpeak_Generator.R
 
 /**
  * Represents a custom leetspeak translation profile

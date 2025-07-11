@@ -1,13 +1,11 @@
-@file:OptIn(ExperimentalMaterial3Api::class)
-
-package com.beigel.leetSpeak_Generator.compose
+package com.beigel.leetSpeak_Generator.ui.components
 
 import androidx.compose.animation.*
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.*
@@ -15,21 +13,20 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.beigel.leetSpeak_Generator.LeetOption
-import com.beigel.leetSpeak_Generator.MainIntent
-import com.beigel.leetSpeak_Generator.MainViewModel
-import com.beigel.leetSpeak_Generator.LeetManager
+import com.beigel.leetSpeak_Generator.data.LeetOption
+import com.beigel.leetSpeak_Generator.manager.LeetManager
+import com.beigel.leetSpeak_Generator.viewmodel.MainIntent
+import com.beigel.leetSpeak_Generator.viewmodel.MainViewModel
 
 /**
- * Enhanced Compose Bottom Sheet für Leet Selector mit integrierten Dialogen
- * Vollständige Funktionalität ohne XML Dependencies
+ * Enhanced Compose Bottom Sheet für Leet Selector
  */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LeetSelectorBottomSheet(
     viewModel: MainViewModel,
@@ -57,9 +54,10 @@ fun LeetSelectorBottomSheet(
                     .padding(vertical = 8.dp)
                     .size(width = 32.dp, height = 4.dp),
                 color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
-                shape = MaterialTheme.shapes.extraLarge
+                shape = RoundedCornerShape(2.dp)
             ) {}
-        }
+        },
+        windowInsets = WindowInsets(0)
     ) {
         LeetSelectorContent(
             leetOptions = leetOptions,
@@ -83,6 +81,9 @@ fun LeetSelectorBottomSheet(
                 showProfileCreationDialog = true
             }
         )
+
+        // Spacer für bessere Bedienung
+        Spacer(modifier = Modifier.height(16.dp))
     }
 
     // Profile Creation Dialog
@@ -106,7 +107,7 @@ fun LeetSelectorBottomSheet(
                 if (profile != null) {
                     ProfileCreationDialog(
                         viewModel = viewModel,
-                        existingProfile = profile,
+                        existingLeet = profile,
                         profileIndex = option.customIndex,
                         onDismiss = {
                             showProfileEditDialog = false
@@ -147,7 +148,6 @@ fun LeetSelectorContent(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp)
-            .padding(bottom = 16.dp)
     ) {
         // Header
         LeetSelectorHeader(onCreateNew = onCreateNew)
@@ -396,14 +396,6 @@ private fun LeetOptionCard(
 }
 
 @Composable
-fun SquareComposablePreview() {
-    Box(Modifier.background(Color.Yellow)) {
-        Text("Hello World")
-    }
-}
-
-
-@Composable
 private fun PreviewSection(
     option: LeetOption,
     onToggleFavorite: (LeetOption) -> Unit,
@@ -549,7 +541,8 @@ private fun CompactLeetCard(
                 text = option.name,
                 style = MaterialTheme.typography.labelMedium,
                 maxLines = 1,
-                fontWeight = if (option.isSelected) FontWeight.Bold else FontWeight.Normal
+                fontWeight = if (option.isSelected) FontWeight.Bold else FontWeight.Normal,
+                textAlign = TextAlign.Center
             )
 
             // Preview
@@ -557,7 +550,8 @@ private fun CompactLeetCard(
                 text = generatePreview(option),
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.secondary,
-                maxLines = 1
+                maxLines = 1,
+                textAlign = TextAlign.Center
             )
         }
     }
@@ -570,201 +564,5 @@ private fun generatePreview(option: LeetOption): String {
         LeetManager.MODE_EXTENDED -> "#3110"
         LeetManager.MODE_CUSTOM -> "H3ll0"
         else -> "H3110"
-    }
-}
-
-/**
- * Translation Table Dialog in Compose
- */
-@Composable
-fun TranslationTableDialog(
-    leetOption: LeetOption,
-    viewModel: MainViewModel,
-    onDismiss: () -> Unit
-) {
-    val alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = {
-            Text(
-                text = "Übersetzungstabelle - ${leetOption.name}",
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold
-            )
-        },
-        text = {
-            Card(
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surface
-                ),
-                border = CardDefaults.outlinedCardBorder().copy(
-                    width = 1.dp,
-                    brush = androidx.compose.ui.graphics.SolidColor(MaterialTheme.colorScheme.secondary)
-                )
-            ) {
-                Column {
-                    // Table Header
-                    Surface(
-                        color = MaterialTheme.colorScheme.secondary,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Row(
-                            modifier = Modifier.padding(12.dp)
-                        ) {
-                            Text(
-                                text = "Plain",
-                                style = MaterialTheme.typography.titleSmall,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onSecondary,
-                                modifier = Modifier.weight(1f),
-                                textAlign = androidx.compose.ui.text.style.TextAlign.Center
-                            )
-                            Text(
-                                text = "Leet",
-                                style = MaterialTheme.typography.titleSmall,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onSecondary,
-                                modifier = Modifier.weight(1f),
-                                textAlign = androidx.compose.ui.text.style.TextAlign.Center
-                            )
-                            Text(
-                                text = "Plain",
-                                style = MaterialTheme.typography.titleSmall,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onSecondary,
-                                modifier = Modifier.weight(1f),
-                                textAlign = androidx.compose.ui.text.style.TextAlign.Center
-                            )
-                            Text(
-                                text = "Leet",
-                                style = MaterialTheme.typography.titleSmall,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onSecondary,
-                                modifier = Modifier.weight(1f),
-                                textAlign = androidx.compose.ui.text.style.TextAlign.Center
-                            )
-                        }
-                    }
-
-                    // Translation Rows
-                    LazyColumn(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(300.dp)
-                            .padding(8.dp)
-                    ) {
-                        items(13) { i ->
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(vertical = 4.dp)
-                            ) {
-                                // Left side (A-M)
-                                Text(
-                                    text = alphabet[i].toString(),
-                                    modifier = Modifier.weight(1f),
-                                    textAlign = androidx.compose.ui.text.style.TextAlign.Center,
-                                    style = MaterialTheme.typography.bodyMedium
-                                )
-
-                                Text(
-                                    text = getTranslatedCharForOption(alphabet[i], leetOption, viewModel),
-                                    modifier = Modifier.weight(1f),
-                                    textAlign = androidx.compose.ui.text.style.TextAlign.Center,
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.secondary,
-                                    fontWeight = FontWeight.Bold
-                                )
-
-                                // Right side (N-Z)
-                                if (i + 13 < alphabet.length) {
-                                    Text(
-                                        text = alphabet[i + 13].toString(),
-                                        modifier = Modifier.weight(1f),
-                                        textAlign = androidx.compose.ui.text.style.TextAlign.Center,
-                                        style = MaterialTheme.typography.bodyMedium
-                                    )
-
-                                    Text(
-                                        text = getTranslatedCharForOption(alphabet[i + 13], leetOption, viewModel),
-                                        modifier = Modifier.weight(1f),
-                                        textAlign = androidx.compose.ui.text.style.TextAlign.Center,
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        color = MaterialTheme.colorScheme.secondary,
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                } else {
-                                    Spacer(modifier = Modifier.weight(2f))
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        confirmButton = {
-            TextButton(onClick = onDismiss) {
-                Text("OK")
-            }
-        }
-    )
-}
-
-private fun getTranslatedCharForOption(char: Char, leetOption: LeetOption, viewModel: MainViewModel): String {
-    // Vereinfachte Preview-Generation
-    return when (leetOption.mode) {
-        LeetManager.MODE_SIMPLE -> {
-            when (char) {
-                'A' -> "4"
-                'E' -> "3"
-                'H' -> "#"
-                'I' -> "1"
-                'L' -> "L"
-                'O' -> "0"
-                'S' -> "5"
-                'T' -> "7"
-                'B' -> "8"
-                'G' -> "6"
-                'Z' -> "2"
-                else -> char.toString()
-            }
-        }
-        LeetManager.MODE_EXTENDED -> {
-            when (char) {
-                'A' -> "4"
-                'B' -> "8"
-                'C' -> "("
-                'D' -> "|)"
-                'E' -> "3"
-                'F' -> "|="
-                'G' -> "6"
-                'H' -> "#"
-                'I' -> "!"
-                'J' -> "_|"
-                'K' -> "|<"
-                'L' -> "1"
-                'M' -> "/\\/\\"
-                'N' -> "|\\|"
-                'O' -> "0"
-                'P' -> "9"
-                'Q' -> "0_"
-                'R' -> "2"
-                'S' -> "5"
-                'T' -> "7"
-                'U' -> "|_|"
-                'V' -> "\\/"
-                'W' -> "\\/\\/"
-                'X' -> "><"
-                'Y' -> "`/"
-                'Z' -> "Z"
-                else -> char.toString()
-            }
-        }
-        LeetManager.MODE_CUSTOM -> {
-            // Für Custom Profile - würde echte Übersetzung verwenden
-            char.toString() // Placeholder
-        }
-        else -> char.toString()
     }
 }
