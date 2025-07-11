@@ -16,7 +16,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 public class IconSelectorDialog extends AppCompatDialog {
 
-    private OnIconSelectedListener listener;
+    private final OnIconSelectedListener listener;
     private int selectedIconResId = R.drawable.ic_custom_mode;
 
     // Interface für Callback wenn ein Icon ausgewählt wurde

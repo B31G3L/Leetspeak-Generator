@@ -10,10 +10,4 @@ import dagger.hilt.android.HiltAndroidApp
 @HiltAndroidApp
 class LeetSpeakApplication : Application() {
 
-    override fun onCreate() {
-        super.onCreate()
-
-        // Hier können Sie globale Initialisierungen vornehmen
-        // z.B. Logging, Crash Reporting, etc.
-    }
 }

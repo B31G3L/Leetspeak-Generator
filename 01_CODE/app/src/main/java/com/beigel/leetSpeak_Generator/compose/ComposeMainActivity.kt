@@ -16,6 +16,8 @@ import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -25,6 +27,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -33,6 +36,7 @@ import com.beigel.leetSpeak_Generator.MainViewModel
 import com.beigel.leetSpeak_Generator.ui.theme.LeetspeakGeneratorTheme
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
+
 
 @AndroidEntryPoint
 class ComposeMainActivity : ComponentActivity() {
@@ -72,7 +76,6 @@ class ComposeMainActivity : ComponentActivity() {
     }
 }
 
-// Enhanced Version mit Working Bottom Sheet
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EnhancedComposeMainScreenWithWorkingBottomSheet(
@@ -363,7 +366,7 @@ private fun EnhancedAnimatedArrows() {
             verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
-                imageVector = Icons.Default.ArrowBack,
+                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                 contentDescription = null,
                 modifier = Modifier
                     .size(14.dp)
@@ -372,7 +375,7 @@ private fun EnhancedAnimatedArrows() {
                 tint = MaterialTheme.colorScheme.secondary
             )
             Icon(
-                imageVector = Icons.Default.ArrowForward,
+                imageVector = Icons.AutoMirrored.Filled.ArrowForward,
                 contentDescription = null,
                 modifier = Modifier
                     .size(14.dp)

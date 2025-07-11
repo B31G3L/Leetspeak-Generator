@@ -12,6 +12,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Article
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -75,8 +76,7 @@ fun EnhancedInputSection(
                 AnimatedPlaceholder()
             },
             textStyle = MaterialTheme.typography.bodyLarge.copy(
-                lineHeight = MaterialTheme.typography.bodyLarge.lineHeight?.times(1.3)
-                    ?: MaterialTheme.typography.bodyLarge.lineHeight!!
+                lineHeight = MaterialTheme.typography.bodyLarge.lineHeight.times(1.3)
             ),
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = MaterialTheme.colorScheme.secondary,
@@ -136,7 +136,7 @@ private fun EnhancedInputHeader(
                     StatChip(
                         label = "Wörter",
                         count = wordCount,
-                        icon = Icons.Default.Article
+                        icon = Icons.AutoMirrored.Filled.Article
                     )
                 }
             }
@@ -218,7 +218,7 @@ private fun AnimatedPlaceholder() {
     }
 
     // ✅ FIX: Standard AnimatedContent verwenden
-    androidx.compose.animation.AnimatedContent(
+    AnimatedContent(
         targetState = placeholders[currentIndex],
         transitionSpec = {
             fadeIn(animationSpec = tween(500)) togetherWith
@@ -286,7 +286,7 @@ fun EnhancedOutputSection(
             ) {
                 SelectionContainer {
                     // ✅ FIX: Standard AnimatedContent verwenden
-                    androidx.compose.animation.AnimatedContent(
+                    AnimatedContent(
                         targetState = outputText,
                         transitionSpec = {
                             fadeIn(animationSpec = tween(300)) togetherWith
@@ -297,8 +297,7 @@ fun EnhancedOutputSection(
                         Text(
                             text = text,
                             style = MaterialTheme.typography.bodyLarge.copy(
-                                lineHeight = MaterialTheme.typography.bodyLarge.lineHeight?.times(1.4)
-                                    ?: MaterialTheme.typography.bodyLarge.lineHeight!!
+                                lineHeight = MaterialTheme.typography.bodyLarge.lineHeight.times(1.4)
                             ),
                             color = MaterialTheme.colorScheme.onSurface
                         )
@@ -353,7 +352,7 @@ private fun EnhancedOutputHeader(
                 modifier = Modifier.size(40.dp)
             ) {
                 // ✅ FIX: Standard AnimatedContent verwenden
-                androidx.compose.animation.AnimatedContent(
+                AnimatedContent(
                     targetState = showCopyFeedback,
                     transitionSpec = {
                         scaleIn() + fadeIn() togetherWith scaleOut() + fadeOut()

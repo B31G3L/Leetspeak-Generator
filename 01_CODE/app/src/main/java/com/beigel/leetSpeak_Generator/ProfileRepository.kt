@@ -26,8 +26,7 @@ class ProfileRepository(context: Context) {
             val profile = CustomLeet(request.name, request.iconResId)
             profile.setTranslations(request.translations)
 
-            val indexResult = leetManager.addProfile(profile)
-            when (indexResult) {
+            when (val indexResult = leetManager.addProfile(profile)) {
                 is ErrorHandler.Result.Success -> {
                     ProfileCreationResult(profile, indexResult.data, true, "Profile created successfully")
                 }
@@ -51,8 +50,7 @@ class ProfileRepository(context: Context) {
      */
     suspend fun deleteProfile(index: Int): ErrorHandler.Result<ProfileDeletionResult> =
         ErrorHandler.safeExecute(errorMessage = "Failed to delete profile") {
-            val result = leetManager.deleteProfile(index)
-            when (result) {
+            when (val result = leetManager.deleteProfile(index)) {
                 is ErrorHandler.Result.Success -> {
                     ProfileDeletionResult(
                         deletedProfile = result.data.deletedProfile,
@@ -78,9 +76,7 @@ class ProfileRepository(context: Context) {
     suspend fun toggleFavorite(mode: Int, customIndex: Int = 0): ErrorHandler.Result<FavoriteToggleResult> =
         ErrorHandler.safeExecute(errorMessage = "Failed to toggle favorite") {
             val wasAlreadyFavorite = leetManager.isFavorite(mode, customIndex)
-            val toggleResult = leetManager.toggleFavorite(mode, customIndex)
-
-            when (toggleResult) {
+            when (val toggleResult = leetManager.toggleFavorite(mode, customIndex)) {
                 is ErrorHandler.Result.Success -> {
                     FavoriteToggleResult(
                         mode = mode,

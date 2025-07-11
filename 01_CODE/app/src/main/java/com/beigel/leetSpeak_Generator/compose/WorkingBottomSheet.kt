@@ -9,6 +9,7 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -389,7 +390,7 @@ private fun WorkingPreviewSection(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(
-                        imageVector = Icons.Default.ArrowForward,
+                        imageVector = Icons.AutoMirrored.Filled.ArrowForward,
                         contentDescription = null,
                         modifier = Modifier.size(16.dp),
                         tint = MaterialTheme.colorScheme.secondary
@@ -719,7 +720,7 @@ private fun WorkingSimpleTranslationSection(
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSecondary,
                     modifier = Modifier.padding(16.dp),
-                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                    textAlign = TextAlign.Center
                 )
             }
 
@@ -758,7 +759,7 @@ private fun WorkingSimpleTranslationSection(
                                         modifier = Modifier.weight(1f),
                                         singleLine = true,
                                         textStyle = androidx.compose.ui.text.TextStyle(
-                                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                                            textAlign = TextAlign.Center
                                         )
                                     )
                                 }
@@ -869,7 +870,7 @@ private fun saveWorkingProfile(
 
         if (isNewProfile) {
             viewModel.handleIntent(
-                com.beigel.leetSpeak_Generator.MainIntent.CreateProfile(
+                MainIntent.CreateProfile(
                     name = profileName,
                     iconResId = selectedIconResId,
                     useExtendedDefaults = false
@@ -879,7 +880,7 @@ private fun saveWorkingProfile(
             val updatedProfile = com.beigel.leetSpeak_Generator.CustomLeet(profileName, selectedIconResId)
             updatedProfile.setTranslations(translations)
             viewModel.handleIntent(
-                com.beigel.leetSpeak_Generator.MainIntent.UpdateProfile(profileIndex, updatedProfile)
+                MainIntent.UpdateProfile(profileIndex, updatedProfile)
             )
         }
     } catch (e: Exception) {

@@ -165,7 +165,7 @@ public class AnimationHelper {
                     .alpha(1f)
                     .translationY(0f)
                     .setDuration(ANIMATION_DURATION_MEDIUM)
-                    .setStartDelay(i * delayBetweenItems)
+                    .setStartDelay((long) i * delayBetweenItems)
                     .setInterpolator(EASE_OUT)
                     .start();
         }

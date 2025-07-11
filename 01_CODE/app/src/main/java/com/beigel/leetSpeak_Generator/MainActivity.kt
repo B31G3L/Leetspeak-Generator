@@ -98,7 +98,7 @@ class MainActivity : AppCompatActivity() {
 
         // Unsichtbar zu Layout hinzufügen (für Compose State Management)
         binding.root.addView(composeView)
-        composeView.visibility = android.view.View.GONE
+        composeView.visibility = View.GONE
 
         composeView.setContent {
             LeetspeakGeneratorTheme {
@@ -380,8 +380,8 @@ class MainActivity : AppCompatActivity() {
         val editTextProfileName = dialogView.findViewById<TextInputEditText>(R.id.editTextProfileName)
         val selectedIcon = dialogView.findViewById<ImageView>(R.id.selectedIcon)
         val editTable = dialogView.findViewById<TableLayout>(R.id.editTable)
-        val buttonCancel = dialogView.findViewById<com.google.android.material.button.MaterialButton>(R.id.buttonCancel)
-        val buttonSave = dialogView.findViewById<com.google.android.material.button.MaterialButton>(R.id.buttonSave)
+        val buttonCancel = dialogView.findViewById<MaterialButton>(R.id.buttonCancel)
+        val buttonSave = dialogView.findViewById<MaterialButton>(R.id.buttonSave)
 
         var selectedIconResId = existingProfile?.iconResId ?: R.drawable.ic_custom_mode
 
@@ -534,7 +534,7 @@ class MainActivity : AppCompatActivity() {
 
         val tableTitle = dialogView.findViewById<TextView>(R.id.tableTitle)
         val tableLayout = dialogView.findViewById<TableLayout>(R.id.translationTable)
-        val buttonClose = dialogView.findViewById<com.google.android.material.button.MaterialButton>(R.id.buttonClose)
+        val buttonClose = dialogView.findViewById<MaterialButton>(R.id.buttonClose)
 
         tableTitle.text = "Übersetzungstabelle - ${leetOption.name}"
         buildTableContent(tableLayout, leetOption)
