@@ -14,7 +14,7 @@ import javax.inject.Inject
  */
 @HiltViewModel
 class MainViewModel @Inject constructor(
-    private val repository: ProfileRepository
+    val repository: ProfileRepository
 ) : ViewModel() {
 
     // Input state

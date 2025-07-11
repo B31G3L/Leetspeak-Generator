@@ -16,7 +16,6 @@
         android:theme="@style/Theme.LeetspeakGenerator"
         tools:targetApi="31">
 
-        <!-- ✅ NEUE Compose Main Activity als Standard -->
         <activity
             android:name=".compose.ComposeMainActivity"
             android:exported="true"
@@ -28,14 +27,7 @@
             </intent-filter>
         </activity>
 
-        <!-- Legacy XML Activity für Fallback/Testing -->
-        <activity
-            android:name=".MainActivity"
-            android:exported="false"
-            android:label="@string/app_name"
-            android:theme="@style/Theme.LeetspeakGenerator" />
 
-        <!-- Compose Test Activity -->
         <activity
             android:name=".compose.ComposeTestActivity"
             android:exported="false"

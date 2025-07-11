@@ -32,7 +32,6 @@ import kotlinx.coroutines.launch
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
-    private lateinit var repository: ProfileRepository
     private lateinit var vibrator: Vibrator
 
     // ViewModel with factory (will be replaced with Hilt later)
@@ -47,8 +46,6 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Initialize dependencies
-        repository = ProfileRepository(this)
         vibrator = getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
 
         setupUI()
@@ -715,18 +712,3 @@ class MainActivity : AppCompatActivity() {
     }
 }
 
-/**
- * ViewModel Factory for dependency injection (temporary until Hilt integration)
- */
-class MainViewModelFactory(
-    private val repository: ProfileRepository
-) : androidx.lifecycle.ViewModelProvider.Factory {
-
-    @Suppress("UNCHECKED_CAST")
-    override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {
-        if (modelClass.isAssignableFrom(MainViewModel::class.java)) {
-            return MainViewModel(repository) as T
-        }
-        throw IllegalArgumentException("Unknown ViewModel class")
-    }
-}
