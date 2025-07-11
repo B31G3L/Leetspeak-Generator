@@ -17,7 +17,7 @@
     <string name="table_hide">Tabelle ausblenden</string>
 
     <string name="plain">Plain</string>
-    <string name="leet">Leed</string>
+    <string name="leet">Leet</string>
     <string name="selected_icon">Ausgewähltes Icon</string>
     <string name="select_icon">Icon ändern</string>
     <string name="icon_selection">Wähle ein Icon</string>
@@ -32,58 +32,62 @@
     <!-- Navigation strings -->
     <string name="menu_mode">Mode</string>
     <string name="modes">Modes</string>
-    <string name="custom_profiles">Custom Leets</string>
-    <string name="user_custom_profiles">Benutzerdefinierte Leets</string>
-    <string name="profile_actions">Leet Actions</string>
+    <string name="custom_leets">Custom Leets</string>
+    <string name="user_custom_leets">Benutzerdefinierte Leets</string>
+    <string name="leet_actions">Leet Actions</string>
     <string name="open_drawer">Open navigation</string>
     <string name="close_drawer">Close navigation</string>
     <string name="favorite">Als Favorit markieren</string>
     <string name="favorite_added">%1$s als Favorit markiert</string>
     <string name="favorite_removed">%1$s von Favoriten entfernt</string>
     <string name="favorite_deleted">Favorit wurde gelöscht, Simple Leet wird angezeigt</string>
+
     <!-- Leet management -->
-    <string name="new_custom">Create new leet</string>
-    <string name="save_current_custom">Save current leet</string>
+    <string name="new_custom_leet">Create new leet</string>
+    <string name="save_current_leet">Save current leet</string>
+    <string name="delete_current_leet">Delete current leet</string>
     <string name="delete_current_custom">Delete current leet</string>
-    <string name="custom_profile_name">Custom leet name</string>
+    <string name="custom_leet_name">Custom leet name</string>
     <string name="ok">OK</string>
     <string name="cancel">Cancel</string>
-    <string name="profile_saved">Leet saved</string>
-    <string name="profile_deleted">Leet deleted</string>
+    <string name="leet_saved">Leet saved</string>
+    <string name="leet_deleted">Leet deleted</string>
     <string name="default_custom_name">Custom</string>
-    <string name="create_new_profile">Create new leet</string>
-    <string name="enter_profile_name">Enter leet name</string>
-    <string name="delete_confirm">Delete this leet?</string>1
+    <string name="create_new_leet">Create new leet</string>
+    <string name="enter_leet_name">Enter leet name</string>
+    <string name="delete_confirm">Delete this leet?</string>
     <string name="delete_confirm_message">This action cannot be undone.</string>
-    <string name="default_profile_no_delete">Cannot delete default leet</string>
-    <string name="new_profile_description">Ein neues Leet-Profil wird mit den aktuellen Einstellungen erstellt. Sie können es später jederzeit anpassen.</string>
+    <string name="default_leet_no_delete">Cannot delete default leet</string>
+    <string name="new_leet_description">Ein neues Leet wird mit den aktuellen Einstellungen erstellt. Sie können es später jederzeit anpassen.</string>
     <string name="create">Erstellen</string>
-    <string name="profile_created">Leet \"%1$s\" wurde erstellt</string>
-    <string name="profile_creation_error">Fehler beim Erstellen: %1$s</string>
+    <string name="leet_created">Leet \"%1$s\" wurde erstellt</string>
+    <string name="leet_creation_error">Fehler beim Erstellen: %1$s</string>
+
     <!-- About section -->
     <string name="about">Über die App</string>
     <string name="about_description">Leetspeak Generator wandelt normalen Text in Leetspeak-Text um. Verfügbar in verschiedenen Modi: Simple, Extended und benutzerdefinierte Leets.</string>
     <string name="made_with">Erstellt mit Material Design für Android</string>
     <string name="version">Version: 1337.00_8374_1</string>
     <string name="copyright">© B31G3L 2025</string>
-    <string name="default_profile_reset">Standard-Profil wurde zurückgesetzt</string>
-  <!-- Neue Strings, die in die strings.xml Datei hinzugefügt werden müssen -->
-    <string name="no_custom_profiles">Keine benutzerdefinierten Leets vorhanden</string>
-    <string name="create_first_custom_profile">Erstelle dein erstes benutzerdefiniertes Leet</string>
-    <string name="no_custom_profiles_available">Keine Custom Leets verfügbar.\nTippe auf + um ein neues zu erstellen.</string>
+    <string name="default_leet_reset">Standard-Leet wurde zurückgesetzt</string>
+
+    <!-- Neue Strings, die in die strings.xml Datei hinzugefügt werden müssen -->
+    <string name="no_custom_leets">Keine benutzerdefinierten Leets vorhanden</string>
+    <string name="create_first_custom_leet">Erstelle dein erstes benutzerdefiniertes Leet</string>
+    <string name="no_custom_leets_available">Keine Custom Leets verfügbar.\nTippe auf + um ein neues zu erstellen.</string>
     <string name="delete_confirm_message_named">Möchtest du \"%1$s\" wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.</string>
-    <string name="last_profile_deleted">Letztes Custom-Profil gelöscht</string>
-    <string name="edit_profile">Profil bearbeiten</string>
-    <string name="profile_name">Profilname</string>
-    <string name="profile_updated">Profil wurde aktualisiert</string>
-    <string name="profile_update_error">Fehler beim Aktualisieren: %1$s</string>
-    <string name="profile_info">Profil-Information</string>
+    <string name="last_leet_deleted">Letztes Custom-Leet gelöscht</string>
+    <string name="edit_leet">Leet bearbeiten</string>
+    <string name="leet_name">Leet-Name</string>
+    <string name="leet_updated">Leet wurde aktualisiert</string>
+    <string name="leet_update_error">Fehler beim Aktualisieren: %1$s</string>
+    <string name="leet_info">Leet-Information</string>
     <string name="translation_table">Übersetzungstabelle</string>
     <string name="all_changes_saved">Alle Änderungen wurden gespeichert</string>
+
     <!-- Füge diese Zeilen zu deiner values/strings.xml hinzu: -->
     <string name="input_hint">Hier deinen Text eingeben...</string>
     <string name="leetspeak_translation">Leetspeak Übersetzung</string>
-
 
     <!-- Enhanced Input/Output -->
     <string name="character_count">%d Zeichen</string>
@@ -123,7 +127,6 @@
     <string name="animation_duration_fast">200</string>
     <string name="animation_duration_normal">300</string>
     <string name="animation_duration_slow">500</string>
-    <!-- Füge diese neuen Strings zu deiner values/strings.xml hinzu: -->
 
     <!-- Neue Strings für Bottom Sheet -->
     <string name="select_leet_mode">Leet-Modus auswählen</string>

@@ -23,17 +23,17 @@ import com.beigel.leetSpeak_Generator.viewmodel.MainIntent
 import com.beigel.leetSpeak_Generator.viewmodel.MainViewModel
 
 /**
- * Compose Implementation für Profile Creation Dialog
- * Ersetzt dialog_comprehensive_edit.xml
+ * Compose Implementation für Leet Creation Dialog
+ * Ersetzt ProfileCreationDialog
  */
 @Composable
-fun ProfileCreationDialog(
+fun LeetCreationDialog(
     viewModel: MainViewModel,
     onDismiss: () -> Unit,
     existingLeet: CustomLeet? = null,
-    profileIndex: Int = -1
+    leetIndex: Int = -1
 ) {
-    var profileName by remember {
+    var leetName by remember {
         mutableStateOf(existingLeet?.name ?: "")
     }
 
@@ -53,7 +53,7 @@ fun ProfileCreationDialog(
         }
     }
 
-    val isNewProfile = existingLeet == null
+    val isNewLeet = existingLeet == null
     val context = LocalContext.current
 
     Dialog(
@@ -82,7 +82,7 @@ fun ProfileCreationDialog(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = if (isNewProfile) "Profil erstellen" else "Profil bearbeiten",
+                            text = if (isNewLeet) "Leet erstellen" else "Leet bearbeiten",
                             style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.Bold,
                             modifier = Modifier.weight(1f)
@@ -98,32 +98,32 @@ fun ProfileCreationDialog(
 
                         Button(
                             onClick = {
-                                // Profile speichern
+                                // Leet speichern
                                 val translations = mutableMapOf<String, String>()
                                 alphabet.forEachIndexed { index, char ->
                                     translations[char.toString()] = translationStates[index].value
                                 }
 
-                                if (isNewProfile) {
-                                    // Neues Profile erstellen
+                                if (isNewLeet) {
+                                    // Neues Leet erstellen
                                     viewModel.handleIntent(
-                                        MainIntent.CreateProfile(
-                                            name = profileName.ifEmpty { "Custom Profile" },
+                                        MainIntent.CreateLeet(
+                                            name = leetName.ifEmpty { "Custom Leet" },
                                             iconResId = selectedIconResId,
                                             useExtendedDefaults = false
                                         )
                                     )
                                 } else {
-                                    // Bestehendes Profile aktualisieren
-                                    val updatedProfile = CustomLeet(
-                                        name = profileName,
+                                    // Bestehendes Leet aktualisieren
+                                    val updatedLeet = CustomLeet(
+                                        name = leetName,
                                         iconResId = selectedIconResId
                                     ).apply {
                                         setTranslations(translations)
                                     }
 
                                     viewModel.handleIntent(
-                                        MainIntent.UpdateProfile(profileIndex, updatedProfile)
+                                        MainIntent.UpdateLeet(leetIndex, updatedLeet)
                                     )
                                 }
 
@@ -143,10 +143,10 @@ fun ProfileCreationDialog(
                         .padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    // Profile Info Card
-                    ProfileInfoCard(
-                        profileName = profileName,
-                        onProfileNameChange = { profileName = it },
+                    // Leet Info Card
+                    LeetInfoCard(
+                        leetName = leetName,
+                        onLeetNameChange = { leetName = it },
                         selectedIconResId = selectedIconResId,
                         onIconClick = { showIconPicker = true }
                     )
@@ -175,9 +175,9 @@ fun ProfileCreationDialog(
 }
 
 @Composable
-private fun ProfileInfoCard(
-    profileName: String,
-    onProfileNameChange: (String) -> Unit,
+private fun LeetInfoCard(
+    leetName: String,
+    onLeetNameChange: (String) -> Unit,
     selectedIconResId: Int,
     onIconClick: () -> Unit
 ) {
@@ -195,7 +195,7 @@ private fun ProfileInfoCard(
             modifier = Modifier.padding(16.dp)
         ) {
             Text(
-                text = "Profil-Information",
+                text = "Leet-Information",
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(bottom = 16.dp)
@@ -222,9 +222,9 @@ private fun ProfileInfoCard(
 
                 // Name Input
                 OutlinedTextField(
-                    value = profileName,
-                    onValueChange = onProfileNameChange,
-                    label = { Text("Profilname") },
+                    value = leetName,
+                    onValueChange = onLeetNameChange,
+                    label = { Text("Leet-Name") },
                     modifier = Modifier.weight(1f),
                     singleLine = true
                 )

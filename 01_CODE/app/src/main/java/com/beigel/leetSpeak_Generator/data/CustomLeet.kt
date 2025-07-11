@@ -3,7 +3,7 @@ package com.beigel.leetSpeak_Generator.data
 import com.beigel.leetSpeak_Generator.R
 
 /**
- * Represents a custom leetspeak translation profile
+ * Represents a custom leetspeak translation leet
  * Migrated from Java to Kotlin with improved type safety and conciseness
  */
 data class CustomLeet(
@@ -61,17 +61,17 @@ data class CustomLeet(
     }
 
     /**
-     * Creates a copy of this profile with a new name
+     * Creates a copy of this leet with a new name
      */
     fun copy(newName: String = this.name): CustomLeet =
         CustomLeet(newName, iconResId, _translations.toMutableMap())
 
     companion object {
         /**
-         * Creates a CustomProfile with default Simple Leet translations
+         * Creates a CustomLeet with default Simple Leet translations
          */
         fun createWithSimpleDefaults(name: String, iconResId: Int = R.drawable.ic_custom_mode): CustomLeet {
-            val profile = CustomLeet(name, iconResId)
+            val leet = CustomLeet(name, iconResId)
 
             // Initialize with Simple Leet mappings
             val simpleMap = mapOf(
@@ -83,15 +83,15 @@ data class CustomLeet(
                 "Z" to "2"
             )
 
-            profile.setTranslations(simpleMap)
-            return profile
+            leet.setTranslations(simpleMap)
+            return leet
         }
 
         /**
-         * Creates a CustomProfile with Extended Leet translations
+         * Creates a CustomLeet with Extended Leet translations
          */
         fun createWithExtendedDefaults(name: String, iconResId: Int = R.drawable.ic_custom_mode): CustomLeet {
-            val profile = CustomLeet(name, iconResId)
+            val leet = CustomLeet(name, iconResId)
 
             // Initialize with Extended Leet mappings
             val extendedMap = mapOf(
@@ -103,8 +103,8 @@ data class CustomLeet(
                 "Z" to "Z"
             )
 
-            profile.setTranslations(extendedMap)
-            return profile
+            leet.setTranslations(extendedMap)
+            return leet
         }
     }
 }

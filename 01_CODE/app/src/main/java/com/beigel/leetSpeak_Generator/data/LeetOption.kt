@@ -87,16 +87,16 @@ data class LeetOption(
          * Creates a Custom Leet option from a profile
          */
         fun createCustom(
-            profile: CustomLeet,
+            leet: CustomLeet,
             customIndex: Int,
             isSelected: Boolean = false,
             isFavorite: Boolean = false
         ): LeetOption =
             LeetOption(
                 mode = LeetManager.MODE_CUSTOM,
-                name = profile.name,
+                name = leet.name,
                 description = "Benutzerdefiniertes Leet",
-                iconResId = profile.iconResId,
+                iconResId = leet.iconResId,
                 isCustom = true,
                 customIndex = customIndex,
                 isSelected = isSelected,

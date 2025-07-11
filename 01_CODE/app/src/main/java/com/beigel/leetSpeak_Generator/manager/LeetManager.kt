@@ -12,8 +12,8 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 
 /**
- * Modern ProfileManager with Kotlin Coroutines and Flow support
- * Handles custom leet profiles with reactive data streams
+ * Modern LeetManager with Kotlin Coroutines and Flow support
+ * Handles custom leet configurations with reactive data streams
  */
 class LeetManager(context: Context) {
 
@@ -34,7 +34,7 @@ class LeetManager(context: Context) {
         const val FAV_SIMPLE = -100
         const val FAV_EXTENDED = -101
 
-        private const val TAG = "ProfileManager"
+        private const val TAG = "LeetManager"
     }
 
     private val prefs: SharedPreferences = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -44,62 +44,62 @@ class LeetManager(context: Context) {
     private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
     // Mutable state flows for reactive updates
-    private val _profiles = MutableStateFlow<List<CustomLeet>>(emptyList())
-    private val _currentProfileIndex = MutableStateFlow(0)
+    private val _leets = MutableStateFlow<List<CustomLeet>>(emptyList())
+    private val _currentLeetIndex = MutableStateFlow(0)
     private val _favoriteIndex = MutableStateFlow(FAV_NONE)
 
     // Public flows for observing state changes
-    val profiles: StateFlow<List<CustomLeet>> = _profiles.asStateFlow()
-    val currentProfileIndex: StateFlow<Int> = _currentProfileIndex.asStateFlow()
+    val leets: StateFlow<List<CustomLeet>> = _leets.asStateFlow()
+    val currentLeetIndex: StateFlow<Int> = _currentLeetIndex.asStateFlow()
     val favoriteIndex: StateFlow<Int> = _favoriteIndex.asStateFlow()
 
     // Computed flows
-    val currentProfile: StateFlow<CustomLeet?> = combine(
-        profiles,
-        currentProfileIndex
-    ) { profiles, index ->
-        profiles.getOrNull(index)
+    val currentLeet: StateFlow<CustomLeet?> = combine(
+        leets,
+        currentLeetIndex
+    ) { leets, index ->
+        leets.getOrNull(index)
     }.stateIn(scope, SharingStarted.Lazily, null)
 
-    val hasProfiles: StateFlow<Boolean> = profiles.map { it.isNotEmpty() }
+    val hasLeets: StateFlow<Boolean> = leets.map { it.isNotEmpty() }
         .stateIn(scope, SharingStarted.Lazily, false)
 
     init {
-        loadProfiles()
+        loadLeets()
     }
 
     /**
-     * Loads profiles from SharedPreferences
+     * Loads leets from SharedPreferences
      */
-    private fun loadProfiles() {
+    private fun loadLeets() {
         scope.launch {
             try {
-                val profilesJson = prefs.getString(LEETS_KEY, null)
+                val leetsJson = prefs.getString(LEETS_KEY, null)
                 val currentIndex = prefs.getInt(CURRENT_LEET_KEY, 0)
                 val favoriteIndex = prefs.getInt(FAVORITE_LEET_KEY, FAV_NONE)
 
-                val loadedProfiles = if (profilesJson != null) {
+                val loadedLeets = if (leetsJson != null) {
                     val type = object : TypeToken<List<CustomLeet>>() {}.type
-                    gson.fromJson<List<CustomLeet>>(profilesJson, type) ?: emptyList()
+                    gson.fromJson<List<CustomLeet>>(leetsJson, type) ?: emptyList()
                 } else {
                     emptyList()
                 }
 
                 // Update state on main thread
                 withContext(Dispatchers.Main) {
-                    _profiles.value = loadedProfiles
-                    _currentProfileIndex.value = currentIndex.coerceIn(0, maxOf(0, loadedProfiles.size - 1))
-                    _favoriteIndex.value = migrateFavoriteIndex(favoriteIndex, loadedProfiles.size)
+                    _leets.value = loadedLeets
+                    _currentLeetIndex.value = currentIndex.coerceIn(0, maxOf(0, loadedLeets.size - 1))
+                    _favoriteIndex.value = migrateFavoriteIndex(favoriteIndex, loadedLeets.size)
                 }
 
-                Log.d(TAG, "Loaded ${loadedProfiles.size} profiles, current: $currentIndex, favorite: $favoriteIndex")
+                Log.d(TAG, "Loaded ${loadedLeets.size} leets, current: $currentIndex, favorite: $favoriteIndex")
 
             } catch (e: Exception) {
-                Log.e(TAG, "Error loading profiles", e)
+                Log.e(TAG, "Error loading leets", e)
                 // Initialize with empty state on error
                 withContext(Dispatchers.Main) {
-                    _profiles.value = emptyList()
-                    _currentProfileIndex.value = 0
+                    _leets.value = emptyList()
+                    _currentLeetIndex.value = 0
                     _favoriteIndex.value = FAV_NONE
                 }
             }
@@ -109,79 +109,79 @@ class LeetManager(context: Context) {
     /**
      * Migrates old favorite index format to new format
      */
-    private fun migrateFavoriteIndex(oldIndex: Int, profileCount: Int): Int {
+    private fun migrateFavoriteIndex(oldIndex: Int, leetCount: Int): Int {
         return when {
             oldIndex == FAV_SIMPLE || oldIndex == FAV_EXTENDED || oldIndex == FAV_NONE -> oldIndex
             oldIndex == 0 -> FAV_SIMPLE // Migrate old default
             oldIndex == 1 -> FAV_EXTENDED // Migrate old extended
-            oldIndex >= 0 && oldIndex < profileCount -> oldIndex // Valid custom profile index
+            oldIndex >= 0 && oldIndex < leetCount -> oldIndex // Valid custom leet index
             else -> FAV_NONE // Invalid index
         }
     }
 
     /**
-     * Saves profiles to SharedPreferences
+     * Saves leets to SharedPreferences
      */
-    private suspend fun saveProfiles() = withContext(Dispatchers.IO) {
+    private suspend fun saveLeets() = withContext(Dispatchers.IO) {
         try {
-            val profilesJson = gson.toJson(_profiles.value)
-            val currentIndex = _currentProfileIndex.value
+            val leetsJson = gson.toJson(_leets.value)
+            val currentIndex = _currentLeetIndex.value
             val favoriteIndex = _favoriteIndex.value
 
             prefs.edit()
-                .putString(LEETS_KEY, profilesJson)
+                .putString(LEETS_KEY, leetsJson)
                 .putInt(CURRENT_LEET_KEY, currentIndex)
                 .putInt(FAVORITE_LEET_KEY, favoriteIndex)
                 .apply()
 
-            Log.d(TAG, "Saved ${_profiles.value.size} profiles")
+            Log.d(TAG, "Saved ${_leets.value.size} leets")
         } catch (e: Exception) {
-            Log.e(TAG, "Error saving profiles", e)
+            Log.e(TAG, "Error saving leets", e)
             throw e
         }
     }
 
     /**
-     * Adds a new profile
+     * Adds a new leet
      */
-    suspend fun addProfile(profile: CustomLeet): ErrorHandler.Result<Int> =
-        ErrorHandler.safeExecute(errorMessage = "Failed to add profile") {
-            val currentProfiles = _profiles.value.toMutableList()
-            currentProfiles.add(profile)
-            val newIndex = currentProfiles.size - 1
+    suspend fun addLeet(leet: CustomLeet): ErrorHandler.Result<Int> =
+        ErrorHandler.safeExecute(errorMessage = "Failed to add leet") {
+            val currentLeets = _leets.value.toMutableList()
+            currentLeets.add(leet)
+            val newIndex = currentLeets.size - 1
 
-            _profiles.value = currentProfiles
-            _currentProfileIndex.value = newIndex
+            _leets.value = currentLeets
+            _currentLeetIndex.value = newIndex
 
-            saveProfiles()
+            saveLeets()
             newIndex
         }
 
     /**
-     * Updates a profile at the given index
+     * Updates a leet at the given index
      */
-    suspend fun updateProfile(index: Int, profile: CustomLeet): ErrorHandler.Result<Unit> =
-        ErrorHandler.safeExecute(errorMessage = "Failed to update profile") {
-            require(index in 0 until _profiles.value.size) { "Invalid profile index: $index" }
+    suspend fun updateLeet(index: Int, leet: CustomLeet): ErrorHandler.Result<Unit> =
+        ErrorHandler.safeExecute(errorMessage = "Failed to update leet") {
+            require(index in 0 until _leets.value.size) { "Invalid leet index: $index" }
 
-            val currentProfiles = _profiles.value.toMutableList()
-            currentProfiles[index] = profile
-            _profiles.value = currentProfiles
+            val currentLeets = _leets.value.toMutableList()
+            currentLeets[index] = leet
+            _leets.value = currentLeets
 
-            saveProfiles()
+            saveLeets()
         }
 
     /**
-     * Deletes a profile at the given index
+     * Deletes a leet at the given index
      */
-    suspend fun deleteProfile(index: Int): ErrorHandler.Result<ProfileDeletionResult> =
-        ErrorHandler.safeExecute(errorMessage = "Failed to delete profile") {
-            require(index in 0 until _profiles.value.size) { "Invalid profile index: $index" }
+    suspend fun deleteLeet(index: Int): ErrorHandler.Result<LeetDeletionResult> =
+        ErrorHandler.safeExecute(errorMessage = "Failed to delete leet") {
+            require(index in 0 until _leets.value.size) { "Invalid leet index: $index" }
 
-            val currentProfiles = _profiles.value.toMutableList()
-            val deletedProfile = currentProfiles.removeAt(index)
+            val currentLeets = _leets.value.toMutableList()
+            val deletedLeet = currentLeets.removeAt(index)
             val wasFavorite = _favoriteIndex.value == index
-            val wasLastProfile = currentProfiles.isEmpty()
+            val wasLastLeet = currentLeets.isEmpty()
 
             // Update favorite index if necessary
             when {
@@ -191,32 +191,32 @@ class LeetManager(context: Context) {
 
             // Update current index if necessary
             val newCurrentIndex = when {
-                currentProfiles.isEmpty() -> 0
-                _currentProfileIndex.value >= currentProfiles.size -> currentProfiles.size - 1
-                else -> _currentProfileIndex.value
+                currentLeets.isEmpty() -> 0
+                _currentLeetIndex.value >= currentLeets.size -> currentLeets.size - 1
+                else -> _currentLeetIndex.value
             }
 
-            _profiles.value = currentProfiles
-            _currentProfileIndex.value = newCurrentIndex
+            _leets.value = currentLeets
+            _currentLeetIndex.value = newCurrentIndex
 
-            saveProfiles()
+            saveLeets()
 
-            ProfileDeletionResult(deletedProfile, wasFavorite, wasLastProfile)
+            LeetDeletionResult(deletedLeet, wasFavorite, wasLastLeet)
         }
 
     /**
-     * Sets the current profile index
+     * Sets the current leet index
      */
-    suspend fun setCurrentProfileIndex(index: Int): ErrorHandler.Result<Unit> =
-        ErrorHandler.safeExecute(errorMessage = "Failed to set current profile") {
-            require(index in 0 until _profiles.value.size) { "Invalid profile index: $index" }
+    suspend fun setCurrentLeetIndex(index: Int): ErrorHandler.Result<Unit> =
+        ErrorHandler.safeExecute(errorMessage = "Failed to set current leet") {
+            require(index in 0 until _leets.value.size) { "Invalid leet index: $index" }
 
-            _currentProfileIndex.value = index
-            saveProfiles()
+            _currentLeetIndex.value = index
+            saveLeets()
         }
 
     /**
-     * Sets the favorite profile
+     * Sets the favorite leet
      */
     suspend fun setFavorite(mode: Int, customIndex: Int = 0): ErrorHandler.Result<Unit> =
         ErrorHandler.safeExecute(errorMessage = "Failed to set favorite") {
@@ -224,8 +224,8 @@ class LeetManager(context: Context) {
                 MODE_SIMPLE -> FAV_SIMPLE
                 MODE_EXTENDED -> FAV_EXTENDED
                 MODE_CUSTOM -> {
-                    require(customIndex in 0 until _profiles.value.size) {
-                        "Invalid custom profile index: $customIndex"
+                    require(customIndex in 0 until _leets.value.size) {
+                        "Invalid custom leet index: $customIndex"
                     }
                     customIndex
                 }
@@ -234,7 +234,7 @@ class LeetManager(context: Context) {
             }
 
             _favoriteIndex.value = favoriteIndex
-            saveProfiles()
+            saveLeets()
 
             Log.d(TAG, "Favorite set to: $favoriteIndex")
         }
@@ -254,7 +254,7 @@ class LeetManager(context: Context) {
             val isCurrentlyFavorite = _favoriteIndex.value == targetIndex
             _favoriteIndex.value = if (isCurrentlyFavorite) FAV_NONE else targetIndex
 
-            saveProfiles()
+            saveLeets()
 
             val newState = !isCurrentlyFavorite
             Log.d(TAG, "Favorite toggled for mode $mode: $newState")
@@ -278,38 +278,38 @@ class LeetManager(context: Context) {
     /**
      * Gets the favorite mode information
      */
-    fun getFavoriteMode(): FavoriteModeInfo? {
+    fun getFavoriteLeetInfo(): FavoriteLeetInfo? {
         return when (val favIndex = _favoriteIndex.value) {
-            FAV_SIMPLE -> FavoriteModeInfo(MODE_SIMPLE, -1, null)
-            FAV_EXTENDED -> FavoriteModeInfo(MODE_EXTENDED, -1, null)
+            FAV_SIMPLE -> FavoriteLeetInfo(MODE_SIMPLE, -1, null)
+            FAV_EXTENDED -> FavoriteLeetInfo(MODE_EXTENDED, -1, null)
             FAV_NONE -> null
             else -> {
-                val profile = _profiles.value.getOrNull(favIndex)
-                if (profile != null) {
-                    FavoriteModeInfo(MODE_CUSTOM, favIndex, profile)
+                val leet = _leets.value.getOrNull(favIndex)
+                if (leet != null) {
+                    FavoriteLeetInfo(MODE_CUSTOM, favIndex, leet)
                 } else null
             }
         }
     }
 
     /**
-     * Creates a profile with simple leet defaults
+     * Creates a leet with simple defaults
      */
-    suspend fun createProfileWithSimpleDefaults(name: String, iconResId: Int = R.drawable.ic_custom_mode): ErrorHandler.Result<CustomLeet> =
-        ErrorHandler.safeExecute(errorMessage = "Failed to create profile") {
-            val profile = CustomLeet.createWithSimpleDefaults(name, iconResId)
-            addProfile(profile).getOrNull() // Add to manager
-            profile
+    suspend fun createLeetWithSimpleDefaults(name: String, iconResId: Int = R.drawable.ic_custom_mode): ErrorHandler.Result<CustomLeet> =
+        ErrorHandler.safeExecute(errorMessage = "Failed to create leet") {
+            val leet = CustomLeet.createWithSimpleDefaults(name, iconResId)
+            addLeet(leet).getOrNull() // Add to manager
+            leet
         }
 
     /**
-     * Creates a profile with extended leet defaults
+     * Creates a leet with extended defaults
      */
-    suspend fun createProfileWithExtendedDefaults(name: String, iconResId: Int = R.drawable.ic_custom_mode): ErrorHandler.Result<CustomLeet> =
-        ErrorHandler.safeExecute(errorMessage = "Failed to create profile") {
-            val profile = CustomLeet.createWithExtendedDefaults(name, iconResId)
-            addProfile(profile).getOrNull() // Add to manager
-            profile
+    suspend fun createLeetWithExtendedDefaults(name: String, iconResId: Int = R.drawable.ic_custom_mode): ErrorHandler.Result<CustomLeet> =
+        ErrorHandler.safeExecute(errorMessage = "Failed to create leet") {
+            val leet = CustomLeet.createWithExtendedDefaults(name, iconResId)
+            addLeet(leet).getOrNull() // Add to manager
+            leet
         }
 
     /**
@@ -320,18 +320,18 @@ class LeetManager(context: Context) {
     }
 
     /**
-     * Data class for profile deletion result
+     * Data class for leet deletion result
      */
-    data class ProfileDeletionResult(
-        val deletedProfile: CustomLeet,
+    data class LeetDeletionResult(
+        val deletedLeet: CustomLeet,
         val wasFavorite: Boolean,
-        val wasLastProfile: Boolean
+        val wasLastLeet: Boolean
     )
 
     /**
-     * Data class for favorite mode information
+     * Data class for favorite leet information
      */
-    data class FavoriteModeInfo(
+    data class FavoriteLeetInfo(
         val mode: Int,
         val customIndex: Int,
         val customLeet: CustomLeet?

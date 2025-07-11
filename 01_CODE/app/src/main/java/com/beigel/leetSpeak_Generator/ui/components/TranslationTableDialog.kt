@@ -217,9 +217,9 @@ private fun getTranslatedCharForOption(char: Char, leetOption: LeetOption, viewM
         }
         LeetManager.MODE_CUSTOM -> {
             // Für Custom Profile - würde echte Übersetzung verwenden
-            val profiles = viewModel.profiles.value
-            val profile = profiles.getOrNull(leetOption.customIndex)
-            profile?.getTranslation(char.toString()) ?: char.toString()
+            val leets = viewModel.leets.value
+            val leet = leets.getOrNull(leetOption.customIndex)
+            leet?.getTranslation(char.toString()) ?: char.toString()
         }
         else -> char.toString()
     }

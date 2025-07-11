@@ -124,7 +124,7 @@ fun MainScreen(
                 .padding(paddingValues)
         ) {
 
-            // Main Content Card
+            // Main Content Card - FIXIERTES LAYOUT
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -135,11 +135,44 @@ fun MainScreen(
                 elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
                 shape = RectangleShape
             ) {
-                Column(
-                    modifier = Modifier.fillMaxSize()
-                ) {
+                // FIXIERTE CONTAINER-HÖHEN
+                if (shouldShowOutput) {
+                    // Mit Output: 50/50 Aufteilung
+                    Column(modifier = Modifier.fillMaxSize()) {
+                        // Input Section - exakt die Hälfte
+                        InputSection(
+                            inputText = inputText,
+                            onInputChange = { text ->
+                                viewModel.handleIntent(MainIntent.UpdateInput(text))
+                            },
+                            onClearText = {
+                                viewModel.handleIntent(MainIntent.ClearInput)
+                            },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .weight(1f) // 50%
+                        )
 
-                    // Input Section
+                        // Divider
+                        HorizontalDivider(
+                            modifier = Modifier.padding(horizontal = 16.dp),
+                            color = MaterialTheme.colorScheme.secondary,
+                            thickness = 2.dp
+                        )
+
+                        // Output Section - exakt die Hälfte
+                        OutputSection(
+                            outputText = outputText,
+                            currentMode = currentModeDisplayName,
+                            onCopyClick = { onCopyToClipboard(outputText) },
+                            translationStats = translationStats,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .weight(1f) // 50%
+                        )
+                    }
+                } else {
+                    // Ohne Output: Input nimmt alles
                     InputSection(
                         inputText = inputText,
                         onInputChange = { text ->
@@ -148,38 +181,8 @@ fun MainScreen(
                         onClearText = {
                             viewModel.handleIntent(MainIntent.ClearInput)
                         },
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier.fillMaxSize() // 100%
                     )
-
-                    // Animated Divider
-                    AnimatedVisibility(
-                        visible = shouldShowOutput,
-                        enter = expandVertically() + fadeIn(),
-                        exit = shrinkVertically() + fadeOut()
-                    ) {
-                        HorizontalDivider(
-                            modifier = Modifier.padding(horizontal = 16.dp),
-                            color = MaterialTheme.colorScheme.secondary,
-                            thickness = 2.dp
-                        )
-                    }
-
-                    // Output Section
-                    AnimatedVisibility(
-                        visible = shouldShowOutput,
-                        enter = expandVertically() + fadeIn(
-                            animationSpec = tween(300, delayMillis = 100)
-                        ),
-                        exit = shrinkVertically() + fadeOut()
-                    ) {
-                        OutputSection(
-                            outputText = outputText,
-                            currentMode = currentModeDisplayName,
-                            onCopyClick = { onCopyToClipboard(outputText) },
-                            translationStats = translationStats,
-                            modifier = Modifier.weight(1f)
-                        )
-                    }
                 }
             }
 

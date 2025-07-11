@@ -115,7 +115,7 @@ private fun InputHeader(
             )
 
             // Statistics
-            AnimatedVisibility(
+            androidx.compose.animation.AnimatedVisibility(
                 visible = hasText,
                 enter = fadeIn() + slideInVertically(),
                 exit = fadeOut() + slideOutVertically()
@@ -138,7 +138,7 @@ private fun InputHeader(
         }
 
         // Action Buttons
-        AnimatedVisibility(
+        androidx.compose.animation.AnimatedVisibility(
             visible = hasText,
             enter = fadeIn() + scaleIn(),
             exit = fadeOut() + scaleOut()
@@ -263,41 +263,37 @@ fun OutputSection(
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        // Enhanced Output Display
-        Card(
+        // Enhanced Output Display - genau wie Input TextField
+        OutlinedTextField(
+            value = outputText,
+            onValueChange = { }, // Read-only
             modifier = Modifier.fillMaxSize(),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.2f)
+            readOnly = true,
+            textStyle = MaterialTheme.typography.bodyLarge.copy(
+                lineHeight = MaterialTheme.typography.bodyLarge.lineHeight.times(1.3)
+            ),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = MaterialTheme.colorScheme.secondary,
+                unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),
+                disabledBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),
+                focusedContainerColor = MaterialTheme.colorScheme.surface,
+                unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                disabledContainerColor = MaterialTheme.colorScheme.surface,
+                focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+                disabledTextColor = MaterialTheme.colorScheme.onSurface
             ),
             shape = MaterialTheme.shapes.large,
-            elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .verticalScroll(rememberScrollState())
-                    .padding(16.dp)
-            ) {
-                SelectionContainer {
-                    AnimatedContent(
-                        targetState = outputText,
-                        transitionSpec = {
-                            fadeIn(animationSpec = tween(300)) togetherWith
-                                    fadeOut(animationSpec = tween(300))
-                        },
-                        label = "output_animation"
-                    ) { text ->
-                        Text(
-                            text = text,
-                            style = MaterialTheme.typography.bodyLarge.copy(
-                                lineHeight = MaterialTheme.typography.bodyLarge.lineHeight.times(1.4)
-                            ),
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                    }
+            placeholder = {
+                if (outputText.isEmpty()) {
+                    Text(
+                        text = "Deine Leetspeak-Übersetzung erscheint hier...",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                    )
                 }
             }
-        }
+        )
     }
 }
 
@@ -324,7 +320,7 @@ private fun OutputHeader(
 
             // Translation Stats
             translationStats?.let { stats ->
-                AnimatedVisibility(
+                androidx.compose.animation.AnimatedVisibility(
                     visible = stats.totalChars > 0,
                     enter = fadeIn() + slideInVertically(),
                     exit = fadeOut() + slideOutVertically()
@@ -370,7 +366,7 @@ private fun OutputHeader(
             }
 
             // Copy Feedback Badge
-            AnimatedVisibility(
+            androidx.compose.animation.AnimatedVisibility(
                 visible = showCopyFeedback,
                 enter = scaleIn() + fadeIn(),
                 exit = scaleOut() + fadeOut()

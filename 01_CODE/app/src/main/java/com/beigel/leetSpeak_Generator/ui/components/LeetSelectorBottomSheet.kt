@@ -37,8 +37,8 @@ fun LeetSelectorBottomSheet(
     val favoriteLeetOptions by viewModel.favoriteLeetOptions.collectAsStateWithLifecycle(initialValue = emptyList())
 
     // Dialog States
-    var showProfileCreationDialog by remember { mutableStateOf(false) }
-    var showProfileEditDialog by remember { mutableStateOf(false) }
+    var showLeetCreationDialog by remember { mutableStateOf(false) }
+    var showLeetEditDialog by remember { mutableStateOf(false) }
     var showTranslationTableDialog by remember { mutableStateOf(false) }
 
     // Current selections for dialogs
@@ -71,14 +71,14 @@ fun LeetSelectorBottomSheet(
             },
             onEditOption = { option ->
                 currentEditOption = option
-                showProfileEditDialog = true
+                showLeetEditDialog = true
             },
             onShowTable = { option ->
                 currentTableOption = option
                 showTranslationTableDialog = true
             },
             onCreateNew = {
-                showProfileCreationDialog = true
+                showLeetCreationDialog = true
             }
         )
 
@@ -86,31 +86,31 @@ fun LeetSelectorBottomSheet(
         Spacer(modifier = Modifier.height(16.dp))
     }
 
-    // Profile Creation Dialog
-    if (showProfileCreationDialog) {
-        ProfileCreationDialog(
+    // Leet Creation Dialog
+    if (showLeetCreationDialog) {
+        LeetCreationDialog(
             viewModel = viewModel,
             onDismiss = {
-                showProfileCreationDialog = false
+                showLeetCreationDialog = false
                 onDismiss() // Close bottom sheet after creation
             }
         )
     }
 
-    // Profile Edit Dialog
-    if (showProfileEditDialog) {
+    // Leet Edit Dialog
+    if (showLeetEditDialog) {
         currentEditOption?.let { option ->
             if (option.isCustom) {
-                val profiles by viewModel.profiles.collectAsStateWithLifecycle()
-                val profile = profiles.getOrNull(option.customIndex)
+                val leets by viewModel.leets.collectAsStateWithLifecycle()
+                val leet = leets.getOrNull(option.customIndex)
 
-                if (profile != null) {
-                    ProfileCreationDialog(
+                if (leet != null) {
+                    LeetCreationDialog(
                         viewModel = viewModel,
-                        existingLeet = profile,
-                        profileIndex = option.customIndex,
+                        existingLeet = leet,
+                        leetIndex = option.customIndex,
                         onDismiss = {
-                            showProfileEditDialog = false
+                            showLeetEditDialog = false
                             currentEditOption = null
                         }
                     )
