@@ -11,7 +11,7 @@ import javax.inject.Singleton
 
 /**
  * Hilt Module für Dependency Injection
- * Ersetzt die manuelle ViewModelFactory
+ * Stellt alle benötigten Dependencies zur Verfügung
  */
 @Module
 @InstallIn(SingletonComponent::class)
@@ -24,16 +24,16 @@ object AppModule {
     ): ProfileRepository {
         return ProfileRepository(context)
     }
-}
 
-/**
- * Hilt Module für ViewModels
- * ViewModels werden automatisch injiziert
- */
-@Module
-@InstallIn(SingletonComponent::class)
-object ViewModelModule {
+    // Falls später weitere Dependencies benötigt werden:
 
-    // ViewModels werden automatisch von Hilt bereitgestellt
-    // Kein manueller Code erforderlich dank @HiltViewModel Annotation
+    /*
+    @Provides
+    @Singleton
+    fun provideSharedPreferences(
+        @ApplicationContext context: Context
+    ): SharedPreferences {
+        return context.getSharedPreferences("leetspeak_prefs", Context.MODE_PRIVATE)
+    }
+    */
 }

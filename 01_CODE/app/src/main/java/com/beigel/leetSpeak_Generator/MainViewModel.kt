@@ -10,7 +10,7 @@ import javax.inject.Inject
 
 /**
  * MainViewModel mit Hilt Dependency Injection
- * Ersetzt die manuelle ViewModelFactory
+ * Repository wird automatisch von Hilt injiziert
  */
 @HiltViewModel
 class MainViewModel @Inject constructor(
@@ -35,6 +35,9 @@ class MainViewModel @Inject constructor(
     val hasProfiles = repository.hasProfiles
     val leetOptions = repository.getLeetOptions()
     val favoriteLeetOptions = repository.getFavoriteLeetOptions()
+
+    // Profile Index State
+    val currentProfileIndex = repository.currentProfileIndex
 
     // Computed output text
     val outputText: StateFlow<String> = combine(
@@ -363,7 +366,7 @@ class MainViewModel @Inject constructor(
 }
 
 /**
- * UI state data class (bleibt unverändert)
+ * UI state data class
  */
 data class MainUiState(
     val isLoading: Boolean = false,
@@ -374,7 +377,7 @@ data class MainUiState(
 )
 
 /**
- * Intent sealed class (bleibt unverändert)
+ * Intent sealed class für UI Events
  */
 sealed class MainIntent {
     data class UpdateInput(val text: String) : MainIntent()

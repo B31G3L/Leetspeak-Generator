@@ -15,7 +15,7 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import dagger.hilt.android.AndroidEntryPoint
 
 /**
- * ✅ EINFACHSTE LÖSUNG: Compose Bottom Sheet als DialogFragment
+ * ✅ KORRIGIERTE LÖSUNG: Compose Bottom Sheet als DialogFragment
  * Funktioniert genauso wie Ihr bestehendes XML Bottom Sheet
  */
 @AndroidEntryPoint
@@ -46,15 +46,16 @@ class ComposeBottomSheetDialog : BottomSheetDialogFragment() {
 }
 
 /**
- * ✅ Content für das Bottom Sheet (ohne ModalBottomSheet wrapper)
+ * ✅ KORRIGIERTE Content für das Bottom Sheet
  */
 @Composable
 fun LeetSelectorBottomSheetContent(
     viewModel: MainViewModel,
     onDismiss: () -> Unit
 ) {
-    val leetOptions by viewModel.leetOptions.collectAsStateWithLifecycle()
-    val favoriteLeetOptions by viewModel.favoriteLeetOptions.collectAsStateWithLifecycle()
+    // ✅ FIX: initialValue Parameter hinzugefügt
+    val leetOptions by viewModel.leetOptions.collectAsStateWithLifecycle(initialValue = emptyList())
+    val favoriteLeetOptions by viewModel.favoriteLeetOptions.collectAsStateWithLifecycle(initialValue = emptyList())
 
     // Direkt den Content rendern (BottomSheetDialogFragment übernimmt das Sheet)
     LeetSelectorContent(

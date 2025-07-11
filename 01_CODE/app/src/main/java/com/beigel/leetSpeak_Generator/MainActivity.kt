@@ -18,7 +18,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.widget.addTextChangedListener
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.beigel.leetSpeak_Generator.compose.ComposeTestFragment
 import com.beigel.leetSpeak_Generator.compose.ComposeTestActivity
 import com.beigel.leetSpeak_Generator.databinding.ActivityMainBinding
 import com.google.android.material.bottomsheet.BottomSheetDialog
@@ -29,25 +28,27 @@ import com.google.android.material.textfield.TextInputEditText
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
-import androidx.activity.compose.setContent
 import androidx.compose.runtime.*
 import com.beigel.leetSpeak_Generator.compose.LeetSelectorBottomSheet
 import com.beigel.leetSpeak_Generator.ui.theme.LeetspeakGeneratorTheme
+import javax.inject.Inject
 
 /**
- * Main Activity mit Hilt und optionaler Compose Integration
- * Migration von manueller DI zu Hilt
+ * Main Activity mit vollständiger Hilt Integration
+ * Repository wird jetzt auch über Hilt injiziert
  */
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
-    private lateinit var repository: ProfileRepository
     private lateinit var vibrator: Vibrator
     private var showComposeBottomSheet by mutableStateOf(false)
 
+    // ✅ Repository wird von Hilt injiziert
+    @Inject
+    lateinit var repository: ProfileRepository
 
-    // ViewModel mit Hilt (ersetzt ViewModelFactory)
+    // ✅ ViewModel wird von Hilt injiziert (mit Repository)
     private val viewModel: MainViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -57,14 +58,12 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Initialize dependencies (Repository wird von Hilt injiziert)
-        repository = ProfileRepository(this) // Temporär bis Repository auch über Hilt läuft
+        // Initialize vibrator
         vibrator = getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
 
         setupUI()
         observeViewModel()
         setupComposeIntegration()
-
     }
 
     /**
@@ -86,12 +85,13 @@ class MainActivity : AppCompatActivity() {
             setDisplayShowTitleEnabled(false)
         }
 
-        // ✅ NEUER: Compose Test Button (temporär für Testing)
+        // Compose Test Button (temporär für Testing)
         binding.appTitle.setOnLongClickListener {
             showComposeTestDialog()
             true
         }
     }
+
     private fun setupComposeIntegration() {
         // Compose Content für Bottom Sheet
         val composeView = androidx.compose.ui.platform.ComposeView(this)
@@ -120,14 +120,12 @@ class MainActivity : AppCompatActivity() {
             .setTitle("🚀 Compose Test")
             .setMessage("Möchten Sie den neuen Compose Screen testen?")
             .setPositiveButton("Ja") { _, _ ->
-                // Einfacher Intent zur Compose Activity
                 val intent = Intent(this, ComposeTestActivity::class.java)
                 startActivity(intent)
             }
             .setNegativeButton("Nein", null)
             .show()
     }
-
 
     /**
      * Sets up input text handling with reactive updates
@@ -147,7 +145,6 @@ class MainActivity : AppCompatActivity() {
         }
 
         binding.buttonLeetSelector.setOnClickListener {
-            // ✅ CHOICE: XML vs Compose Bottom Sheet
             showLeetSelectorChoice()
         }
 
@@ -161,6 +158,7 @@ class MainActivity : AppCompatActivity() {
             true
         }
     }
+
     private fun showLeetSelectorChoice() {
         MaterialAlertDialogBuilder(this)
             .setTitle("Bottom Sheet Version")
@@ -169,7 +167,7 @@ class MainActivity : AppCompatActivity() {
                 showComposeBottomSheet = true
             }
             .setNeutralButton("📱 Alte (XML)") { _, _ ->
-                showLeetSelectorBottomSheet() // Ihre bestehende Methode
+                showLeetSelectorBottomSheet()
             }
             .setNegativeButton("Abbrechen", null)
             .show()
@@ -180,7 +178,6 @@ class MainActivity : AppCompatActivity() {
      */
     private fun observeViewModel() {
         lifecycleScope.launch {
-            // Observe output text changes
             viewModel.outputText.collect { outputText ->
                 binding.outputLeetText.text = outputText
                 updateLayoutForOutput(outputText)
@@ -188,7 +185,6 @@ class MainActivity : AppCompatActivity() {
         }
 
         lifecycleScope.launch {
-            // Observe current mode display name
             viewModel.currentModeDisplayName.collect { displayName ->
                 binding.buttonLeetSelector.text = displayName
                 binding.outputModeTitle.text = displayName
@@ -196,19 +192,16 @@ class MainActivity : AppCompatActivity() {
         }
 
         lifecycleScope.launch {
-            // Observe UI state changes
             viewModel.uiState.collect { uiState ->
                 handleUiState(uiState)
             }
         }
 
         lifecycleScope.launch {
-            // Observe loading state
             viewModel.uiState
                 .distinctUntilChanged { old, new -> old.isLoading == new.isLoading }
                 .collect { uiState ->
                     // Show/hide loading indicator if needed
-                    // binding.progressBar.visibility = if (uiState.isLoading) View.VISIBLE else View.GONE
                 }
         }
     }
@@ -217,13 +210,11 @@ class MainActivity : AppCompatActivity() {
      * Handles UI state changes (errors, success messages, etc.)
      */
     private fun handleUiState(uiState: MainUiState) {
-        // Handle error messages
         uiState.errorMessage?.let { message ->
             ErrorHandler.showSnackbar(this, message, Snackbar.LENGTH_LONG)
             viewModel.handleIntent(MainIntent.ClearError)
         }
 
-        // Handle success messages
         uiState.successMessage?.let { message ->
             ErrorHandler.showSnackbar(this, message, Snackbar.LENGTH_SHORT)
             viewModel.handleIntent(MainIntent.ClearSuccess)
@@ -237,14 +228,12 @@ class MainActivity : AppCompatActivity() {
         val hasOutput = outputText.isNotEmpty()
 
         if (hasOutput) {
-            // Show output section with animation
             if (binding.outputSection.visibility != View.VISIBLE) {
                 binding.outputSection.visibility = View.VISIBLE
                 binding.divider.visibility = View.VISIBLE
                 AnimationHelper.slideInFromBottom(binding.outputSection)
             }
         } else {
-            // Hide output section
             binding.outputSection.visibility = View.GONE
             binding.divider.visibility = View.GONE
         }
@@ -272,16 +261,11 @@ class MainActivity : AppCompatActivity() {
         val favoritesHeader = view.findViewById<TextView>(R.id.favoritesHeader)
         val buttonAddNewLeet = view.findViewById<MaterialButton>(R.id.buttonAddNewLeet)
 
-        // Setup main RecyclerView
         recyclerViewLeets.layoutManager = LinearLayoutManager(this)
-
-        // Setup favorites RecyclerView
         recyclerViewFavorites.layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
 
-        // Create adapter with listener
         val listener = createLeetSelectorListener(dialog)
 
-        // Observe leet options and update adapters
         lifecycleScope.launch {
             viewModel.leetOptions.collect { options ->
                 val adapter = LeetSelectorAdapter(options, listener)
@@ -289,7 +273,6 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        // Observe favorite options
         lifecycleScope.launch {
             viewModel.favoriteLeetOptions.collect { favoriteOptions ->
                 if (favoriteOptions.isEmpty()) {
@@ -305,7 +288,6 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        // Add new profile button
         buttonAddNewLeet.setOnClickListener {
             dialog.dismiss()
             showNewProfileDialog()
@@ -349,9 +331,6 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
-
-    // ✅ Alle anderen Methoden bleiben unverändert...
-    // (Ich kürze sie hier ab, da sie identisch zu Ihrer ursprünglichen Implementation sind)
 
     /**
      * Shows dialog for creating new profile
@@ -398,12 +377,84 @@ class MainActivity : AppCompatActivity() {
         existingProfile: CustomProfile? = null,
         profileIndex: Int = -1
     ) {
-        // Implementation bleibt gleich...
+        val editTextProfileName = dialogView.findViewById<TextInputEditText>(R.id.editTextProfileName)
+        val selectedIcon = dialogView.findViewById<ImageView>(R.id.selectedIcon)
+        val editTable = dialogView.findViewById<TableLayout>(R.id.editTable)
+        val buttonCancel = dialogView.findViewById<com.google.android.material.button.MaterialButton>(R.id.buttonCancel)
+        val buttonSave = dialogView.findViewById<com.google.android.material.button.MaterialButton>(R.id.buttonSave)
+
+        var selectedIconResId = existingProfile?.iconResId ?: R.drawable.ic_custom_mode
+
+        if (existingProfile != null) {
+            editTextProfileName.setText(existingProfile.name)
+            selectedIcon.setImageResource(existingProfile.iconResId)
+        } else {
+            selectedIcon.setImageResource(selectedIconResId)
+        }
+
+        selectedIcon.setOnClickListener {
+            showIconSelectorDialog { newIconResId ->
+                selectedIconResId = newIconResId
+                selectedIcon.setImageResource(newIconResId)
+            }
+        }
+
+        val tableEditFields = buildEditTable(editTable, existingProfile)
+
+        buttonCancel.setOnClickListener { dialog.dismiss() }
+
+        buttonSave.setOnClickListener {
+            val profileName = editTextProfileName.text?.toString()?.trim()
+                ?: getString(R.string.default_custom_name)
+
+            saveProfileChanges(
+                profileName,
+                selectedIconResId,
+                tableEditFields,
+                isNewProfile,
+                profileIndex,
+                dialog
+            )
+        }
+
+        editTextProfileName.requestFocus()
+        val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        imm.showSoftInput(editTextProfileName, InputMethodManager.SHOW_IMPLICIT)
     }
 
     private fun buildEditTable(editTable: TableLayout, existingProfile: CustomProfile?): Array<Array<EditText?>> {
-        // Implementation bleibt gleich...
-        return Array(13) { Array<EditText?>(2) { null } }
+        val tableEditFields = Array(13) { Array<EditText?>(2) { null } }
+        val cellPadding = resources.getDimensionPixelSize(R.dimen.table_cell_padding)
+
+        val alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".toCharArray()
+
+        for (i in 0 until 13) {
+            val row = TableRow(this)
+
+            val leftPlain = createTableTextView(alphabet[i].toString(), cellPadding)
+            row.addView(leftPlain)
+
+            val leftLeet = createTableEditText(
+                existingProfile?.getTranslation(alphabet[i].toString()) ?: alphabet[i].toString(),
+                cellPadding
+            )
+            tableEditFields[i][0] = leftLeet
+            row.addView(leftLeet)
+
+            val rightPlain = createTableTextView(alphabet[i + 13].toString(), cellPadding)
+            row.addView(rightPlain)
+
+            val rightLeet = createTableEditText(
+                existingProfile?.getTranslation(alphabet[i + 13].toString()) ?: alphabet[i + 13].toString(),
+                cellPadding
+            )
+            tableEditFields[i][1] = rightLeet
+            row.addView(rightLeet)
+
+            editTable.addView(row)
+        }
+
+        return tableEditFields
     }
 
     private fun createTableTextView(text: String, padding: Int): TextView {
