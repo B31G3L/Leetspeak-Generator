@@ -136,13 +136,13 @@ class MainViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 when (leetOption.mode) {
-                    ProfileManager.MODE_SIMPLE -> {
+                    LeetManager.MODE_SIMPLE -> {
                         _currentMode.value = LeetTranslator.TranslationMode.SIMPLE
                     }
-                    ProfileManager.MODE_EXTENDED -> {
+                    LeetManager.MODE_EXTENDED -> {
                         _currentMode.value = LeetTranslator.TranslationMode.EXTENDED
                     }
-                    ProfileManager.MODE_CUSTOM -> {
+                    LeetManager.MODE_CUSTOM -> {
                         if (leetOption.isCustom && leetOption.customIndex >= 0) {
                             repository.setCurrentProfileIndex(leetOption.customIndex)
                             _currentMode.value = LeetTranslator.TranslationMode.CUSTOM
@@ -215,7 +215,7 @@ class MainViewModel @Inject constructor(
     /**
      * Updates an existing profile
      */
-    fun updateProfile(index: Int, profile: CustomProfile) {
+    fun updateProfile(index: Int, profile: CustomLeet) {
         viewModelScope.launch {
             updateUiState { copy(isLoading = true) }
 
@@ -303,9 +303,9 @@ class MainViewModel @Inject constructor(
      */
     fun generatePreview(leetOption: LeetOption, sampleText: String = "Hello"): String {
         val mode = when (leetOption.mode) {
-            ProfileManager.MODE_SIMPLE -> LeetTranslator.TranslationMode.SIMPLE
-            ProfileManager.MODE_EXTENDED -> LeetTranslator.TranslationMode.EXTENDED
-            ProfileManager.MODE_CUSTOM -> LeetTranslator.TranslationMode.CUSTOM
+            LeetManager.MODE_SIMPLE -> LeetTranslator.TranslationMode.SIMPLE
+            LeetManager.MODE_EXTENDED -> LeetTranslator.TranslationMode.EXTENDED
+            LeetManager.MODE_CUSTOM -> LeetTranslator.TranslationMode.CUSTOM
             else -> LeetTranslator.TranslationMode.SIMPLE
         }
 
@@ -388,7 +388,7 @@ sealed class MainIntent {
         val iconResId: Int,
         val useExtendedDefaults: Boolean = false
     ) : MainIntent()
-    data class UpdateProfile(val index: Int, val profile: CustomProfile) : MainIntent()
+    data class UpdateProfile(val index: Int, val profile: CustomLeet) : MainIntent()
     data class DeleteProfile(val index: Int) : MainIntent()
     object CopyToClipboard : MainIntent()
     object ClearInput : MainIntent()

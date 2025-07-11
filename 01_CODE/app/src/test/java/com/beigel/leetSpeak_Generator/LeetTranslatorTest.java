@@ -49,11 +49,11 @@ public class LeetTranslatorTest {
 
     @Test
     public void testCustomProfile() {
-        CustomProfile customProfile = new CustomProfile("Test");
-        customProfile.setTranslation("A", "@");
-        customProfile.setTranslation("E", "€");
+        CustomLeet customLeet = new CustomLeet("Test");
+        customLeet.setTranslation("A", "@");
+        customLeet.setTranslation("E", "€");
 
-        String result = LeetTranslator.translate("AE", LeetTranslator.TranslationMode.CUSTOM, customProfile);
+        String result = LeetTranslator.translate("AE", LeetTranslator.TranslationMode.CUSTOM, customLeet);
         assertEquals("@€", result);
     }
 

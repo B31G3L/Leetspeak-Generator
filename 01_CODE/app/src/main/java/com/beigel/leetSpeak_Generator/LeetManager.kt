@@ -12,7 +12,7 @@ import kotlinx.coroutines.flow.*
  * Modern ProfileManager with Kotlin Coroutines and Flow support
  * Handles custom leet profiles with reactive data streams
  */
-class ProfileManager(context: Context) {
+class LeetManager(context: Context) {
 
     companion object {
         private const val PREFS_NAME = "LeetSpeakProfiles"
@@ -41,17 +41,17 @@ class ProfileManager(context: Context) {
     private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
     // Mutable state flows for reactive updates
-    private val _profiles = MutableStateFlow<List<CustomProfile>>(emptyList())
+    private val _profiles = MutableStateFlow<List<CustomLeet>>(emptyList())
     private val _currentProfileIndex = MutableStateFlow(0)
     private val _favoriteIndex = MutableStateFlow(FAV_NONE)
 
     // Public flows for observing state changes
-    val profiles: StateFlow<List<CustomProfile>> = _profiles.asStateFlow()
+    val profiles: StateFlow<List<CustomLeet>> = _profiles.asStateFlow()
     val currentProfileIndex: StateFlow<Int> = _currentProfileIndex.asStateFlow()
     val favoriteIndex: StateFlow<Int> = _favoriteIndex.asStateFlow()
 
     // Computed flows
-    val currentProfile: StateFlow<CustomProfile?> = combine(
+    val currentProfile: StateFlow<CustomLeet?> = combine(
         profiles,
         currentProfileIndex
     ) { profiles, index ->
@@ -76,8 +76,8 @@ class ProfileManager(context: Context) {
                 val favoriteIndex = prefs.getInt(FAVORITE_LEET_KEY, FAV_NONE)
 
                 val loadedProfiles = if (profilesJson != null) {
-                    val type = object : TypeToken<List<CustomProfile>>() {}.type
-                    gson.fromJson<List<CustomProfile>>(profilesJson, type) ?: emptyList()
+                    val type = object : TypeToken<List<CustomLeet>>() {}.type
+                    gson.fromJson<List<CustomLeet>>(profilesJson, type) ?: emptyList()
                 } else {
                     emptyList()
                 }
@@ -141,7 +141,7 @@ class ProfileManager(context: Context) {
     /**
      * Adds a new profile
      */
-    suspend fun addProfile(profile: CustomProfile): ErrorHandler.Result<Int> =
+    suspend fun addProfile(profile: CustomLeet): ErrorHandler.Result<Int> =
         ErrorHandler.safeExecute(errorMessage = "Failed to add profile") {
             val currentProfiles = _profiles.value.toMutableList()
             currentProfiles.add(profile)
@@ -157,7 +157,7 @@ class ProfileManager(context: Context) {
     /**
      * Updates a profile at the given index
      */
-    suspend fun updateProfile(index: Int, profile: CustomProfile): ErrorHandler.Result<Unit> =
+    suspend fun updateProfile(index: Int, profile: CustomLeet): ErrorHandler.Result<Unit> =
         ErrorHandler.safeExecute(errorMessage = "Failed to update profile") {
             require(index in 0 until _profiles.value.size) { "Invalid profile index: $index" }
 
@@ -291,9 +291,9 @@ class ProfileManager(context: Context) {
     /**
      * Creates a profile with simple leet defaults
      */
-    suspend fun createProfileWithSimpleDefaults(name: String, iconResId: Int = R.drawable.ic_custom_mode): ErrorHandler.Result<CustomProfile> =
+    suspend fun createProfileWithSimpleDefaults(name: String, iconResId: Int = R.drawable.ic_custom_mode): ErrorHandler.Result<CustomLeet> =
         ErrorHandler.safeExecute(errorMessage = "Failed to create profile") {
-            val profile = CustomProfile.createWithSimpleDefaults(name, iconResId)
+            val profile = CustomLeet.createWithSimpleDefaults(name, iconResId)
             addProfile(profile).getOrNull() // Add to manager
             profile
         }
@@ -301,9 +301,9 @@ class ProfileManager(context: Context) {
     /**
      * Creates a profile with extended leet defaults
      */
-    suspend fun createProfileWithExtendedDefaults(name: String, iconResId: Int = R.drawable.ic_custom_mode): ErrorHandler.Result<CustomProfile> =
+    suspend fun createProfileWithExtendedDefaults(name: String, iconResId: Int = R.drawable.ic_custom_mode): ErrorHandler.Result<CustomLeet> =
         ErrorHandler.safeExecute(errorMessage = "Failed to create profile") {
-            val profile = CustomProfile.createWithExtendedDefaults(name, iconResId)
+            val profile = CustomLeet.createWithExtendedDefaults(name, iconResId)
             addProfile(profile).getOrNull() // Add to manager
             profile
         }
@@ -319,7 +319,7 @@ class ProfileManager(context: Context) {
      * Data class for profile deletion result
      */
     data class ProfileDeletionResult(
-        val deletedProfile: CustomProfile,
+        val deletedProfile: CustomLeet,
         val wasFavorite: Boolean,
         val wasLastProfile: Boolean
     )
@@ -330,6 +330,6 @@ class ProfileManager(context: Context) {
     data class FavoriteModeInfo(
         val mode: Int,
         val customIndex: Int,
-        val customProfile: CustomProfile?
+        val customLeet: CustomLeet?
     )
 }

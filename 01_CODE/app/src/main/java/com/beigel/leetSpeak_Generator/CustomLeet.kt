@@ -4,7 +4,7 @@ package com.beigel.leetSpeak_Generator
  * Represents a custom leetspeak translation profile
  * Migrated from Java to Kotlin with improved type safety and conciseness
  */
-data class CustomProfile(
+data class CustomLeet(
     var name: String,
     var iconResId: Int = R.drawable.ic_custom_mode,
     private val _translations: MutableMap<String, String> = mutableMapOf()
@@ -61,15 +61,15 @@ data class CustomProfile(
     /**
      * Creates a copy of this profile with a new name
      */
-    fun copy(newName: String = this.name): CustomProfile =
-        CustomProfile(newName, iconResId, _translations.toMutableMap())
+    fun copy(newName: String = this.name): CustomLeet =
+        CustomLeet(newName, iconResId, _translations.toMutableMap())
 
     companion object {
         /**
          * Creates a CustomProfile with default Simple Leet translations
          */
-        fun createWithSimpleDefaults(name: String, iconResId: Int = R.drawable.ic_custom_mode): CustomProfile {
-            val profile = CustomProfile(name, iconResId)
+        fun createWithSimpleDefaults(name: String, iconResId: Int = R.drawable.ic_custom_mode): CustomLeet {
+            val profile = CustomLeet(name, iconResId)
 
             // Initialize with Simple Leet mappings
             val simpleMap = mapOf(
@@ -88,8 +88,8 @@ data class CustomProfile(
         /**
          * Creates a CustomProfile with Extended Leet translations
          */
-        fun createWithExtendedDefaults(name: String, iconResId: Int = R.drawable.ic_custom_mode): CustomProfile {
-            val profile = CustomProfile(name, iconResId)
+        fun createWithExtendedDefaults(name: String, iconResId: Int = R.drawable.ic_custom_mode): CustomLeet {
+            val profile = CustomLeet(name, iconResId)
 
             // Initialize with Extended Leet mappings
             val extendedMap = mapOf(

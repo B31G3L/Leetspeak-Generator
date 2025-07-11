@@ -55,7 +55,7 @@ data class LeetOption(
          */
         fun createSimple(isSelected: Boolean = false, isFavorite: Boolean = false): LeetOption =
             LeetOption(
-                mode = ProfileManager.MODE_SIMPLE,
+                mode = LeetManager.MODE_SIMPLE,
                 name = "Simple Leet",
                 description = "Einfache Leetspeak-Übersetzung",
                 iconResId = R.drawable.ic_simple_mode,
@@ -70,7 +70,7 @@ data class LeetOption(
          */
         fun createExtended(isSelected: Boolean = false, isFavorite: Boolean = false): LeetOption =
             LeetOption(
-                mode = ProfileManager.MODE_EXTENDED,
+                mode = LeetManager.MODE_EXTENDED,
                 name = "Extended Leet",
                 description = "Erweiterte Leetspeak-Übersetzung",
                 iconResId = R.drawable.ic_extended_mode,
@@ -84,13 +84,13 @@ data class LeetOption(
          * Creates a Custom Leet option from a profile
          */
         fun createCustom(
-            profile: CustomProfile,
+            profile: CustomLeet,
             customIndex: Int,
             isSelected: Boolean = false,
             isFavorite: Boolean = false
         ): LeetOption =
             LeetOption(
-                mode = ProfileManager.MODE_CUSTOM,
+                mode = LeetManager.MODE_CUSTOM,
                 name = profile.name,
                 description = "Benutzerdefiniertes Leet",
                 iconResId = profile.iconResId,

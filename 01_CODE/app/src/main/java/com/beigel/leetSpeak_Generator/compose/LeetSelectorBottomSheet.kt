@@ -13,7 +13,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -21,8 +20,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.beigel.leetSpeak_Generator.LeetOption
 import com.beigel.leetSpeak_Generator.MainIntent
 import com.beigel.leetSpeak_Generator.MainViewModel
-import com.beigel.leetSpeak_Generator.ProfileManager
-import com.beigel.leetSpeak_Generator.R
+import com.beigel.leetSpeak_Generator.LeetManager
 
 /**
  * Enhanced Compose Bottom Sheet für Leet Selector mit integrierten Dialogen
@@ -556,9 +554,9 @@ private fun CompactLeetCard(
 // Helper function für Preview Generation
 private fun generatePreview(option: LeetOption): String {
     return when (option.mode) {
-        ProfileManager.MODE_SIMPLE -> "H3110"
-        ProfileManager.MODE_EXTENDED -> "#3110"
-        ProfileManager.MODE_CUSTOM -> "H3ll0"
+        LeetManager.MODE_SIMPLE -> "H3110"
+        LeetManager.MODE_EXTENDED -> "#3110"
+        LeetManager.MODE_CUSTOM -> "H3ll0"
         else -> "H3110"
     }
 }
@@ -704,7 +702,7 @@ fun TranslationTableDialog(
 private fun getTranslatedCharForOption(char: Char, leetOption: LeetOption, viewModel: MainViewModel): String {
     // Vereinfachte Preview-Generation
     return when (leetOption.mode) {
-        ProfileManager.MODE_SIMPLE -> {
+        LeetManager.MODE_SIMPLE -> {
             when (char) {
                 'A' -> "4"
                 'E' -> "3"
@@ -720,7 +718,7 @@ private fun getTranslatedCharForOption(char: Char, leetOption: LeetOption, viewM
                 else -> char.toString()
             }
         }
-        ProfileManager.MODE_EXTENDED -> {
+        LeetManager.MODE_EXTENDED -> {
             when (char) {
                 'A' -> "4"
                 'B' -> "8"
@@ -751,7 +749,7 @@ private fun getTranslatedCharForOption(char: Char, leetOption: LeetOption, viewM
                 else -> char.toString()
             }
         }
-        ProfileManager.MODE_CUSTOM -> {
+        LeetManager.MODE_CUSTOM -> {
             // Für Custom Profile - würde echte Übersetzung verwenden
             char.toString() // Placeholder
         }

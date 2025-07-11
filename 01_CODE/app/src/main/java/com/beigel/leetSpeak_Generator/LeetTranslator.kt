@@ -37,18 +37,18 @@ object LeetTranslator {
      *
      * @param input The text to translate
      * @param mode The translation mode to use
-     * @param customProfile Optional custom profile for CUSTOM mode
+     * @param customLeet Optional custom profile for CUSTOM mode
      * @return Translated text
      */
     fun translate(
         input: String?,
         mode: TranslationMode,
-        customProfile: CustomProfile? = null
+        customLeet: CustomLeet? = null
     ): String {
         if (input.isNullOrEmpty()) return input.orEmpty()
 
         return input.map { char ->
-            translateChar(char, mode, customProfile)
+            translateChar(char, mode, customLeet)
         }.joinToString("")
     }
 
@@ -57,13 +57,13 @@ object LeetTranslator {
      *
      * @param char The character to translate
      * @param mode The translation mode
-     * @param customProfile Optional custom profile
+     * @param customLeet Optional custom profile
      * @return Translated character as string
      */
     fun translateChar(
         char: Char,
         mode: TranslationMode,
-        customProfile: CustomProfile? = null
+        customLeet: CustomLeet? = null
     ): String {
         val upperChar = char.uppercaseChar()
 
@@ -71,7 +71,7 @@ object LeetTranslator {
             TranslationMode.SIMPLE -> simpleMap[upperChar] ?: char.toString()
             TranslationMode.EXTENDED -> extendedMap[upperChar] ?: char.toString()
             TranslationMode.CUSTOM -> {
-                customProfile?.getTranslation(upperChar.toString())
+                customLeet?.getTranslation(upperChar.toString())
                     ?: simpleMap[upperChar]
                     ?: char.toString()
             }
@@ -83,8 +83,8 @@ object LeetTranslator {
      */
     fun String.toLeet(
         mode: TranslationMode,
-        customProfile: CustomProfile? = null
-    ): String = translate(this, mode, customProfile)
+        customLeet: CustomLeet? = null
+    ): String = translate(this, mode, customLeet)
 
     /**
      * Gets the translation map for a specific mode
@@ -121,9 +121,9 @@ object LeetTranslator {
      */
     fun createPreview(
         mode: TranslationMode,
-        customProfile: CustomProfile? = null,
+        customLeet: CustomLeet? = null,
         sampleText: String = "Hello"
-    ): String = translate(sampleText, mode, customProfile)
+    ): String = translate(sampleText, mode, customLeet)
 
     /**
      * Analyzes text and returns translation statistics
@@ -131,7 +131,7 @@ object LeetTranslator {
     fun analyzeTranslation(
         input: String,
         mode: TranslationMode,
-        customProfile: CustomProfile? = null
+        customLeet: CustomLeet? = null
     ): TranslationStats {
         if (input.isEmpty()) return TranslationStats.empty()
 
@@ -141,7 +141,7 @@ object LeetTranslator {
 
         input.forEach { char ->
             totalChars++
-            val translated = translateChar(char, mode, customProfile)
+            val translated = translateChar(char, mode, customLeet)
             if (translated != char.toString()) {
                 translatedChars++
             } else {

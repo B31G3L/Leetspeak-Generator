@@ -1,7 +1,6 @@
 package com.beigel.leetSpeak_Generator
 
 import android.content.Context
-import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 
 /**
@@ -10,24 +9,24 @@ import kotlinx.coroutines.flow.*
  */
 class ProfileRepository(context: Context) {
 
-    private val profileManager = ProfileManager(context)
+    private val leetManager = LeetManager(context)
 
     // Expose reactive streams from ProfileManager
-    val profiles: StateFlow<List<CustomProfile>> = profileManager.profiles
-    val currentProfile: StateFlow<CustomProfile?> = profileManager.currentProfile
-    val currentProfileIndex: StateFlow<Int> = profileManager.currentProfileIndex
-    val hasProfiles: StateFlow<Boolean> = profileManager.hasProfiles
-    val favoriteIndex: StateFlow<Int> = profileManager.favoriteIndex
+    val profiles: StateFlow<List<CustomLeet>> = leetManager.profiles
+    val currentProfile: StateFlow<CustomLeet?> = leetManager.currentProfile
+    val currentProfileIndex: StateFlow<Int> = leetManager.currentProfileIndex
+    val hasProfiles: StateFlow<Boolean> = leetManager.hasProfiles
+    val favoriteIndex: StateFlow<Int> = leetManager.favoriteIndex
 
     /**
      * Creates a new profile with the given configuration
      */
     suspend fun createProfile(request: ProfileCreationRequest): ErrorHandler.Result<ProfileCreationResult> =
         ErrorHandler.safeExecute(errorMessage = "Failed to create profile") {
-            val profile = CustomProfile(request.name, request.iconResId)
+            val profile = CustomLeet(request.name, request.iconResId)
             profile.setTranslations(request.translations)
 
-            val indexResult = profileManager.addProfile(profile)
+            val indexResult = leetManager.addProfile(profile)
             when (indexResult) {
                 is ErrorHandler.Result.Success -> {
                     ProfileCreationResult(profile, indexResult.data, true, "Profile created successfully")
@@ -41,9 +40,9 @@ class ProfileRepository(context: Context) {
     /**
      * Updates an existing profile
      */
-    suspend fun updateProfile(index: Int, profile: CustomProfile): ErrorHandler.Result<ProfileUpdateResult> =
+    suspend fun updateProfile(index: Int, profile: CustomLeet): ErrorHandler.Result<ProfileUpdateResult> =
         ErrorHandler.safeExecute(errorMessage = "Failed to update profile") {
-            profileManager.updateProfile(index, profile).getOrNull()
+            leetManager.updateProfile(index, profile).getOrNull()
             ProfileUpdateResult(profile, index, true, "Profile updated successfully")
         }
 
@@ -52,7 +51,7 @@ class ProfileRepository(context: Context) {
      */
     suspend fun deleteProfile(index: Int): ErrorHandler.Result<ProfileDeletionResult> =
         ErrorHandler.safeExecute(errorMessage = "Failed to delete profile") {
-            val result = profileManager.deleteProfile(index)
+            val result = leetManager.deleteProfile(index)
             when (result) {
                 is ErrorHandler.Result.Success -> {
                     ProfileDeletionResult(
@@ -71,15 +70,15 @@ class ProfileRepository(context: Context) {
      * Sets the current profile index
      */
     suspend fun setCurrentProfileIndex(index: Int): ErrorHandler.Result<Unit> =
-        profileManager.setCurrentProfileIndex(index)
+        leetManager.setCurrentProfileIndex(index)
 
     /**
      * Toggles favorite status for a mode
      */
     suspend fun toggleFavorite(mode: Int, customIndex: Int = 0): ErrorHandler.Result<FavoriteToggleResult> =
         ErrorHandler.safeExecute(errorMessage = "Failed to toggle favorite") {
-            val wasAlreadyFavorite = profileManager.isFavorite(mode, customIndex)
-            val toggleResult = profileManager.toggleFavorite(mode, customIndex)
+            val wasAlreadyFavorite = leetManager.isFavorite(mode, customIndex)
+            val toggleResult = leetManager.toggleFavorite(mode, customIndex)
 
             when (toggleResult) {
                 is ErrorHandler.Result.Success -> {
@@ -103,15 +102,15 @@ class ProfileRepository(context: Context) {
      */
     suspend fun loadFavoriteMode(): ErrorHandler.Result<FavoriteModeResult> =
         ErrorHandler.safeExecute(errorMessage = "Failed to load favorite mode") {
-            val favoriteInfo = profileManager.getFavoriteMode()
+            val favoriteInfo = leetManager.getFavoriteMode()
 
             when {
                 favoriteInfo == null -> FavoriteModeResult.simple()
-                favoriteInfo.mode == ProfileManager.MODE_SIMPLE -> FavoriteModeResult.simple()
-                favoriteInfo.mode == ProfileManager.MODE_EXTENDED -> FavoriteModeResult.extended()
-                favoriteInfo.mode == ProfileManager.MODE_CUSTOM -> {
-                    if (favoriteInfo.customProfile != null) {
-                        FavoriteModeResult.custom(favoriteInfo.customIndex, favoriteInfo.customProfile)
+                favoriteInfo.mode == LeetManager.MODE_SIMPLE -> FavoriteModeResult.simple()
+                favoriteInfo.mode == LeetManager.MODE_EXTENDED -> FavoriteModeResult.extended()
+                favoriteInfo.mode == LeetManager.MODE_CUSTOM -> {
+                    if (favoriteInfo.customLeet != null) {
+                        FavoriteModeResult.custom(favoriteInfo.customIndex, favoriteInfo.customLeet)
                     } else {
                         FavoriteModeResult.simple() // Fallback
                     }
@@ -123,14 +122,14 @@ class ProfileRepository(context: Context) {
     /**
      * Creates a profile with simple defaults
      */
-    suspend fun createProfileWithSimpleDefaults(name: String, iconResId: Int = R.drawable.ic_custom_mode): ErrorHandler.Result<CustomProfile> =
-        profileManager.createProfileWithSimpleDefaults(name, iconResId)
+    suspend fun createProfileWithSimpleDefaults(name: String, iconResId: Int = R.drawable.ic_custom_mode): ErrorHandler.Result<CustomLeet> =
+        leetManager.createProfileWithSimpleDefaults(name, iconResId)
 
     /**
      * Creates a profile with extended defaults
      */
-    suspend fun createProfileWithExtendedDefaults(name: String, iconResId: Int = R.drawable.ic_custom_mode): ErrorHandler.Result<CustomProfile> =
-        profileManager.createProfileWithExtendedDefaults(name, iconResId)
+    suspend fun createProfileWithExtendedDefaults(name: String, iconResId: Int = R.drawable.ic_custom_mode): ErrorHandler.Result<CustomLeet> =
+        leetManager.createProfileWithExtendedDefaults(name, iconResId)
 
     /**
      * Gets all leet options for UI display
@@ -144,13 +143,13 @@ class ProfileRepository(context: Context) {
             // Add Simple Leet
             add(LeetOption.createSimple(
                 isSelected = currentIndex == -1, // No custom profile selected
-                isFavorite = favoriteIndex == ProfileManager.FAV_SIMPLE
+                isFavorite = favoriteIndex == LeetManager.FAV_SIMPLE
             ))
 
             // Add Extended Leet
             add(LeetOption.createExtended(
                 isSelected = currentIndex == -2, // Extended mode indicator
-                isFavorite = favoriteIndex == ProfileManager.FAV_EXTENDED
+                isFavorite = favoriteIndex == LeetManager.FAV_EXTENDED
             ))
 
             // Add Custom Leets
@@ -177,12 +176,12 @@ class ProfileRepository(context: Context) {
      * Checks if a mode is favorite
      */
     fun isFavorite(mode: Int, customIndex: Int = 0): Boolean =
-        profileManager.isFavorite(mode, customIndex)
+        leetManager.isFavorite(mode, customIndex)
 
     /**
      * Gets the current profile synchronously (for compatibility)
      */
-    fun getCurrentProfile(): CustomProfile? = currentProfile.value
+    fun getCurrentProfile(): CustomLeet? = currentProfile.value
 
     /**
      * Gets the current profile index synchronously
@@ -197,17 +196,17 @@ class ProfileRepository(context: Context) {
     /**
      * Gets all profiles synchronously
      */
-    fun getProfiles(): List<CustomProfile> = profiles.value
+    fun getProfiles(): List<CustomLeet> = profiles.value
 
     /**
      * Cleanup resources
      */
     fun cleanup() {
-        profileManager.cleanup()
+        leetManager.cleanup()
     }
 
     // Legacy compatibility for gradual migration
-    fun getProfileManager(): ProfileManager = profileManager
+    fun getProfileManager(): LeetManager = leetManager
 
     /**
      * Data class for profile creation request
@@ -222,21 +221,21 @@ class ProfileRepository(context: Context) {
      * Result classes for operations
      */
     data class ProfileCreationResult(
-        val profile: CustomProfile,
+        val profile: CustomLeet,
         val index: Int,
         val success: Boolean,
         val message: String
     )
 
     data class ProfileUpdateResult(
-        val profile: CustomProfile,
+        val profile: CustomLeet,
         val index: Int,
         val success: Boolean,
         val message: String
     )
 
     data class ProfileDeletionResult(
-        val deletedProfile: CustomProfile,
+        val deletedProfile: CustomLeet,
         val wasFavorite: Boolean,
         val wasLastProfile: Boolean,
         val success: Boolean,
@@ -257,18 +256,18 @@ class ProfileRepository(context: Context) {
     sealed class FavoriteModeResult {
         abstract val mode: Int
 
-        data class Simple(override val mode: Int = ProfileManager.MODE_SIMPLE) : FavoriteModeResult()
-        data class Extended(override val mode: Int = ProfileManager.MODE_EXTENDED) : FavoriteModeResult()
+        data class Simple(override val mode: Int = LeetManager.MODE_SIMPLE) : FavoriteModeResult()
+        data class Extended(override val mode: Int = LeetManager.MODE_EXTENDED) : FavoriteModeResult()
         data class Custom(
-            override val mode: Int = ProfileManager.MODE_CUSTOM,
+            override val mode: Int = LeetManager.MODE_CUSTOM,
             val customIndex: Int,
-            val profile: CustomProfile
+            val profile: CustomLeet
         ) : FavoriteModeResult()
 
         companion object {
             fun simple() = Simple()
             fun extended() = Extended()
-            fun custom(index: Int, profile: CustomProfile) = Custom(customIndex = index, profile = profile)
+            fun custom(index: Int, profile: CustomLeet) = Custom(customIndex = index, profile = profile)
         }
     }
 }

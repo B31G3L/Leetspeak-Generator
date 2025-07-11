@@ -10,8 +10,6 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -22,7 +20,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import com.beigel.leetSpeak_Generator.CustomProfile
+import com.beigel.leetSpeak_Generator.CustomLeet
 import com.beigel.leetSpeak_Generator.MainIntent
 import com.beigel.leetSpeak_Generator.MainViewModel
 import com.beigel.leetSpeak_Generator.R
@@ -35,7 +33,7 @@ import com.beigel.leetSpeak_Generator.R
 fun ProfileCreationDialog(
     viewModel: MainViewModel,
     onDismiss: () -> Unit,
-    existingProfile: CustomProfile? = null,
+    existingProfile: CustomLeet? = null,
     profileIndex: Int = -1
 ) {
     var profileName by remember {
@@ -120,7 +118,7 @@ fun ProfileCreationDialog(
                                     )
                                 } else {
                                     // Bestehendes Profile aktualisieren
-                                    val updatedProfile = CustomProfile(
+                                    val updatedProfile = CustomLeet(
                                         name = profileName,
                                         iconResId = selectedIconResId
                                     ).apply {

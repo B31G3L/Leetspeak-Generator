@@ -374,7 +374,7 @@ class MainActivity : AppCompatActivity() {
         dialogView: View,
         dialog: androidx.appcompat.app.AlertDialog,
         isNewProfile: Boolean,
-        existingProfile: CustomProfile? = null,
+        existingProfile: CustomLeet? = null,
         profileIndex: Int = -1
     ) {
         val editTextProfileName = dialogView.findViewById<TextInputEditText>(R.id.editTextProfileName)
@@ -422,7 +422,7 @@ class MainActivity : AppCompatActivity() {
         imm.showSoftInput(editTextProfileName, InputMethodManager.SHOW_IMPLICIT)
     }
 
-    private fun buildEditTable(editTable: TableLayout, existingProfile: CustomProfile?): Array<Array<EditText?>> {
+    private fun buildEditTable(editTable: TableLayout, existingProfile: CustomLeet?): Array<Array<EditText?>> {
         val tableEditFields = Array(13) { Array<EditText?>(2) { null } }
         val cellPadding = resources.getDimensionPixelSize(R.dimen.table_cell_padding)
 
@@ -507,7 +507,7 @@ class MainActivity : AppCompatActivity() {
                     MainIntent.CreateProfile(profileName, selectedIconResId, false)
                 )
             } else {
-                val updatedProfile = CustomProfile(profileName, selectedIconResId)
+                val updatedProfile = CustomLeet(profileName, selectedIconResId)
                 updatedProfile.setTranslations(translations)
                 viewModel.handleIntent(
                     MainIntent.UpdateProfile(profileIndex, updatedProfile)
@@ -576,9 +576,9 @@ class MainActivity : AppCompatActivity() {
 
     private fun getTranslatedCharForOption(char: Char, leetOption: LeetOption): String {
         val mode = when (leetOption.mode) {
-            ProfileManager.MODE_SIMPLE -> LeetTranslator.TranslationMode.SIMPLE
-            ProfileManager.MODE_EXTENDED -> LeetTranslator.TranslationMode.EXTENDED
-            ProfileManager.MODE_CUSTOM -> LeetTranslator.TranslationMode.CUSTOM
+            LeetManager.MODE_SIMPLE -> LeetTranslator.TranslationMode.SIMPLE
+            LeetManager.MODE_EXTENDED -> LeetTranslator.TranslationMode.EXTENDED
+            LeetManager.MODE_CUSTOM -> LeetTranslator.TranslationMode.CUSTOM
             else -> LeetTranslator.TranslationMode.SIMPLE
         }
 
@@ -637,9 +637,9 @@ class MainActivity : AppCompatActivity() {
             if (favoriteItem != null) {
                 val isFavorite = repository.isFavorite(
                     when (currentMode) {
-                        LeetTranslator.TranslationMode.SIMPLE -> ProfileManager.MODE_SIMPLE
-                        LeetTranslator.TranslationMode.EXTENDED -> ProfileManager.MODE_EXTENDED
-                        LeetTranslator.TranslationMode.CUSTOM -> ProfileManager.MODE_CUSTOM
+                        LeetTranslator.TranslationMode.SIMPLE -> LeetManager.MODE_SIMPLE
+                        LeetTranslator.TranslationMode.EXTENDED -> LeetManager.MODE_EXTENDED
+                        LeetTranslator.TranslationMode.CUSTOM -> LeetManager.MODE_CUSTOM
                     },
                     currentIndex
                 )

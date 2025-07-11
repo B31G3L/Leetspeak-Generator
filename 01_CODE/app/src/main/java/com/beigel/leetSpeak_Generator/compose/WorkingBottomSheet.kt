@@ -14,7 +14,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -23,7 +22,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.beigel.leetSpeak_Generator.LeetOption
 import com.beigel.leetSpeak_Generator.MainIntent
 import com.beigel.leetSpeak_Generator.MainViewModel
-import com.beigel.leetSpeak_Generator.ProfileManager
+import com.beigel.leetSpeak_Generator.LeetManager
 import com.beigel.leetSpeak_Generator.R
 
 /**
@@ -527,9 +526,9 @@ private fun WorkingCompactCard(
 // Helper function für Preview Generation
 private fun generateWorkingPreview(option: LeetOption): String {
     return when (option.mode) {
-        ProfileManager.MODE_SIMPLE -> "H3110"
-        ProfileManager.MODE_EXTENDED -> "#3110"
-        ProfileManager.MODE_CUSTOM -> "H3ll0"
+        LeetManager.MODE_SIMPLE -> "H3110"
+        LeetManager.MODE_EXTENDED -> "#3110"
+        LeetManager.MODE_CUSTOM -> "H3ll0"
         else -> "H3110"
     }
 }
@@ -543,7 +542,7 @@ private fun generateWorkingPreview(option: LeetOption): String {
 fun WorkingProfileDialog(
     viewModel: MainViewModel,
     onDismiss: () -> Unit,
-    existingProfile: com.beigel.leetSpeak_Generator.CustomProfile? = null,
+    existingProfile: com.beigel.leetSpeak_Generator.CustomLeet? = null,
     profileIndex: Int = -1
 ) {
     var profileName by remember {
@@ -877,7 +876,7 @@ private fun saveWorkingProfile(
                 )
             )
         } else {
-            val updatedProfile = com.beigel.leetSpeak_Generator.CustomProfile(profileName, selectedIconResId)
+            val updatedProfile = com.beigel.leetSpeak_Generator.CustomLeet(profileName, selectedIconResId)
             updatedProfile.setTranslations(translations)
             viewModel.handleIntent(
                 com.beigel.leetSpeak_Generator.MainIntent.UpdateProfile(profileIndex, updatedProfile)

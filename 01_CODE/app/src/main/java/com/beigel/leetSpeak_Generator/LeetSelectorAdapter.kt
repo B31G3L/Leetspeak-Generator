@@ -174,13 +174,13 @@ class LeetSelectorAdapter(
          */
         private fun generatePreview(option: LeetOption): String {
             return when (option.mode) {
-                ProfileManager.MODE_SIMPLE -> {
+                LeetManager.MODE_SIMPLE -> {
                     LeetTranslator.translate("Hello", LeetTranslator.TranslationMode.SIMPLE, null)
                 }
-                ProfileManager.MODE_EXTENDED -> {
+                LeetManager.MODE_EXTENDED -> {
                     LeetTranslator.translate("Hello", LeetTranslator.TranslationMode.EXTENDED, null)
                 }
-                ProfileManager.MODE_CUSTOM -> {
+                LeetManager.MODE_CUSTOM -> {
                     // For custom profiles, we would need access to the profile
                     // This is a simplified version that assumes basic translation
                     "H3ll0" // Placeholder - would need actual profile data
