@@ -2,15 +2,18 @@ package com.beigel.leetSpeak_Generator
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.Job
+import javax.inject.Inject
 
 /**
- * MainViewModel implementing MVVM pattern with reactive state management
- * Handles all UI state and business logic for the main screen
+ * MainViewModel mit Hilt Dependency Injection
+ * Ersetzt die manuelle ViewModelFactory
  */
-class MainViewModel(
+@HiltViewModel
+class MainViewModel @Inject constructor(
     private val repository: ProfileRepository
 ) : ViewModel() {
 
@@ -360,7 +363,7 @@ class MainViewModel(
 }
 
 /**
- * UI state data class
+ * UI state data class (bleibt unverändert)
  */
 data class MainUiState(
     val isLoading: Boolean = false,
@@ -371,7 +374,7 @@ data class MainUiState(
 )
 
 /**
- * Intent sealed class for handling UI events
+ * Intent sealed class (bleibt unverändert)
  */
 sealed class MainIntent {
     data class UpdateInput(val text: String) : MainIntent()
