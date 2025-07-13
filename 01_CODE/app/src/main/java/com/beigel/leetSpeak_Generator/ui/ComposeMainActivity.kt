@@ -31,6 +31,7 @@ import com.beigel.leetSpeak_Generator.ui.components.*
 import com.beigel.leetSpeak_Generator.ui.theme.LeetspeakGeneratorTheme
 import com.beigel.leetSpeak_Generator.viewmodel.MainIntent
 import com.beigel.leetSpeak_Generator.viewmodel.MainViewModel
+import com.beigel.leetSpeak_Generator.ui.components.AboutDialog
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
 
@@ -94,6 +95,7 @@ fun MainScreen(
     val shouldShowOutput by viewModel.shouldShowOutput.collectAsStateWithLifecycle()
 
     var showBottomSheet by remember { mutableStateOf(false) }
+    var showAboutDialog by remember { mutableStateOf(false) } // ✅ NEU
     val context = LocalContext.current
 
     Scaffold(
@@ -102,7 +104,10 @@ fun MainScreen(
                 title = {
                     Text(
                         "Leetspeak Generator",
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.Bold,
+                        style = MaterialTheme.typography.headlineSmall.copy(
+                            fontSize = 22.sp // ✅ GRÖßER: von default ~20sp auf 22sp
+                        )
                     )
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -110,16 +115,13 @@ fun MainScreen(
                     titleContentColor = MaterialTheme.colorScheme.onSurface
                 ),
                 actions = {
-                    IconButton(onClick = {
-                        android.widget.Toast.makeText(
-                            context,
-                            "Aktueller Modus: $currentModeDisplayName",
-                            android.widget.Toast.LENGTH_SHORT
-                        ).show()
-                    }) {
+                    IconButton(
+                        onClick = { showAboutDialog = true }
+                    ) {
                         Icon(
                             imageVector = Icons.Default.Info,
-                            contentDescription = "Info"
+                            contentDescription = "About",
+                            modifier = Modifier.size(24.dp) // ✅ Icon auch etwas größer
                         )
                     }
                 }
@@ -132,6 +134,7 @@ fun MainScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
+            // ... Rest der UI bleibt gleich ...
 
             // Main Content Card - FIXIERTES LAYOUT
             Card(
@@ -215,6 +218,13 @@ fun MainScreen(
             )
         }
 
+        // ✅ NEU: About Dialog
+        if (showAboutDialog) {
+            AboutDialog(
+                onDismiss = { showAboutDialog = false }
+            )
+        }
+
         // UI State Handling
         HandleUiState(uiState, viewModel, context)
     }
@@ -240,7 +250,7 @@ private fun ButtonSection(
             verticalAlignment = Alignment.CenterVertically
         ) {
 
-            // Plain Text Button
+            // Plain Text Button mit GRÖßEREM TEXT
             var plainButtonPressed by remember { mutableStateOf(false) }
 
             OutlinedButton(
@@ -270,11 +280,13 @@ private fun ButtonSection(
                     Icon(
                         imageVector = Icons.Default.Clear,
                         contentDescription = null,
-                        modifier = Modifier.size(18.dp)
+                        modifier = Modifier.size(20.dp) // ✅ Icon größer
                     )
                     Text(
                         "Clear",
-                        style = MaterialTheme.typography.labelLarge,
+                        style = MaterialTheme.typography.labelLarge.copy(
+                            fontSize = 16.sp // ✅ GRÖßER: von 14sp auf 16sp
+                        ),
                         fontWeight = FontWeight.Medium
                     )
                 }
@@ -290,7 +302,7 @@ private fun ButtonSection(
             // Animated Arrows
             AnimatedArrows()
 
-            // Leet Mode Button
+            // Leet Mode Button mit GRÖßEREM TEXT
             var leetButtonPressed by remember { mutableStateOf(false) }
 
             Button(
@@ -315,11 +327,13 @@ private fun ButtonSection(
                     Icon(
                         imageVector = Icons.Default.Transform,
                         contentDescription = null,
-                        modifier = Modifier.size(18.dp)
+                        modifier = Modifier.size(20.dp) // ✅ Icon größer
                     )
                     Text(
                         currentMode,
-                        style = MaterialTheme.typography.labelLarge,
+                        style = MaterialTheme.typography.labelLarge.copy(
+                            fontSize = 16.sp // ✅ GRÖßER: von 14sp auf 16sp
+                        ),
                         fontWeight = FontWeight.Bold,
                         maxLines = 1
                     )
@@ -372,7 +386,7 @@ private fun AnimatedArrows() {
                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                 contentDescription = null,
                 modifier = Modifier
-                    .size(14.dp)
+                    .size(16.dp) // ✅ Etwas größer: von 14dp auf 16dp
                     .graphicsLayer(
                         alpha = arrowAlpha,
                         translationX = arrowOffset
@@ -383,7 +397,7 @@ private fun AnimatedArrows() {
                 imageVector = Icons.AutoMirrored.Filled.ArrowForward,
                 contentDescription = null,
                 modifier = Modifier
-                    .size(14.dp)
+                    .size(16.dp) // ✅ Etwas größer: von 14dp auf 16dp
                     .graphicsLayer(
                         alpha = arrowAlpha,
                         translationX = -arrowOffset
@@ -392,12 +406,13 @@ private fun AnimatedArrows() {
             )
         }
 
-        // Mini-Text für Klarheit
+        // Mini-Text für Klarheit - auch etwas größer
         Text(
             text = "Modes",
-            style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.7f),
-            fontSize = 9.sp
+            style = MaterialTheme.typography.labelSmall.copy(
+                fontSize = 10.sp // ✅ Etwas größer: von 9sp auf 10sp
+            ),
+            color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.7f)
         )
     }
 }

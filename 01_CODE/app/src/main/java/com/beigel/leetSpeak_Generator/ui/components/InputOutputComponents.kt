@@ -27,8 +27,32 @@ import androidx.compose.ui.unit.sp
 import com.beigel.leetSpeak_Generator.translation.LeetTranslator
 import kotlinx.coroutines.delay
 
+
 /**
- * Enhanced Input Section mit modernen Compose Features
+ * Berechnet adaptive Schriftgröße - NORMALE FUNKTION ohne @Composable
+ */
+private fun getAdaptiveTextSize(text: String): androidx.compose.ui.unit.TextUnit {
+    return when {
+        text.length <= 40 -> 30.sp      // ✅ Größerer Bereich für 30sp
+        text.length <= 180 -> 22.sp     // ✅ Größerer Bereich für 22sp
+        else -> 18.sp                   // ✅ 18sp für sehr lange Texte
+    }
+}
+
+/**
+ * Berechnet adaptive Zeilenhöhe - optimiert für deine neuen Größen
+ */
+@Composable
+private fun getAdaptiveLineHeight(fontSize: androidx.compose.ui.unit.TextUnit): androidx.compose.ui.unit.TextUnit {
+    return when {
+        fontSize.value >= 30f -> fontSize * 1.25f  // ✅ Weniger Zeilenabstand bei sehr großer Schrift
+        fontSize.value >= 22f -> fontSize * 1.3f   // ✅ Mittlerer Zeilenabstand
+        else -> fontSize * 1.35f                   // ✅ Mehr Zeilenabstand bei kleinerer Schrift
+    }
+}
+
+/**
+ * Enhanced Input Section mit stabilem Focus bei Schriftgrößen-Änderung
  */
 @Composable
 fun InputSection(
@@ -43,9 +67,41 @@ fun InputSection(
     val keyboardController = LocalSoftwareKeyboardController.current
     val focusManager = LocalFocusManager.current
 
+    // ✅ LÖSUNG: Focus-State merken und wiederherstellen
+    var shouldMaintainFocus by remember { mutableStateOf(false) }
+    var previousTextLength by remember { mutableStateOf(0) }
+
     // Character and word count
     val charCount = inputText.length
     val wordCount = if (inputText.isBlank()) 0 else inputText.trim().split("\\s+".toRegex()).size
+
+    // ✅ ADAPTIVE SCHRIFTGRÖSSE - Jetzt als normale Funktionen
+    val adaptiveTextSize = getAdaptiveTextSize(inputText)
+    val adaptiveLineHeight = getAdaptiveLineHeight(adaptiveTextSize)
+
+    // ✅ Focus wiederherstellen wenn Schriftgröße sich ändert
+    LaunchedEffect(adaptiveTextSize.value) {
+        if (shouldMaintainFocus && inputText.isNotEmpty()) {
+            // Kleiner Delay um sicherzustellen dass Recomposition fertig ist
+            kotlinx.coroutines.delay(50)
+            focusRequester.requestFocus()
+        }
+    }
+
+    // ✅ Focus-State tracken
+    LaunchedEffect(inputText.length) {
+        val textLengthChanged = inputText.length != previousTextLength
+        val crossedThreshold = (previousTextLength <= 40 && inputText.length > 40) ||
+                (previousTextLength <= 180 && inputText.length > 180) ||
+                (previousTextLength > 40 && inputText.length <= 40) ||
+                (previousTextLength > 180 && inputText.length <= 180)
+
+        if (textLengthChanged && crossedThreshold) {
+            shouldMaintainFocus = true
+        }
+
+        previousTextLength = inputText.length
+    }
 
     Column(
         modifier = modifier.padding(16.dp)
@@ -54,24 +110,33 @@ fun InputSection(
         InputHeader(
             charCount = charCount,
             wordCount = wordCount,
-            onClearText = onClearText,
-            hasText = inputText.isNotEmpty()
+            onClearText = {
+                shouldMaintainFocus = false // ✅ Reset focus state beim Clear
+                onClearText()
+            },
+            hasText = inputText.isNotEmpty(),
+            currentTextSize = adaptiveTextSize
         )
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        // Enhanced Text Field
+        // ✅ Enhanced Text Field mit STABILEM FOCUS
         OutlinedTextField(
             value = inputText,
-            onValueChange = onInputChange,
+            onValueChange = { newText ->
+                onInputChange(newText)
+                // ✅ Focus-State setzen wenn User aktiv tippt
+                shouldMaintainFocus = true
+            },
             modifier = Modifier
                 .fillMaxSize()
                 .focusRequester(focusRequester),
             placeholder = {
-                AnimatedPlaceholder()
+                AnimatedPlaceholder(adaptiveTextSize)
             },
             textStyle = MaterialTheme.typography.bodyLarge.copy(
-                lineHeight = MaterialTheme.typography.bodyLarge.lineHeight.times(1.3)
+                fontSize = adaptiveTextSize,
+                lineHeight = adaptiveLineHeight
             ),
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = MaterialTheme.colorScheme.secondary,
@@ -85,6 +150,7 @@ fun InputSection(
             ),
             keyboardActions = KeyboardActions(
                 onDone = {
+                    shouldMaintainFocus = false // ✅ Reset focus state bei Done
                     keyboardController?.hide()
                     focusManager.clearFocus()
                 }
@@ -98,23 +164,26 @@ private fun InputHeader(
     charCount: Int,
     wordCount: Int,
     onClearText: () -> Unit,
-    hasText: Boolean
+    hasText: Boolean,
+    currentTextSize: androidx.compose.ui.unit.TextUnit
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // Title und Stats
+        // Title und Stats mit GRÖßERER SCHRIFT
         Column {
             Text(
                 text = "Plaintext",
-                style = MaterialTheme.typography.labelLarge,
+                style = MaterialTheme.typography.titleMedium.copy(
+                    fontSize = 18.sp
+                ),
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 fontWeight = FontWeight.Medium
             )
 
-            // Statistics
+            // Statistics mit Text-Size Indikator
             androidx.compose.animation.AnimatedVisibility(
                 visible = hasText,
                 enter = fadeIn() + slideInVertically(),
@@ -133,6 +202,8 @@ private fun InputHeader(
                         count = wordCount,
                         icon = Icons.AutoMirrored.Filled.Article
                     )
+                    // ✅ NEU: Text-Size Indicator
+                    TextSizeIndicator(currentTextSize)
                 }
             }
         }
@@ -163,6 +234,48 @@ private fun InputHeader(
 }
 
 @Composable
+private fun TextSizeIndicator(currentTextSize: androidx.compose.ui.unit.TextUnit) {
+    val sizeLabel = when {
+        currentTextSize.value >= 30f -> "XXL"    // ✅ Angepasst an deine 30sp
+        currentTextSize.value >= 22f -> "XL"     // ✅ Angepasst an deine 22sp
+        else -> "L"                              // ✅ Angepasst an deine 18sp
+    }
+
+    val sizeColor = when {
+        currentTextSize.value >= 30f -> MaterialTheme.colorScheme.tertiary
+        currentTextSize.value >= 22f -> MaterialTheme.colorScheme.secondary
+        else -> MaterialTheme.colorScheme.primary
+    }
+
+    Surface(
+        color = sizeColor.copy(alpha = 0.2f),
+        shape = MaterialTheme.shapes.small,
+        modifier = Modifier.padding(vertical = 2.dp)
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Default.FormatSize,
+                contentDescription = null,
+                modifier = Modifier.size(12.dp),
+                tint = sizeColor
+            )
+            Text(
+                text = sizeLabel,
+                style = MaterialTheme.typography.labelSmall.copy(
+                    fontSize = 13.sp
+                ),
+                color = sizeColor,
+                fontWeight = FontWeight.Bold
+            )
+        }
+    }
+}
+
+@Composable
 private fun StatChip(
     label: String,
     count: Int,
@@ -186,7 +299,9 @@ private fun StatChip(
             )
             Text(
                 text = "$count",
-                style = MaterialTheme.typography.labelSmall,
+                style = MaterialTheme.typography.labelSmall.copy(
+                    fontSize = 13.sp
+                ),
                 color = MaterialTheme.colorScheme.secondary,
                 fontWeight = FontWeight.Bold
             )
@@ -195,7 +310,7 @@ private fun StatChip(
 }
 
 @Composable
-private fun AnimatedPlaceholder() {
+private fun AnimatedPlaceholder(adaptiveTextSize: androidx.compose.ui.unit.TextUnit) {
     val placeholders = listOf(
         "Hier deinen Text eingeben...",
         "Schreibe etwas Cooles...",
@@ -222,13 +337,15 @@ private fun AnimatedPlaceholder() {
     ) { placeholder ->
         Text(
             text = placeholder,
-            style = MaterialTheme.typography.bodyLarge
+            style = MaterialTheme.typography.bodyLarge.copy(
+                fontSize = adaptiveTextSize // ✅ Placeholder mit adaptiver Größe
+            )
         )
     }
 }
 
 /**
- * Enhanced Output Section mit Animationen und verbesserter UX
+ * Enhanced Output Section mit adaptiver Schriftgröße - AUCH KORRIGIERT
  */
 @Composable
 fun OutputSection(
@@ -240,6 +357,10 @@ fun OutputSection(
 ) {
     var showCopyFeedback by remember { mutableStateOf(false) }
 
+    // ✅ ADAPTIVE SCHRIFTGRÖSSE für Output - normale Funktionen
+    val adaptiveTextSize = getAdaptiveTextSize(outputText)
+    val adaptiveLineHeight = getAdaptiveLineHeight(adaptiveTextSize)
+
     LaunchedEffect(showCopyFeedback) {
         if (showCopyFeedback) {
             delay(1500)
@@ -250,7 +371,7 @@ fun OutputSection(
     Column(
         modifier = modifier.padding(16.dp)
     ) {
-        // Output Header
+        // Output Header mit Schriftgröße-Indikator
         OutputHeader(
             currentMode = currentMode,
             onCopyClick = {
@@ -258,19 +379,21 @@ fun OutputSection(
                 showCopyFeedback = true
             },
             showCopyFeedback = showCopyFeedback,
-            translationStats = translationStats
+            translationStats = translationStats,
+            currentTextSize = adaptiveTextSize
         )
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        // Enhanced Output Display - genau wie Input TextField
+        // Enhanced Output Display mit ADAPTIVER SCHRIFTGRÖSSE
         OutlinedTextField(
             value = outputText,
             onValueChange = { }, // Read-only
             modifier = Modifier.fillMaxSize(),
             readOnly = true,
             textStyle = MaterialTheme.typography.bodyLarge.copy(
-                lineHeight = MaterialTheme.typography.bodyLarge.lineHeight.times(1.3)
+                fontSize = adaptiveTextSize,
+                lineHeight = adaptiveLineHeight
             ),
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = MaterialTheme.colorScheme.secondary,
@@ -288,7 +411,9 @@ fun OutputSection(
                 if (outputText.isEmpty()) {
                     Text(
                         text = "Deine Leetspeak-Übersetzung erscheint hier...",
-                        style = MaterialTheme.typography.bodyLarge,
+                        style = MaterialTheme.typography.bodyLarge.copy(
+                            fontSize = 30.sp // ✅ Placeholder immer groß
+                        ),
                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                     )
                 }
@@ -302,34 +427,49 @@ private fun OutputHeader(
     currentMode: String,
     onCopyClick: () -> Unit,
     showCopyFeedback: Boolean,
-    translationStats: LeetTranslator.TranslationStats?
+    translationStats: LeetTranslator.TranslationStats?,
+    currentTextSize: androidx.compose.ui.unit.TextUnit
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // Mode Info
+        // Mode Info mit Schriftgröße-Info
         Column {
             Text(
                 text = currentMode,
-                style = MaterialTheme.typography.labelLarge,
+                style = MaterialTheme.typography.titleMedium.copy(
+                    fontSize = 18.sp
+                ),
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 fontWeight = FontWeight.Medium
             )
 
-            // Translation Stats
-            translationStats?.let { stats ->
-                androidx.compose.animation.AnimatedVisibility(
-                    visible = stats.totalChars > 0,
-                    enter = fadeIn() + slideInVertically(),
-                    exit = fadeOut() + slideOutVertically()
-                ) {
-                    Text(
-                        text = "${stats.translatedChars}/${stats.totalChars} übersetzt (${stats.translationPercentage.toInt()}%)",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.secondary
-                    )
+            // Translation Stats mit Text-Size Indicator
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                translationStats?.let { stats ->
+                    androidx.compose.animation.AnimatedVisibility(
+                        visible = stats.totalChars > 0,
+                        enter = fadeIn() + slideInVertically(),
+                        exit = fadeOut() + slideOutVertically()
+                    ) {
+                        Text(
+                            text = "${stats.translatedChars}/${stats.totalChars} übersetzt (${stats.translationPercentage.toInt()}%)",
+                            style = MaterialTheme.typography.labelMedium.copy(
+                                fontSize = 13.sp
+                            ),
+                            color = MaterialTheme.colorScheme.secondary
+                        )
+                    }
+                }
+
+                // ✅ Text-Size Indicator für Output
+                if (translationStats?.totalChars ?: 0 > 0) {
+                    TextSizeIndicator(currentTextSize)
                 }
             }
         }
