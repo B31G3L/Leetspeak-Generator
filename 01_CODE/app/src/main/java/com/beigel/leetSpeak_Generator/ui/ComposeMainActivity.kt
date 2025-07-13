@@ -82,12 +82,7 @@ class ComposeMainActivity : ComponentActivity() {
         val clip = ClipData.newPlainText("Leetspeak Text", text)
         clipboard.setPrimaryClip(clip)
 
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-            vibrator.vibrate(VibrationEffect.createOneShot(50, VibrationEffect.DEFAULT_AMPLITUDE))
-        } else {
-            @Suppress("DEPRECATION")
-            vibrator.vibrate(50)
-        }
+        vibrator.vibrate(VibrationEffect.createOneShot(50, VibrationEffect.DEFAULT_AMPLITUDE))
     }
 }
 
