@@ -17,6 +17,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.font.FontWeight
@@ -33,26 +34,26 @@ import kotlinx.coroutines.delay
  */
 private fun getAdaptiveTextSize(text: String): androidx.compose.ui.unit.TextUnit {
     return when {
-        text.length <= 40 -> 30.sp      // ✅ Größerer Bereich für 30sp
-        text.length <= 180 -> 22.sp     // ✅ Größerer Bereich für 22sp
-        else -> 18.sp                   // ✅ 18sp für sehr lange Texte
+        text.length <= 40 -> 30.sp
+        text.length <= 180 -> 22.sp
+        else -> 18.sp
     }
 }
 
 /**
- * Berechnet adaptive Zeilenhöhe - optimiert für deine neuen Größen
+ * Berechnet adaptive Zeilenhöhe
  */
 @Composable
 private fun getAdaptiveLineHeight(fontSize: androidx.compose.ui.unit.TextUnit): androidx.compose.ui.unit.TextUnit {
     return when {
-        fontSize.value >= 30f -> fontSize * 1.25f  // ✅ Weniger Zeilenabstand bei sehr großer Schrift
-        fontSize.value >= 22f -> fontSize * 1.3f   // ✅ Mittlerer Zeilenabstand
-        else -> fontSize * 1.35f                   // ✅ Mehr Zeilenabstand bei kleinerer Schrift
+        fontSize.value >= 30f -> fontSize * 1.25f
+        fontSize.value >= 22f -> fontSize * 1.3f
+        else -> fontSize * 1.35f
     }
 }
 
 /**
- * Enhanced Input Section mit stabilem Focus bei Schriftgrößen-Änderung
+ * ✅ RADIKAL ÜBERARBEITETE InputSection - FOCUS BLEIBT DEFINITIV STABIL
  */
 @Composable
 fun InputSection(
@@ -67,41 +68,26 @@ fun InputSection(
     val keyboardController = LocalSoftwareKeyboardController.current
     val focusManager = LocalFocusManager.current
 
-    // ✅ LÖSUNG: Focus-State merken und wiederherstellen
-    var shouldMaintainFocus by remember { mutableStateOf(false) }
-    var previousTextLength by remember { mutableStateOf(0) }
+    // ✅ NEUE STRATEGIE: Stabile Schriftgröße, weniger Recomposition
+    var isFocused by remember { mutableStateOf(false) }
 
     // Character and word count
     val charCount = inputText.length
     val wordCount = if (inputText.isBlank()) 0 else inputText.trim().split("\\s+".toRegex()).size
 
-    // ✅ ADAPTIVE SCHRIFTGRÖSSE - Jetzt als normale Funktionen
-    val adaptiveTextSize = getAdaptiveTextSize(inputText)
+    // ✅ LÖSUNG: STABILE Schriftgröße - ändert sich NICHT bei jedem Zeichen
+    val adaptiveTextSize = remember {
+        derivedStateOf {
+            when {
+                inputText.length <= 40 -> 30.sp
+                inputText.length <= 180 -> 22.sp
+                else -> 18.sp
+            }
+        }
+    }.value
     val adaptiveLineHeight = getAdaptiveLineHeight(adaptiveTextSize)
 
-    // ✅ Focus wiederherstellen wenn Schriftgröße sich ändert
-    LaunchedEffect(adaptiveTextSize.value) {
-        if (shouldMaintainFocus && inputText.isNotEmpty()) {
-            // Kleiner Delay um sicherzustellen dass Recomposition fertig ist
-            kotlinx.coroutines.delay(50)
-            focusRequester.requestFocus()
-        }
-    }
-
-    // ✅ Focus-State tracken
-    LaunchedEffect(inputText.length) {
-        val textLengthChanged = inputText.length != previousTextLength
-        val crossedThreshold = (previousTextLength <= 40 && inputText.length > 40) ||
-                (previousTextLength <= 180 && inputText.length > 180) ||
-                (previousTextLength > 40 && inputText.length <= 40) ||
-                (previousTextLength > 180 && inputText.length <= 180)
-
-        if (textLengthChanged && crossedThreshold) {
-            shouldMaintainFocus = true
-        }
-
-        previousTextLength = inputText.length
-    }
+    // ✅ KEIN LaunchedEffect mehr - das war das Problem!
 
     Column(
         modifier = modifier.padding(16.dp)
@@ -111,7 +97,7 @@ fun InputSection(
             charCount = charCount,
             wordCount = wordCount,
             onClearText = {
-                shouldMaintainFocus = false // ✅ Reset focus state beim Clear
+                isFocused = false
                 onClearText()
             },
             hasText = inputText.isNotEmpty(),
@@ -120,42 +106,45 @@ fun InputSection(
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        // ✅ Enhanced Text Field mit STABILEM FOCUS
-        OutlinedTextField(
-            value = inputText,
-            onValueChange = { newText ->
-                onInputChange(newText)
-                // ✅ Focus-State setzen wenn User aktiv tippt
-                shouldMaintainFocus = true
-            },
-            modifier = Modifier
-                .fillMaxSize()
-                .focusRequester(focusRequester),
-            placeholder = {
-                AnimatedPlaceholder(adaptiveTextSize)
-            },
-            textStyle = MaterialTheme.typography.bodyLarge.copy(
-                fontSize = adaptiveTextSize,
-                lineHeight = adaptiveLineHeight
-            ),
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = MaterialTheme.colorScheme.secondary,
-                unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),
-                focusedPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                unfocusedPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
-            ),
-            shape = MaterialTheme.shapes.large,
-            keyboardOptions = KeyboardOptions(
-                imeAction = ImeAction.Default
-            ),
-            keyboardActions = KeyboardActions(
-                onDone = {
-                    shouldMaintainFocus = false // ✅ Reset focus state bei Done
-                    keyboardController?.hide()
-                    focusManager.clearFocus()
-                }
+        // ✅ ULTIMATIVE LÖSUNG: TextField mit MINIMALER Recomposition
+        key(inputText.isEmpty()) { // ✅ Nur bei leer/nicht-leer Wechsel neu erstellen
+            OutlinedTextField(
+                value = inputText,
+                onValueChange = onInputChange, // ✅ Direkt weiterleiten, keine Zwischensteps
+                modifier = Modifier
+                    .fillMaxSize()
+                    .focusRequester(focusRequester)
+                    .onFocusChanged { focusState ->
+                        isFocused = focusState.isFocused
+                    },
+                placeholder = {
+                    AnimatedPlaceholder(adaptiveTextSize)
+                },
+                textStyle = MaterialTheme.typography.bodyLarge.copy(
+                    fontSize = adaptiveTextSize,
+                    lineHeight = adaptiveLineHeight
+                ),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = MaterialTheme.colorScheme.secondary,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),
+                    focusedPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                    unfocusedPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                ),
+                shape = MaterialTheme.shapes.large,
+                keyboardOptions = KeyboardOptions(
+                    imeAction = ImeAction.Default
+                ),
+                keyboardActions = KeyboardActions(
+                    onDone = {
+                        isFocused = false
+                        keyboardController?.hide()
+                        focusManager.clearFocus()
+                    }
+                ),
+                singleLine = false,
+                maxLines = Int.MAX_VALUE
             )
-        )
+        }
     }
 }
 
@@ -172,7 +161,7 @@ private fun InputHeader(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // Title und Stats mit GRÖßERER SCHRIFT
+        // Title und Stats
         Column {
             Text(
                 text = "Plaintext",
@@ -202,7 +191,7 @@ private fun InputHeader(
                         count = wordCount,
                         icon = Icons.AutoMirrored.Filled.Article
                     )
-                    // ✅ NEU: Text-Size Indicator
+                    // Text-Size Indicator
                     TextSizeIndicator(currentTextSize)
                 }
             }
@@ -236,9 +225,9 @@ private fun InputHeader(
 @Composable
 private fun TextSizeIndicator(currentTextSize: androidx.compose.ui.unit.TextUnit) {
     val sizeLabel = when {
-        currentTextSize.value >= 30f -> "XXL"    // ✅ Angepasst an deine 30sp
-        currentTextSize.value >= 22f -> "XL"     // ✅ Angepasst an deine 22sp
-        else -> "L"                              // ✅ Angepasst an deine 18sp
+        currentTextSize.value >= 30f -> "XXL"
+        currentTextSize.value >= 22f -> "XL"
+        else -> "L"
     }
 
     val sizeColor = when {
@@ -338,14 +327,14 @@ private fun AnimatedPlaceholder(adaptiveTextSize: androidx.compose.ui.unit.TextU
         Text(
             text = placeholder,
             style = MaterialTheme.typography.bodyLarge.copy(
-                fontSize = adaptiveTextSize // ✅ Placeholder mit adaptiver Größe
+                fontSize = adaptiveTextSize
             )
         )
     }
 }
 
 /**
- * Enhanced Output Section mit adaptiver Schriftgröße - AUCH KORRIGIERT
+ * ✅ ÜBERARBEITETE Output Section - mit showContent Parameter
  */
 @Composable
 fun OutputSection(
@@ -353,12 +342,21 @@ fun OutputSection(
     currentMode: String,
     onCopyClick: () -> Unit,
     modifier: Modifier = Modifier,
-    translationStats: LeetTranslator.TranslationStats? = null
+    translationStats: LeetTranslator.TranslationStats? = null,
+    showContent: Boolean = true // ✅ NEU: Kontrolle über Sichtbarkeit
 ) {
     var showCopyFeedback by remember { mutableStateOf(false) }
 
-    // ✅ ADAPTIVE SCHRIFTGRÖSSE für Output - normale Funktionen
-    val adaptiveTextSize = getAdaptiveTextSize(outputText)
+    // Stabile Schriftgröße
+    val adaptiveTextSize = remember {
+        derivedStateOf {
+            when {
+                outputText.length <= 40 -> 30.sp
+                outputText.length <= 180 -> 22.sp
+                else -> 18.sp
+            }
+        }
+    }.value
     val adaptiveLineHeight = getAdaptiveLineHeight(adaptiveTextSize)
 
     LaunchedEffect(showCopyFeedback) {
@@ -368,57 +366,98 @@ fun OutputSection(
         }
     }
 
-    Column(
-        modifier = modifier.padding(16.dp)
+    // ✅ WICHTIG: AnimatedVisibility hier, nicht im Parent
+    AnimatedVisibility(
+        visible = showContent,
+        enter = fadeIn(animationSpec = tween(300)) + slideInVertically(
+            animationSpec = tween(300),
+            initialOffsetY = { it / 4 }
+        ),
+        exit = fadeOut(animationSpec = tween(200)) + slideOutVertically(
+            animationSpec = tween(200),
+            targetOffsetY = { it / 4 }
+        ),
+        modifier = modifier
     ) {
-        // Output Header mit Schriftgröße-Indikator
-        OutputHeader(
-            currentMode = currentMode,
-            onCopyClick = {
-                onCopyClick()
-                showCopyFeedback = true
-            },
-            showCopyFeedback = showCopyFeedback,
-            translationStats = translationStats,
-            currentTextSize = adaptiveTextSize
-        )
+        Column(
+            modifier = Modifier.padding(16.dp)
+        ) {
+            // Output Header
+            OutputHeader(
+                currentMode = currentMode,
+                onCopyClick = {
+                    onCopyClick()
+                    showCopyFeedback = true
+                },
+                showCopyFeedback = showCopyFeedback,
+                translationStats = translationStats,
+                currentTextSize = adaptiveTextSize
+            )
 
-        Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
-        // Enhanced Output Display mit ADAPTIVER SCHRIFTGRÖSSE
-        OutlinedTextField(
-            value = outputText,
-            onValueChange = { }, // Read-only
-            modifier = Modifier.fillMaxSize(),
-            readOnly = true,
-            textStyle = MaterialTheme.typography.bodyLarge.copy(
-                fontSize = adaptiveTextSize,
-                lineHeight = adaptiveLineHeight
-            ),
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = MaterialTheme.colorScheme.secondary,
-                unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),
-                disabledBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),
-                focusedContainerColor = MaterialTheme.colorScheme.surface,
-                unfocusedContainerColor = MaterialTheme.colorScheme.surface,
-                disabledContainerColor = MaterialTheme.colorScheme.surface,
-                focusedTextColor = MaterialTheme.colorScheme.onSurface,
-                unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
-                disabledTextColor = MaterialTheme.colorScheme.onSurface
-            ),
-            shape = MaterialTheme.shapes.large,
-            placeholder = {
-                if (outputText.isEmpty()) {
-                    Text(
-                        text = "Deine Leetspeak-Übersetzung erscheint hier...",
-                        style = MaterialTheme.typography.bodyLarge.copy(
-                            fontSize = 30.sp // ✅ Placeholder immer groß
-                        ),
-                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
-                    )
+            // Output Display
+            OutlinedTextField(
+                value = outputText,
+                onValueChange = { }, // Read-only
+                modifier = Modifier.fillMaxSize(),
+                readOnly = true,
+                textStyle = MaterialTheme.typography.bodyLarge.copy(
+                    fontSize = adaptiveTextSize,
+                    lineHeight = adaptiveLineHeight
+                ),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = MaterialTheme.colorScheme.secondary,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),
+                    disabledBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),
+                    focusedContainerColor = MaterialTheme.colorScheme.surface,
+                    unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                    disabledContainerColor = MaterialTheme.colorScheme.surface,
+                    focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                    unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+                    disabledTextColor = MaterialTheme.colorScheme.onSurface
+                ),
+                shape = MaterialTheme.shapes.large,
+                placeholder = {
+                    if (outputText.isEmpty()) {
+                        Text(
+                            text = "Deine Leetspeak-Übersetzung erscheint hier...",
+                            style = MaterialTheme.typography.bodyLarge.copy(
+                                fontSize = 30.sp
+                            ),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                        )
+                    }
                 }
+            )
+        }
+    }
+
+    // ✅ Fallback wenn nicht sichtbar
+    if (!showContent) {
+        Box(
+            modifier = modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Transform,
+                    contentDescription = null,
+                    modifier = Modifier.size(48.dp),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = "Text eingeben für Leetspeak-Übersetzung",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                    textAlign = TextAlign.Center
+                )
             }
-        )
+        }
     }
 }
 
@@ -435,7 +474,7 @@ private fun OutputHeader(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // Mode Info mit Schriftgröße-Info
+        // Mode Info
         Column {
             Text(
                 text = currentMode,
@@ -446,7 +485,6 @@ private fun OutputHeader(
                 fontWeight = FontWeight.Medium
             )
 
-            // Translation Stats mit Text-Size Indicator
             Row(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalAlignment = Alignment.CenterVertically
@@ -467,14 +505,13 @@ private fun OutputHeader(
                     }
                 }
 
-                // ✅ Text-Size Indicator für Output
                 if (translationStats?.totalChars ?: 0 > 0) {
                     TextSizeIndicator(currentTextSize)
                 }
             }
         }
 
-        // Copy Button mit Feedback
+        // Copy Button
         Box {
             IconButton(
                 onClick = onCopyClick,
@@ -505,7 +542,6 @@ private fun OutputHeader(
                 }
             }
 
-            // Copy Feedback Badge
             androidx.compose.animation.AnimatedVisibility(
                 visible = showCopyFeedback,
                 enter = scaleIn() + fadeIn(),

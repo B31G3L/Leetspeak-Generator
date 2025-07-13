@@ -12,6 +12,8 @@ import androidx.activity.viewModels
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
@@ -20,18 +22,26 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.view.WindowCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.beigel.leetSpeak_Generator.ui.components.*
+import com.beigel.leetSpeak_Generator.translation.LeetTranslator
+import com.beigel.leetSpeak_Generator.ui.components.AboutDialog
+import com.beigel.leetSpeak_Generator.ui.components.LeetSelectorBottomSheet
 import com.beigel.leetSpeak_Generator.ui.theme.LeetspeakGeneratorTheme
 import com.beigel.leetSpeak_Generator.viewmodel.MainIntent
 import com.beigel.leetSpeak_Generator.viewmodel.MainViewModel
-import com.beigel.leetSpeak_Generator.ui.components.AboutDialog
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
 
@@ -43,6 +53,9 @@ class ComposeMainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // WindowCompat für moderne Inset-Behandlung
+        WindowCompat.setDecorFitsSystemWindows(window, false)
 
         vibrator = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
             val vibratorManager = getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as android.os.VibratorManager
@@ -69,15 +82,12 @@ class ComposeMainActivity : ComponentActivity() {
         val clip = ClipData.newPlainText("Leetspeak Text", text)
         clipboard.setPrimaryClip(clip)
 
-        // Modern haptic feedback
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
             vibrator.vibrate(VibrationEffect.createOneShot(50, VibrationEffect.DEFAULT_AMPLITUDE))
         } else {
             @Suppress("DEPRECATION")
             vibrator.vibrate(50)
         }
-
-        viewModel.handleIntent(MainIntent.CopyToClipboard)
     }
 }
 
@@ -87,27 +97,44 @@ fun MainScreen(
     viewModel: MainViewModel,
     onCopyToClipboard: (String) -> Unit
 ) {
-    val inputText by viewModel.inputText.collectAsStateWithLifecycle()
-    val outputText by viewModel.outputText.collectAsStateWithLifecycle()
+    // Lokaler State
+    var inputText by remember { mutableStateOf("") }
+    var outputText by remember { mutableStateOf("") }
+
+    // ViewModel State
     val currentModeDisplayName by viewModel.currentModeDisplayName.collectAsStateWithLifecycle()
-    val translationStats by viewModel.translationStats.collectAsStateWithLifecycle()
+    val currentMode by viewModel.currentMode.collectAsStateWithLifecycle()
+    val currentLeet by viewModel.currentLeet.collectAsStateWithLifecycle()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val shouldShowOutput by viewModel.shouldShowOutput.collectAsStateWithLifecycle()
+
+    // ✅ EINFACHE Keyboard Detection - ohne komplexe LaunchedEffect
+    val density = LocalDensity.current
+    val keyboardHeight = WindowInsets.ime.getBottom(density)
+    val isKeyboardVisible = keyboardHeight > 100 // Einfacher Threshold
+    val hasOutput = outputText.isNotEmpty()
 
     var showBottomSheet by remember { mutableStateOf(false) }
-    var showAboutDialog by remember { mutableStateOf(false) } // ✅ NEU
+    var showAboutDialog by remember { mutableStateOf(false) }
     val context = LocalContext.current
 
+    // Lokale Translation
+    LaunchedEffect(inputText, currentMode, currentLeet) {
+        outputText = if (inputText.isEmpty()) {
+            ""
+        } else {
+            LeetTranslator.translate(inputText, currentMode, currentLeet)
+        }
+    }
+
     Scaffold(
+        modifier = Modifier.fillMaxSize(),
         topBar = {
             TopAppBar(
                 title = {
                     Text(
                         "Leetspeak Generator",
                         fontWeight = FontWeight.Bold,
-                        style = MaterialTheme.typography.headlineSmall.copy(
-                            fontSize = 22.sp // ✅ GRÖßER: von default ~20sp auf 22sp
-                        )
+                        style = MaterialTheme.typography.headlineSmall.copy(fontSize = 22.sp)
                     )
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -115,13 +142,11 @@ fun MainScreen(
                     titleContentColor = MaterialTheme.colorScheme.onSurface
                 ),
                 actions = {
-                    IconButton(
-                        onClick = { showAboutDialog = true }
-                    ) {
+                    IconButton(onClick = { showAboutDialog = true }) {
                         Icon(
                             imageVector = Icons.Default.Info,
                             contentDescription = "About",
-                            modifier = Modifier.size(24.dp) // ✅ Icon auch etwas größer
+                            modifier = Modifier.size(24.dp)
                         )
                     }
                 }
@@ -133,84 +158,104 @@ fun MainScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
+                .then(
+                    if (isKeyboardVisible) {
+                        Modifier.padding(bottom = with(density) { keyboardHeight.toDp() })
+                    } else {
+                        Modifier
+                    }
+                )
         ) {
-            // ... Rest der UI bleibt gleich ...
 
-            // Main Content Card - FIXIERTES LAYOUT
+            // ✅ FIXES LAYOUT mit besserer Platz-Verteilung
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surface
-                ),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                 elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
                 shape = RectangleShape
             ) {
-                // FIXIERTE CONTAINER-HÖHEN
-                if (shouldShowOutput) {
-                    // Mit Output: 50/50 Aufteilung
-                    Column(modifier = Modifier.fillMaxSize()) {
-                        // Input Section - exakt die Hälfte
+                Column(modifier = Modifier.fillMaxSize()) {
+                    // ✅ INPUT - mit besserer Mindest-Höhe
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .then(
+                                when {
+                                    !hasOutput -> Modifier.weight(1f) // Kein Output: 100%
+                                    !isKeyboardVisible -> Modifier.weight(0.5f) // Normal: 50%
+                                    else -> Modifier.heightIn(min = 120.dp).weight(0.5f) // ✅ Mit Keyboard: Mindest-Höhe + 50%
+                                }
+                            )
+                    ) {
                         InputSection(
                             inputText = inputText,
-                            onInputChange = { text ->
-                                viewModel.handleIntent(MainIntent.UpdateInput(text))
-                            },
-                            onClearText = {
-                                viewModel.handleIntent(MainIntent.ClearInput)
-                            },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .weight(1f) // 50%
-                        )
-
-                        // Divider
-                        HorizontalDivider(
-                            modifier = Modifier.padding(horizontal = 16.dp),
-                            color = MaterialTheme.colorScheme.secondary,
-                            thickness = 2.dp
-                        )
-
-                        // Output Section - exakt die Hälfte
-                        OutputSection(
-                            outputText = outputText,
-                            currentMode = currentModeDisplayName,
-                            onCopyClick = { onCopyToClipboard(outputText) },
-                            translationStats = translationStats,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .weight(1f) // 50%
+                            onInputChange = { inputText = it },
+                            onClearText = { inputText = "" },
+                            modifier = Modifier.fillMaxSize()
                         )
                     }
-                } else {
-                    // Ohne Output: Input nimmt alles
-                    InputSection(
-                        inputText = inputText,
-                        onInputChange = { text ->
-                            viewModel.handleIntent(MainIntent.UpdateInput(text))
-                        },
-                        onClearText = {
-                            viewModel.handleIntent(MainIntent.ClearInput)
-                        },
-                        modifier = Modifier.fillMaxSize() // 100%
-                    )
+
+                    // ✅ OUTPUT - nur wenn Text da, mit intelligenter Höhe
+                    AnimatedVisibility(
+                        visible = hasOutput,
+                        enter = expandVertically(animationSpec = tween(300)) + fadeIn(),
+                        exit = shrinkVertically(animationSpec = tween(200)) + fadeOut()
+                    ) {
+                        Column {
+                            // Divider
+                            HorizontalDivider(
+                                modifier = Modifier.padding(horizontal = 16.dp),
+                                color = MaterialTheme.colorScheme.secondary,
+                                thickness = if (isKeyboardVisible) 1.dp else 2.dp
+                            )
+
+                            // Output Section mit angepasster Höhe
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .then(
+                                        if (isKeyboardVisible) {
+                                            // ✅ Bei Keyboard: Feste kompakte Höhe
+                                            Modifier.height(100.dp)
+                                        } else {
+                                            // ✅ Ohne Keyboard: 50% des Platzes
+                                            Modifier.weight(0.5f)
+                                        }
+                                    )
+                            ) {
+                                if (isKeyboardVisible) {
+                                    // Kompakte Version für Keyboard
+                                    CompactKeyboardOutput(
+                                        outputText = outputText,
+                                        currentMode = currentModeDisplayName,
+                                        onCopyClick = { onCopyToClipboard(outputText) }
+                                    )
+                                } else {
+                                    // Normale Version
+                                    OutputSection(
+                                        outputText = outputText,
+                                        currentMode = currentModeDisplayName,
+                                        onCopyClick = { onCopyToClipboard(outputText) },
+                                        modifier = Modifier.fillMaxSize()
+                                    )
+                                }
+                            }
+                        }
+                    }
                 }
             }
 
             // Button Section
             ButtonSection(
                 currentMode = currentModeDisplayName,
-                onLeetSelectorClick = {
-                    showBottomSheet = true
-                },
-                onPlainModeClick = {
-                    viewModel.handleIntent(MainIntent.ClearInput)
-                }
+                onLeetSelectorClick = { showBottomSheet = true },
+                onPlainModeClick = { inputText = "" }
             )
         }
 
-        // Bottom Sheet
+        // Dialoge
         if (showBottomSheet) {
             LeetSelectorBottomSheet(
                 viewModel = viewModel,
@@ -218,15 +263,259 @@ fun MainScreen(
             )
         }
 
-        // ✅ NEU: About Dialog
         if (showAboutDialog) {
             AboutDialog(
                 onDismiss = { showAboutDialog = false }
             )
         }
 
-        // UI State Handling
         HandleUiState(uiState, viewModel, context)
+    }
+}
+
+// LAYOUT KOMPONENTEN - VEREINFACHT
+
+// ✅ Die alten Layout-Komponenten sind nicht mehr nötig!
+// Alles läuft über die einheitliche Struktur im MainScreen
+
+// UI KOMPONENTEN
+
+@Composable
+private fun InputSection(
+    inputText: String,
+    onInputChange: (String) -> Unit,
+    onClearText: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    // ✅ MINIMAL - wie die funktionierende Version
+    Column(modifier = modifier.padding(16.dp)) {
+        // Header
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "Plaintext",
+                style = MaterialTheme.typography.titleMedium.copy(fontSize = 18.sp),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                fontWeight = FontWeight.Medium
+            )
+
+            if (inputText.isNotEmpty()) {
+                IconButton(
+                    onClick = onClearText,
+                    modifier = Modifier.size(32.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Clear,
+                        contentDescription = "Clear",
+                        modifier = Modifier.size(18.dp),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        // ✅ EINFACHES TextField - zurück zur funktionierenden Version
+        OutlinedTextField(
+            value = inputText,
+            onValueChange = onInputChange, // Direkt weiterleiten
+            modifier = Modifier.fillMaxSize(),
+            placeholder = { Text("Hier deinen Text eingeben...") },
+            textStyle = MaterialTheme.typography.bodyLarge.copy(fontSize = 20.sp),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = MaterialTheme.colorScheme.secondary,
+                unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
+            ),
+            shape = MaterialTheme.shapes.large,
+            singleLine = false,
+            maxLines = Int.MAX_VALUE
+        )
+    }
+}
+
+@Composable
+private fun OutputSection(
+    outputText: String,
+    currentMode: String,
+    onCopyClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    var showCopyFeedback by remember { mutableStateOf(false) }
+
+    LaunchedEffect(showCopyFeedback) {
+        if (showCopyFeedback) {
+            delay(1500)
+            showCopyFeedback = false
+        }
+    }
+
+    Column(modifier = modifier.padding(16.dp)) {
+        // Header
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = currentMode,
+                style = MaterialTheme.typography.titleMedium.copy(fontSize = 18.sp),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                fontWeight = FontWeight.Medium
+            )
+
+            IconButton(
+                onClick = {
+                    onCopyClick()
+                    showCopyFeedback = true
+                },
+                modifier = Modifier.size(40.dp)
+            ) {
+                AnimatedContent(
+                    targetState = showCopyFeedback,
+                    transitionSpec = {
+                        scaleIn() + fadeIn() togetherWith scaleOut() + fadeOut()
+                    },
+                    label = "copy_feedback"
+                ) { feedback ->
+                    Icon(
+                        imageVector = if (feedback) Icons.Default.Check else Icons.Default.ContentCopy,
+                        contentDescription = if (feedback) "Kopiert!" else "Kopieren",
+                        tint = MaterialTheme.colorScheme.secondary,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        // Output TextField
+        OutlinedTextField(
+            value = outputText,
+            onValueChange = { },
+            modifier = Modifier.fillMaxSize(),
+            readOnly = true,
+            textStyle = MaterialTheme.typography.bodyLarge.copy(fontSize = 20.sp),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = MaterialTheme.colorScheme.secondary,
+                unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),
+                disabledBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),
+                focusedContainerColor = MaterialTheme.colorScheme.surface,
+                unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                disabledContainerColor = MaterialTheme.colorScheme.surface
+            ),
+            shape = MaterialTheme.shapes.large
+        )
+    }
+}
+
+@Composable
+private fun CompactKeyboardOutput(
+    outputText: String,
+    currentMode: String,
+    onCopyClick: () -> Unit
+) {
+    var showCopyFeedback by remember { mutableStateOf(false) }
+
+    LaunchedEffect(showCopyFeedback) {
+        if (showCopyFeedback) {
+            delay(1200)
+            showCopyFeedback = false
+        }
+    }
+
+    // ✅ ULTRA-KOMPAKTE Keyboard-Version - nur das Nötigste!
+    Surface(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.3f),
+        shape = MaterialTheme.shapes.medium
+    ) {
+        Row(
+            modifier = Modifier.padding(12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // ✅ Kompakter Text-Bereich
+            Column(modifier = Modifier.weight(1f)) {
+                // Mini-Header
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Transform,
+                        contentDescription = null,
+                        modifier = Modifier.size(12.dp),
+                        tint = MaterialTheme.colorScheme.secondary
+                    )
+                    Text(
+                        text = currentMode,
+                        style = MaterialTheme.typography.labelSmall.copy(fontSize = 11.sp),
+                        color = MaterialTheme.colorScheme.secondary,
+                        fontWeight = FontWeight.Medium
+                    )
+                    // Character count
+                    Text(
+                        text = "(${outputText.length})",
+                        style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(4.dp))
+
+                // ✅ Output Text - scrollable, 2 Zeilen max
+                Text(
+                    text = outputText,
+                    style = MaterialTheme.typography.bodySmall.copy(
+                        fontSize = 14.sp,
+                        lineHeight = 18.sp
+                    ),
+                    color = MaterialTheme.colorScheme.onSurface,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+
+            // ✅ Kompakter Copy-Button
+            IconButton(
+                onClick = {
+                    onCopyClick()
+                    showCopyFeedback = true
+                },
+                modifier = Modifier.size(36.dp)
+            ) {
+                AnimatedContent(
+                    targetState = showCopyFeedback,
+                    transitionSpec = {
+                        scaleIn() + fadeIn() togetherWith scaleOut() + fadeOut()
+                    },
+                    label = "ultra_compact_copy"
+                ) { feedback ->
+                    if (feedback) {
+                        Icon(
+                            imageVector = Icons.Default.Check,
+                            contentDescription = "Kopiert!",
+                            tint = MaterialTheme.colorScheme.secondary,
+                            modifier = Modifier.size(16.dp)
+                        )
+                    } else {
+                        Icon(
+                            imageVector = Icons.Default.ContentCopy,
+                            contentDescription = "Kopieren",
+                            tint = MaterialTheme.colorScheme.secondary,
+                            modifier = Modifier.size(16.dp)
+                        )
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -249,8 +538,6 @@ private fun ButtonSection(
             horizontalArrangement = Arrangement.spacedBy(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-
-            // Plain Text Button mit GRÖßEREM TEXT
             var plainButtonPressed by remember { mutableStateOf(false) }
 
             OutlinedButton(
@@ -267,9 +554,7 @@ private fun ButtonSection(
                         MaterialTheme.colorScheme.surface
                 ),
                 border = ButtonDefaults.outlinedButtonBorder.copy(
-                    brush = androidx.compose.ui.graphics.SolidColor(
-                        MaterialTheme.colorScheme.secondary
-                    )
+                    brush = androidx.compose.ui.graphics.SolidColor(MaterialTheme.colorScheme.secondary)
                 ),
                 shape = MaterialTheme.shapes.large
             ) {
@@ -280,13 +565,11 @@ private fun ButtonSection(
                     Icon(
                         imageVector = Icons.Default.Clear,
                         contentDescription = null,
-                        modifier = Modifier.size(20.dp) // ✅ Icon größer
+                        modifier = Modifier.size(20.dp)
                     )
                     Text(
                         "Clear",
-                        style = MaterialTheme.typography.labelLarge.copy(
-                            fontSize = 16.sp // ✅ GRÖßER: von 14sp auf 16sp
-                        ),
+                        style = MaterialTheme.typography.labelLarge.copy(fontSize = 16.sp),
                         fontWeight = FontWeight.Medium
                     )
                 }
@@ -299,10 +582,8 @@ private fun ButtonSection(
                 }
             }
 
-            // Animated Arrows
             AnimatedArrows()
 
-            // Leet Mode Button mit GRÖßEREM TEXT
             var leetButtonPressed by remember { mutableStateOf(false) }
 
             Button(
@@ -327,13 +608,11 @@ private fun ButtonSection(
                     Icon(
                         imageVector = Icons.Default.Transform,
                         contentDescription = null,
-                        modifier = Modifier.size(20.dp) // ✅ Icon größer
+                        modifier = Modifier.size(20.dp)
                     )
                     Text(
                         currentMode,
-                        style = MaterialTheme.typography.labelLarge.copy(
-                            fontSize = 16.sp // ✅ GRÖßER: von 14sp auf 16sp
-                        ),
+                        style = MaterialTheme.typography.labelLarge.copy(fontSize = 16.sp),
                         fontWeight = FontWeight.Bold,
                         maxLines = 1
                     )
@@ -386,7 +665,7 @@ private fun AnimatedArrows() {
                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                 contentDescription = null,
                 modifier = Modifier
-                    .size(16.dp) // ✅ Etwas größer: von 14dp auf 16dp
+                    .size(16.dp)
                     .graphicsLayer(
                         alpha = arrowAlpha,
                         translationX = arrowOffset
@@ -397,7 +676,7 @@ private fun AnimatedArrows() {
                 imageVector = Icons.AutoMirrored.Filled.ArrowForward,
                 contentDescription = null,
                 modifier = Modifier
-                    .size(16.dp) // ✅ Etwas größer: von 14dp auf 16dp
+                    .size(16.dp)
                     .graphicsLayer(
                         alpha = arrowAlpha,
                         translationX = -arrowOffset
@@ -406,12 +685,9 @@ private fun AnimatedArrows() {
             )
         }
 
-        // Mini-Text für Klarheit - auch etwas größer
         Text(
             text = "Modes",
-            style = MaterialTheme.typography.labelSmall.copy(
-                fontSize = 10.sp // ✅ Etwas größer: von 9sp auf 10sp
-            ),
+            style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
             color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.7f)
         )
     }
@@ -423,7 +699,6 @@ private fun HandleUiState(
     viewModel: MainViewModel,
     context: Context
 ) {
-    // Success Message
     uiState.successMessage?.let { message ->
         LaunchedEffect(message) {
             android.widget.Toast.makeText(
@@ -435,7 +710,6 @@ private fun HandleUiState(
         }
     }
 
-    // Error Message
     uiState.errorMessage?.let { message ->
         LaunchedEffect(message) {
             android.widget.Toast.makeText(

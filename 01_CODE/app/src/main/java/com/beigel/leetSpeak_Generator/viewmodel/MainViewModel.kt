@@ -123,14 +123,6 @@ class MainViewModel @Inject constructor(
     fun updateInputText(text: String) {
         _inputText.value = text
 
-        // Cancel previous debounce job
-        debounceJob?.cancel()
-
-        // Debounce for performance with large texts
-        debounceJob = viewModelScope.launch {
-            kotlinx.coroutines.delay(100) // 100ms debounce
-            // Translation happens automatically via combine flow
-        }
     }
 
     /**
