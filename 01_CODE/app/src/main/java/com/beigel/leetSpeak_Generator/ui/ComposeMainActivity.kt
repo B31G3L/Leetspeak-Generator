@@ -12,8 +12,6 @@ import androidx.activity.viewModels
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
@@ -22,15 +20,10 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -54,7 +47,6 @@ class ComposeMainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // WindowCompat für moderne Inset-Behandlung
         WindowCompat.setDecorFitsSystemWindows(window, false)
 
         vibrator = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
@@ -102,17 +94,20 @@ fun MainScreen(
     val currentLeet by viewModel.currentLeet.collectAsStateWithLifecycle()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    // ✅ EINFACHE Keyboard Detection - ohne komplexe LaunchedEffect
+    // ✅ EINFACHE Logik - nur diese 2 Variablen!
+    val hasInput = inputText.isNotEmpty()
+    val hasOutput = outputText.isNotEmpty()
+
+    // Keyboard Detection
     val density = LocalDensity.current
     val keyboardHeight = WindowInsets.ime.getBottom(density)
-    val isKeyboardVisible = keyboardHeight > 100 // Einfacher Threshold
-    val hasOutput = outputText.isNotEmpty()
+    val isKeyboardVisible = keyboardHeight > 100
 
     var showBottomSheet by remember { mutableStateOf(false) }
     var showAboutDialog by remember { mutableStateOf(false) }
     val context = LocalContext.current
 
-    // Lokale Translation
+    // Translation
     LaunchedEffect(inputText, currentMode, currentLeet) {
         outputText = if (inputText.isEmpty()) {
             ""
@@ -149,6 +144,7 @@ fun MainScreen(
         }
     ) { paddingValues ->
 
+        // ✅ EINFACHES LAYOUT - Keyboard reduziert die Gesamthöhe
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -162,91 +158,49 @@ fun MainScreen(
                 )
         ) {
 
-            // ✅ FIXES LAYOUT mit besserer Platz-Verteilung
-            Card(
+            // ✅ CONTENT BEREICH - nimmt verfügbaren Platz
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .weight(1f),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-                shape = RectangleShape
+                    .weight(1f)
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                Column(modifier = Modifier.fillMaxSize()) {
-                    // ✅ INPUT - mit besserer Mindest-Höhe
-                    Box(
+
+                // ✅ INPUT CARD - immer sichtbar
+                InputCard(
+                    inputText = inputText,
+                    onInputChange = { inputText = it },
+                    onClearText = { inputText = "" },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .then(
+                            if (hasOutput) {
+                                Modifier.weight(1f) // 50% wenn Output da ist
+                            } else {
+                                Modifier.weight(1f) // 100% wenn kein Output
+                            }
+                        )
+                )
+
+                // ✅ OUTPUT CARD - nur wenn Output vorhanden
+                if (hasOutput) {
+                    OutputCard(
+                        outputText = outputText,
+                        currentMode = currentModeDisplayName,
+                        onCopyClick = { onCopyToClipboard(outputText) },
                         modifier = Modifier
                             .fillMaxWidth()
-                            .then(
-                                when {
-                                    !hasOutput -> Modifier.weight(1f) // Kein Output: 100%
-                                    !isKeyboardVisible -> Modifier.weight(0.5f) // Normal: 50%
-                                    else -> Modifier.heightIn(min = 120.dp).weight(0.5f) // ✅ Mit Keyboard: Mindest-Höhe + 50%
-                                }
-                            )
-                    ) {
-                        InputSection(
-                            inputText = inputText,
-                            onInputChange = { inputText = it },
-                            onClearText = { inputText = "" },
-                            modifier = Modifier.fillMaxSize()
-                        )
-                    }
-
-                    // ✅ OUTPUT - nur wenn Text da, mit intelligenter Höhe
-                    AnimatedVisibility(
-                        visible = hasOutput,
-                        enter = expandVertically(animationSpec = tween(300)) + fadeIn(),
-                        exit = shrinkVertically(animationSpec = tween(200)) + fadeOut()
-                    ) {
-                        Column {
-                            // Divider
-                            HorizontalDivider(
-                                modifier = Modifier.padding(horizontal = 16.dp),
-                                color = MaterialTheme.colorScheme.secondary,
-                                thickness = if (isKeyboardVisible) 1.dp else 2.dp
-                            )
-
-                            // Output Section mit angepasster Höhe
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .then(
-                                        if (isKeyboardVisible) {
-                                            // ✅ Bei Keyboard: Feste kompakte Höhe
-                                            Modifier.height(100.dp)
-                                        } else {
-                                            // ✅ Ohne Keyboard: 50% des Platzes
-                                            Modifier.weight(0.5f)
-                                        }
-                                    )
-                            ) {
-                                if (isKeyboardVisible) {
-                                    // Kompakte Version für Keyboard
-                                    CompactKeyboardOutput(
-                                        outputText = outputText,
-                                        currentMode = currentModeDisplayName,
-                                        onCopyClick = { onCopyToClipboard(outputText) }
-                                    )
-                                } else {
-                                    // Normale Version
-                                    OutputSection(
-                                        outputText = outputText,
-                                        currentMode = currentModeDisplayName,
-                                        onCopyClick = { onCopyToClipboard(outputText) },
-                                        modifier = Modifier.fillMaxSize()
-                                    )
-                                }
-                            }
-                        }
-                    }
+                            .weight(1f) // 50%
+                    )
                 }
             }
 
-            // Button Section
+            // ✅ BUTTON SECTION - immer unten
             ButtonSection(
                 currentMode = currentModeDisplayName,
                 onLeetSelectorClick = { showBottomSheet = true },
-                onPlainModeClick = { inputText = "" }
+                onClearClick = { inputText = "" }
             )
         }
 
@@ -268,78 +222,116 @@ fun MainScreen(
     }
 }
 
-// LAYOUT KOMPONENTEN - VEREINFACHT
-
-// ✅ Die alten Layout-Komponenten sind nicht mehr nötig!
-// Alles läuft über die einheitliche Struktur im MainScreen
-
-// UI KOMPONENTEN
-
+// ✅ INPUT CARD - Eigene Card-Komponente
 @Composable
-private fun InputSection(
+private fun InputCard(
     inputText: String,
     onInputChange: (String) -> Unit,
     onClearText: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    // ✅ MINIMAL - wie die funktionierende Version
-    Column(modifier = modifier.padding(16.dp)) {
-        // Header
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = "Plaintext",
-                style = MaterialTheme.typography.titleMedium.copy(fontSize = 18.sp),
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                fontWeight = FontWeight.Medium
-            )
+    // ✅ ADAPTIVE TEXTGRÖSSE basierend auf Textlänge
+    val adaptiveTextSize = remember(inputText.length) {
+        when {
+            inputText.length <= 50 -> 18.sp      // Kurzer Text: Große Schrift
+            inputText.length <= 200 -> 16.sp     // Mittlerer Text: Normale Schrift
+            inputText.length <= 500 -> 14.sp     // Langer Text: Kleinere Schrift
+            else -> 12.sp                        // Sehr langer Text: Kleine Schrift
+        }
+    }
 
-            if (inputText.isNotEmpty()) {
-                IconButton(
-                    onClick = onClearText,
-                    modifier = Modifier.size(32.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Clear,
-                        contentDescription = "Clear",
-                        modifier = Modifier.size(18.dp),
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+    val adaptiveLineHeight = adaptiveTextSize * 1.4f
+    Card(
+        modifier = modifier,
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp)
+        ) {
+            // Header
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Plaintext",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Medium,
+                    color = MaterialTheme.colorScheme.primary
+                )
+
+                if (inputText.isNotEmpty()) {
+                    IconButton(
+                        onClick = onClearText,
+                        modifier = Modifier.size(32.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Clear,
+                            contentDescription = "Clear",
+                            modifier = Modifier.size(18.dp),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                 }
             }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // TextField
+            OutlinedTextField(
+                value = inputText,
+                onValueChange = onInputChange,
+                modifier = Modifier.fillMaxSize(),
+                placeholder = {
+                    Text(
+                        text = "Hier deinen Text eingeben...",
+                        style = MaterialTheme.typography.bodyLarge.copy(
+                            fontSize = adaptiveTextSize
+                        )
+                    )
+                },
+                textStyle = MaterialTheme.typography.bodyLarge.copy(
+                    fontSize = adaptiveTextSize,
+                    lineHeight = adaptiveLineHeight
+                ),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f)
+                ),
+                shape = MaterialTheme.shapes.medium,
+                singleLine = false
+            )
         }
-
-        Spacer(modifier = Modifier.height(12.dp))
-
-        // ✅ EINFACHES TextField - zurück zur funktionierenden Version
-        OutlinedTextField(
-            value = inputText,
-            onValueChange = onInputChange, // Direkt weiterleiten
-            modifier = Modifier.fillMaxSize(),
-            placeholder = { Text("Hier deinen Text eingeben...") },
-            textStyle = MaterialTheme.typography.bodyLarge.copy(fontSize = 20.sp),
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = MaterialTheme.colorScheme.secondary,
-                unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
-            ),
-            shape = MaterialTheme.shapes.large,
-            singleLine = false,
-            maxLines = Int.MAX_VALUE
-        )
     }
 }
 
+// ✅ OUTPUT CARD - Eigene Card-Komponente
 @Composable
-private fun OutputSection(
+private fun OutputCard(
     outputText: String,
     currentMode: String,
     onCopyClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     var showCopyFeedback by remember { mutableStateOf(false) }
+
+    // ✅ ADAPTIVE TEXTGRÖSSE auch für Output
+    val adaptiveTextSize = remember(outputText.length) {
+        when {
+            outputText.length <= 50 -> 18.sp      // Kurzer Text: Große Schrift
+            outputText.length <= 200 -> 16.sp     // Mittlerer Text: Normale Schrift
+            outputText.length <= 500 -> 14.sp     // Langer Text: Kleinere Schrift
+            else -> 12.sp                         // Sehr langer Text: Kleine Schrift
+        }
+    }
+
+    val adaptiveLineHeight = adaptiveTextSize * 1.4f
 
     LaunchedEffect(showCopyFeedback) {
         if (showCopyFeedback) {
@@ -348,177 +340,89 @@ private fun OutputSection(
         }
     }
 
-    Column(modifier = modifier.padding(16.dp)) {
-        // Header
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = currentMode,
-                style = MaterialTheme.typography.titleMedium.copy(fontSize = 18.sp),
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                fontWeight = FontWeight.Medium
-            )
-
-            IconButton(
-                onClick = {
-                    onCopyClick()
-                    showCopyFeedback = true
-                },
-                modifier = Modifier.size(40.dp)
-            ) {
-                AnimatedContent(
-                    targetState = showCopyFeedback,
-                    transitionSpec = {
-                        scaleIn() + fadeIn() togetherWith scaleOut() + fadeOut()
-                    },
-                    label = "copy_feedback"
-                ) { feedback ->
-                    Icon(
-                        imageVector = if (feedback) Icons.Default.Check else Icons.Default.ContentCopy,
-                        contentDescription = if (feedback) "Kopiert!" else "Kopieren",
-                        tint = MaterialTheme.colorScheme.secondary,
-                        modifier = Modifier.size(20.dp)
-                    )
-                }
-            }
-        }
-
-        Spacer(modifier = Modifier.height(12.dp))
-
-        // Output TextField
-        OutlinedTextField(
-            value = outputText,
-            onValueChange = { },
-            modifier = Modifier.fillMaxSize(),
-            readOnly = true,
-            textStyle = MaterialTheme.typography.bodyLarge.copy(fontSize = 20.sp),
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = MaterialTheme.colorScheme.secondary,
-                unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),
-                disabledBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),
-                focusedContainerColor = MaterialTheme.colorScheme.surface,
-                unfocusedContainerColor = MaterialTheme.colorScheme.surface,
-                disabledContainerColor = MaterialTheme.colorScheme.surface
-            ),
-            shape = MaterialTheme.shapes.large
-        )
-    }
-}
-
-@Composable
-private fun CompactKeyboardOutput(
-    outputText: String,
-    currentMode: String,
-    onCopyClick: () -> Unit
-) {
-    var showCopyFeedback by remember { mutableStateOf(false) }
-
-    LaunchedEffect(showCopyFeedback) {
-        if (showCopyFeedback) {
-            delay(1200)
-            showCopyFeedback = false
-        }
-    }
-
-    // ✅ ULTRA-KOMPAKTE Keyboard-Version - nur das Nötigste!
-    Surface(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
-        color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.3f),
-        shape = MaterialTheme.shapes.medium
+    Card(
+        modifier = modifier,
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.3f)
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
-        Row(
-            modifier = Modifier.padding(12.dp),
-            verticalAlignment = Alignment.CenterVertically
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp)
         ) {
-            // ✅ Kompakter Text-Bereich
-            Column(modifier = Modifier.weight(1f)) {
-                // Mini-Header
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Transform,
-                        contentDescription = null,
-                        modifier = Modifier.size(12.dp),
-                        tint = MaterialTheme.colorScheme.secondary
-                    )
-                    Text(
-                        text = currentMode,
-                        style = MaterialTheme.typography.labelSmall.copy(fontSize = 11.sp),
-                        color = MaterialTheme.colorScheme.secondary,
-                        fontWeight = FontWeight.Medium
-                    )
-                    // Character count
-                    Text(
-                        text = "(${outputText.length})",
-                        style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(4.dp))
-
-                // ✅ Output Text - scrollable, 2 Zeilen max
-                Text(
-                    text = outputText,
-                    style = MaterialTheme.typography.bodySmall.copy(
-                        fontSize = 14.sp,
-                        lineHeight = 18.sp
-                    ),
-                    color = MaterialTheme.colorScheme.onSurface,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.fillMaxWidth()
-                )
-            }
-
-            // ✅ Kompakter Copy-Button
-            IconButton(
-                onClick = {
-                    onCopyClick()
-                    showCopyFeedback = true
-                },
-                modifier = Modifier.size(36.dp)
+            // Header
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                AnimatedContent(
-                    targetState = showCopyFeedback,
-                    transitionSpec = {
-                        scaleIn() + fadeIn() togetherWith scaleOut() + fadeOut()
+                Text(
+                    text = currentMode,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Medium,
+                    color = MaterialTheme.colorScheme.secondary
+                )
+
+                // Copy button
+                IconButton(
+                    onClick = {
+                        onCopyClick()
+                        showCopyFeedback = true
                     },
-                    label = "ultra_compact_copy"
-                ) { feedback ->
-                    if (feedback) {
+                    modifier = Modifier.size(40.dp)
+                ) {
+                    AnimatedContent(
+                        targetState = showCopyFeedback,
+                        transitionSpec = {
+                            scaleIn() + fadeIn() togetherWith scaleOut() + fadeOut()
+                        },
+                        label = "copy_feedback"
+                    ) { feedback ->
                         Icon(
-                            imageVector = Icons.Default.Check,
-                            contentDescription = "Kopiert!",
+                            imageVector = if (feedback) Icons.Default.Check else Icons.Default.ContentCopy,
+                            contentDescription = if (feedback) "Kopiert!" else "Kopieren",
                             tint = MaterialTheme.colorScheme.secondary,
-                            modifier = Modifier.size(16.dp)
-                        )
-                    } else {
-                        Icon(
-                            imageVector = Icons.Default.ContentCopy,
-                            contentDescription = "Kopieren",
-                            tint = MaterialTheme.colorScheme.secondary,
-                            modifier = Modifier.size(16.dp)
+                            modifier = Modifier.size(20.dp)
                         )
                     }
                 }
             }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // Output TextField
+            OutlinedTextField(
+                value = outputText,
+                onValueChange = { },
+                modifier = Modifier.fillMaxSize(),
+                readOnly = true,
+                textStyle = MaterialTheme.typography.bodyLarge.copy(
+                    fontSize = adaptiveTextSize,
+                    lineHeight = adaptiveLineHeight
+                ),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = MaterialTheme.colorScheme.secondary,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.secondary.copy(alpha = 0.5f),
+                    disabledBorderColor = MaterialTheme.colorScheme.secondary.copy(alpha = 0.5f),
+                    focusedContainerColor = MaterialTheme.colorScheme.surface,
+                    unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                    disabledContainerColor = MaterialTheme.colorScheme.surface
+                ),
+                shape = MaterialTheme.shapes.medium,
+                singleLine = false
+            )
         }
     }
 }
 
+// ✅ BUTTON SECTION - Vereinfacht
 @Composable
 private fun ButtonSection(
     currentMode: String,
     onLeetSelectorClick: () -> Unit,
-    onPlainModeClick: () -> Unit,
+    onClearClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Surface(
@@ -533,92 +437,41 @@ private fun ButtonSection(
             horizontalArrangement = Arrangement.spacedBy(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            var plainButtonPressed by remember { mutableStateOf(false) }
 
             OutlinedButton(
-                onClick = {
-                    plainButtonPressed = true
-                    onPlainModeClick()
-                },
-                modifier = Modifier.weight(1f),
-                colors = ButtonDefaults.outlinedButtonColors(
-                    contentColor = MaterialTheme.colorScheme.onSurface,
-                    containerColor = if (plainButtonPressed)
-                        MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.1f)
-                    else
-                        MaterialTheme.colorScheme.surface
-                ),
-                border = ButtonDefaults.outlinedButtonBorder.copy(
-                    brush = androidx.compose.ui.graphics.SolidColor(MaterialTheme.colorScheme.secondary)
-                ),
-                shape = MaterialTheme.shapes.large
+                onClick = onClearClick,
+                modifier = Modifier.weight(1f)
             ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Clear,
-                        contentDescription = null,
-                        modifier = Modifier.size(20.dp)
-                    )
-                    Text(
-                        "Clear",
-                        style = MaterialTheme.typography.labelLarge.copy(fontSize = 16.sp),
-                        fontWeight = FontWeight.Medium
-                    )
-                }
+                Icon(
+                    imageVector = Icons.Default.Clear,
+                    contentDescription = null,
+                    modifier = Modifier.size(18.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("Clear")
             }
 
-            LaunchedEffect(plainButtonPressed) {
-                if (plainButtonPressed) {
-                    delay(150)
-                    plainButtonPressed = false
-                }
-            }
-
+            // Animated arrows
             AnimatedArrows()
 
-            var leetButtonPressed by remember { mutableStateOf(false) }
-
             Button(
-                onClick = {
-                    leetButtonPressed = true
-                    onLeetSelectorClick()
-                },
+                onClick = onLeetSelectorClick,
                 modifier = Modifier.weight(1f),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = if (leetButtonPressed)
-                        MaterialTheme.colorScheme.secondary.copy(alpha = 0.8f)
-                    else
-                        MaterialTheme.colorScheme.secondary,
-                    contentColor = MaterialTheme.colorScheme.onSecondary
-                ),
-                shape = MaterialTheme.shapes.large
+                    containerColor = MaterialTheme.colorScheme.secondary
+                )
             ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Transform,
-                        contentDescription = null,
-                        modifier = Modifier.size(20.dp)
-                    )
-                    Text(
-                        currentMode,
-                        style = MaterialTheme.typography.labelLarge.copy(fontSize = 16.sp),
-                        fontWeight = FontWeight.Bold,
-                        maxLines = 1
-                    )
-                }
-            }
-
-            LaunchedEffect(leetButtonPressed) {
-                if (leetButtonPressed) {
-                    delay(150)
-                    leetButtonPressed = false
-                }
+                Icon(
+                    imageVector = Icons.Default.Transform,
+                    contentDescription = null,
+                    modifier = Modifier.size(18.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = currentMode,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
             }
         }
     }
