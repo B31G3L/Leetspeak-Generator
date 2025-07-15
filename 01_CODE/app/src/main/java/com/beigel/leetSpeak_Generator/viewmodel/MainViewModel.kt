@@ -6,6 +6,7 @@ import com.beigel.leetSpeak_Generator.data.CustomLeet
 import com.beigel.leetSpeak_Generator.data.LeetOption
 import com.beigel.leetSpeak_Generator.repository.LeetRepository
 import com.beigel.leetSpeak_Generator.translation.LeetTranslator
+import com.beigel.leetSpeak_Generator.translation.ReverseTranslator
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -13,8 +14,7 @@ import kotlinx.coroutines.Job
 import javax.inject.Inject
 
 /**
- * MainViewModel mit Hilt Dependency Injection
- * Repository wird automatisch von Hilt injiziert
+ * MainViewModel mit Reverse Translation Support
  */
 @HiltViewModel
 class MainViewModel @Inject constructor(
@@ -28,6 +28,10 @@ class MainViewModel @Inject constructor(
     // Current mode state
     private val _currentMode = MutableStateFlow(LeetTranslator.TranslationMode.SIMPLE)
     val currentMode: StateFlow<LeetTranslator.TranslationMode> = _currentMode.asStateFlow()
+
+    // ✅ NEU: Reverse Mode State
+    private val _isReverseMode = MutableStateFlow(false)
+    val isReverseMode: StateFlow<Boolean> = _isReverseMode.asStateFlow()
 
     // UI state
     private val _uiState = MutableStateFlow(MainUiState())
@@ -43,18 +47,26 @@ class MainViewModel @Inject constructor(
     // Leet Index State
     val currentLeetIndex = repository.currentLeetIndex
 
-    // Computed output text
+    // ✅ ERWEITERT: Output text mit Reverse Support
     val outputText: StateFlow<String> = combine(
         inputText,
         currentMode,
-        currentLeet
-    ) { input, mode, leet ->
+        currentLeet,
+        isReverseMode
+    ) { input, mode, leet, reverse ->
         if (input.isEmpty()) {
             ""
+        } else if (reverse) {
+            ReverseTranslator.reverseTranslate(input, mode, leet)
         } else {
             LeetTranslator.translate(input, mode, leet)
         }
     }.stateIn(viewModelScope, SharingStarted.Lazily, "")
+
+    // ✅ NEU: Auto-Detection für Leetspeak
+    val isInputLikelyLeetspeak: StateFlow<Boolean> = inputText.map { text ->
+        ReverseTranslator.isLikelyLeetspeak(text)
+    }.stateIn(viewModelScope, SharingStarted.Lazily, false)
 
     // Translation statistics
     val translationStats: StateFlow<LeetTranslator.TranslationStats> = combine(
@@ -69,16 +81,18 @@ class MainViewModel @Inject constructor(
         }
     }.stateIn(viewModelScope, SharingStarted.Lazily, LeetTranslator.TranslationStats.empty())
 
-    // Current mode display name
+    // ✅ ERWEITERT: Current mode display name mit Reverse
     val currentModeDisplayName: StateFlow<String> = combine(
         currentMode,
-        currentLeet
-    ) { mode, leet ->
-        when (mode) {
+        currentLeet,
+        isReverseMode
+    ) { mode, leet, reverse ->
+        val baseName = when (mode) {
             LeetTranslator.TranslationMode.SIMPLE -> "Simple Leet"
             LeetTranslator.TranslationMode.EXTENDED -> "Extended Leet"
             LeetTranslator.TranslationMode.CUSTOM -> leet?.name ?: "Custom Leet"
         }
+        if (reverse) "Reverse" else baseName
     }.stateIn(viewModelScope, SharingStarted.Lazily, "Simple Leet")
 
     // Layout state for output section visibility
@@ -118,11 +132,34 @@ class MainViewModel @Inject constructor(
     }
 
     /**
+     * ✅ NEU: Toggle Reverse Mode mit Input/Output Swap
+     */
+    fun toggleReverseMode() {
+        val currentInput = _inputText.value
+        val currentOutput = outputText.value
+
+        // Reverse Mode umschalten
+        _isReverseMode.value = !_isReverseMode.value
+
+        // Input und Output tauschen wenn beide vorhanden sind
+        if (currentInput.isNotEmpty() && currentOutput.isNotEmpty()) {
+            _inputText.value = currentOutput
+        }
+
+        updateUiState {
+            copy(successMessage = if (_isReverseMode.value) {
+                "Reverse-Modus aktiviert - Input und Output getauscht"
+            } else {
+                "Normal-Modus aktiviert - Input und Output getauscht"
+            })
+        }
+    }
+
+    /**
      * Handles input text changes with debouncing
      */
     fun updateInputText(text: String) {
         _inputText.value = text
-
     }
 
     /**
@@ -313,7 +350,7 @@ class MainViewModel @Inject constructor(
     }
 
     /**
-     * Handles UI events
+     * ✅ ERWEITERT: Handles UI events mit Reverse Support
      */
     fun handleIntent(intent: MainIntent) {
         when (intent) {
@@ -331,6 +368,7 @@ class MainViewModel @Inject constructor(
             is MainIntent.ClearInput -> clearInput()
             is MainIntent.ClearError -> clearError()
             is MainIntent.ClearSuccess -> clearSuccess()
+            is MainIntent.ToggleReverseMode -> toggleReverseMode() // ✅ NEU
         }
     }
 
@@ -373,7 +411,7 @@ data class MainUiState(
 )
 
 /**
- * Intent sealed class für UI Events
+ * ✅ ERWEITERT: Intent sealed class für UI Events mit Reverse
  */
 sealed class MainIntent {
     data class UpdateInput(val text: String) : MainIntent()
@@ -390,4 +428,5 @@ sealed class MainIntent {
     object ClearInput : MainIntent()
     object ClearError : MainIntent()
     object ClearSuccess : MainIntent()
+    object ToggleReverseMode : MainIntent() // ✅ NEU
 }

@@ -25,7 +25,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.view.WindowCompat
@@ -90,13 +89,15 @@ fun MainScreen(
     var inputText by remember { mutableStateOf("") }
     var outputText by remember { mutableStateOf("") }
 
-    // ViewModel State
+    // ✅ ERWEITERT: ViewModel State mit Reverse
     val currentModeDisplayName by viewModel.currentModeDisplayName.collectAsStateWithLifecycle()
     val currentMode by viewModel.currentMode.collectAsStateWithLifecycle()
     val currentLeet by viewModel.currentLeet.collectAsStateWithLifecycle()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val isReverseMode by viewModel.isReverseMode.collectAsStateWithLifecycle() // ✅ NEU
+    val isInputLikelyLeetspeak by viewModel.isInputLikelyLeetspeak.collectAsStateWithLifecycle() // ✅ NEU
 
-    // ✅ Keyboard Detection
+    // Keyboard Detection
     val density = LocalDensity.current
     val keyboardHeight = WindowInsets.ime.getBottom(density)
     val isKeyboardVisible = keyboardHeight > 100
@@ -109,10 +110,12 @@ fun MainScreen(
     var showAboutDialog by remember { mutableStateOf(false) }
     val context = LocalContext.current
 
-    // Translation
-    LaunchedEffect(inputText, currentMode, currentLeet) {
+    // ✅ ERWEITERT: Translation mit Reverse Support
+    LaunchedEffect(inputText, currentMode, currentLeet, isReverseMode) {
         outputText = if (inputText.isEmpty()) {
             ""
+        } else if (isReverseMode) {
+            com.beigel.leetSpeak_Generator.translation.ReverseTranslator.reverseTranslate(inputText, currentMode, currentLeet)
         } else {
             LeetTranslator.translate(inputText, currentMode, currentLeet)
         }
@@ -121,14 +124,51 @@ fun MainScreen(
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = {
-            // ✅ Standard TopBar
             TopAppBar(
                 title = {
-                    Text(
-                        "Leetspeak Generator",
-                        fontWeight = FontWeight.Bold,
-                        style = MaterialTheme.typography.headlineSmall.copy(fontSize = 22.sp)
-                    )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            "Leetspeak Generator",
+                            fontWeight = FontWeight.Bold,
+                            style = MaterialTheme.typography.headlineSmall.copy(fontSize = 22.sp)
+                        )
+
+                        // ✅ NEU: Reverse Mode Indicator
+                        if (isReverseMode) {
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Surface(
+                                color = MaterialTheme.colorScheme.tertiary,
+                                shape = androidx.compose.foundation.shape.CircleShape
+                            ) {
+                                Text(
+                                    text = "R",
+                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+                                    color = MaterialTheme.colorScheme.onTertiary,
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                        }
+
+                        // ✅ NEU: Leetspeak Detection Indicator
+                        if (!isReverseMode && isInputLikelyLeetspeak) {
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Surface(
+                                color = MaterialTheme.colorScheme.secondary,
+                                shape = androidx.compose.foundation.shape.CircleShape
+                            ) {
+                                Text(
+                                    text = "L",
+                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+                                    color = MaterialTheme.colorScheme.onSecondary,
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                        }
+                    }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.surface,
@@ -147,7 +187,6 @@ fun MainScreen(
         }
     ) { paddingValues ->
 
-        // ✅ Layout angepasst für Keyboard
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -161,21 +200,24 @@ fun MainScreen(
                 )
         ) {
 
-            // ✅ CONTENT BEREICH
+            // CONTENT BEREICH
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f)
-                    .padding(8.dp), // ✅ Reduziert von 16dp auf 8dp
-                verticalArrangement = Arrangement.spacedBy(8.dp) // ✅ Reduziert von 16dp auf 8dp
+                    .padding(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
 
-                // ✅ INPUT CARD - Header immer anzeigen
+                // INPUT CARD - Header immer anzeigen
                 InputCard(
                     inputText = inputText,
-                    onInputChange = { inputText = it },
+                    onInputChange = {
+                        inputText = it
+                        viewModel.updateInputText(it)
+                    },
                     onClearText = { inputText = "" },
-                    showHeader = true, // ✅ Header immer anzeigen
+                    showHeader = true,
                     modifier = Modifier
                         .fillMaxWidth()
                         .then(
@@ -187,13 +229,13 @@ fun MainScreen(
                         )
                 )
 
-                // ✅ OUTPUT CARD - nur wenn Output vorhanden
+                // OUTPUT CARD - nur wenn Output vorhanden
                 if (hasOutput) {
                     OutputCard(
                         outputText = outputText,
                         currentMode = currentModeDisplayName,
                         onCopyClick = { onCopyToClipboard(outputText) },
-                        showHeader = true, // ✅ Header immer anzeigen
+                        showHeader = true,
                         modifier = Modifier
                             .fillMaxWidth()
                             .weight(1f)
@@ -201,12 +243,16 @@ fun MainScreen(
                 }
             }
 
-            // ✅ BUTTON SECTION - nur ohne Tastatur
+            // ✅ ERWEITERTE BUTTON SECTION - ohne Clear Button, mit Reverse
             if (!isKeyboardVisible) {
-                ButtonSection(
+                EnhancedButtonSection(
                     currentMode = currentModeDisplayName,
+                    isReverseMode = isReverseMode,
+                    isInputLikelyLeetspeak = isInputLikelyLeetspeak,
                     onLeetSelectorClick = { showBottomSheet = true },
-                    onClearClick = { inputText = "" }
+                    onToggleReverseMode = {
+                        viewModel.handleIntent(MainIntent.ToggleReverseMode)
+                    }
                 )
             }
         }
@@ -229,13 +275,13 @@ fun MainScreen(
     }
 }
 
-// ✅ ÜBERARBEITETE INPUT CARD - mit showHeader Parameter
+// INPUT CARD - unverändert
 @Composable
 fun InputCard(
     inputText: String,
     onInputChange: (String) -> Unit,
     onClearText: () -> Unit,
-    showHeader: Boolean = true, // ✅ Header standardmäßig anzeigen
+    showHeader: Boolean = true,
     modifier: Modifier = Modifier
 ) {
     // Adaptive Textgröße
@@ -260,9 +306,8 @@ fun InputCard(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(8.dp) // ✅ Reduziert von 16dp auf 8dp
+                .padding(8.dp)
         ) {
-            // ✅ Header immer anzeigen
             if (showHeader) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -279,22 +324,21 @@ fun InputCard(
                     if (inputText.isNotEmpty()) {
                         IconButton(
                             onClick = onClearText,
-                            modifier = Modifier.size(28.dp) // ✅ Reduziert von 32dp auf 28dp
+                            modifier = Modifier.size(28.dp)
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Clear,
                                 contentDescription = "Clear",
-                                modifier = Modifier.size(16.dp), // ✅ Reduziert von 18dp auf 16dp
+                                modifier = Modifier.size(16.dp),
                                 tint = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
                     }
                 }
 
-                Spacer(modifier = Modifier.height(8.dp)) // ✅ Reduziert von 12dp auf 8dp
+                Spacer(modifier = Modifier.height(8.dp))
             }
 
-            // TextField
             OutlinedTextField(
                 value = inputText,
                 onValueChange = onInputChange,
@@ -322,19 +366,17 @@ fun InputCard(
     }
 }
 
-// ✅ ÜBERARBEITETE OUTPUT CARD - mit showHeader Parameter
-
+// OUTPUT CARD - unverändert
 @Composable
 fun OutputCard(
     outputText: String,
     currentMode: String,
     onCopyClick: () -> Unit,
-    showHeader: Boolean = true, // ✅ Header standardmäßig anzeigen
+    showHeader: Boolean = true,
     modifier: Modifier = Modifier
 ) {
     var showCopyFeedback by remember { mutableStateOf(false) }
 
-    // Adaptive Textgröße auch für Output
     val adaptiveTextSize = remember(outputText.length) {
         when {
             outputText.length <= 50 -> 18.sp
@@ -358,15 +400,13 @@ fun OutputCard(
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        border = null // ✅ Rahmen entfernt
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(8.dp) // ✅ Reduziert von 16dp auf 8dp
+                .padding(8.dp)
         ) {
-            // ✅ Header immer anzeigen
             if (showHeader) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -380,13 +420,12 @@ fun OutputCard(
                         color = MaterialTheme.colorScheme.secondary
                     )
 
-                    // Copy button
                     IconButton(
                         onClick = {
                             onCopyClick()
                             showCopyFeedback = true
                         },
-                        modifier = Modifier.size(36.dp) // ✅ Reduziert von 40dp auf 36dp
+                        modifier = Modifier.size(36.dp)
                     ) {
                         AnimatedContent(
                             targetState = showCopyFeedback,
@@ -399,46 +438,15 @@ fun OutputCard(
                                 imageVector = if (feedback) Icons.Default.Check else Icons.Default.ContentCopy,
                                 contentDescription = if (feedback) "Kopiert!" else "Kopieren",
                                 tint = MaterialTheme.colorScheme.secondary,
-                                modifier = Modifier.size(18.dp) // ✅ Reduziert von 20dp auf 18dp
+                                modifier = Modifier.size(18.dp)
                             )
                         }
                     }
                 }
 
-                Spacer(modifier = Modifier.height(8.dp)) // ✅ Reduziert von 12dp auf 8dp
-            } else {
-                // ✅ Copy Button kompakt wenn Header da ist
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.End
-                ) {
-                    IconButton(
-                        onClick = {
-                            onCopyClick()
-                            showCopyFeedback = true
-                        },
-                        modifier = Modifier.size(28.dp) // ✅ Reduziert von 32dp auf 28dp
-                    ) {
-                        AnimatedContent(
-                            targetState = showCopyFeedback,
-                            transitionSpec = {
-                                scaleIn() + fadeIn() togetherWith scaleOut() + fadeOut()
-                            },
-                            label = "copy_feedback_compact"
-                        ) { feedback ->
-                            Icon(
-                                imageVector = if (feedback) Icons.Default.Check else Icons.Default.ContentCopy,
-                                contentDescription = if (feedback) "Kopiert!" else "Kopieren",
-                                tint = MaterialTheme.colorScheme.secondary,
-                                modifier = Modifier.size(16.dp) // ✅ Reduziert von 18dp auf 16dp
-                            )
-                        }
-                    }
-                }
-                Spacer(modifier = Modifier.height(6.dp)) // ✅ Reduziert von 8dp auf 6dp
+                Spacer(modifier = Modifier.height(8.dp))
             }
 
-            // Output TextField
             OutlinedTextField(
                 value = outputText,
                 onValueChange = { },
@@ -459,12 +467,14 @@ fun OutputCard(
     }
 }
 
-// ✅ BUTTON SECTION - bleibt unverändert
+// ✅ NEUE ENHANCED BUTTON SECTION - ohne Clear Button
 @Composable
-fun ButtonSection(
+fun EnhancedButtonSection(
     currentMode: String,
+    isReverseMode: Boolean,
+    isInputLikelyLeetspeak: Boolean,
     onLeetSelectorClick: () -> Unit,
-    onClearClick: () -> Unit,
+    onToggleReverseMode: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Surface(
@@ -474,31 +484,24 @@ fun ButtonSection(
     ) {
         Row(
             modifier = Modifier
-                .padding(12.dp) // ✅ Reduziert von 16dp auf 12dp
+                .padding(12.dp)
                 .fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(12.dp), // ✅ Reduziert von 16dp auf 12dp
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
 
-            OutlinedButton(
-                onClick = onClearClick,
+            // ✅ ERWEITERTE ANIMATED ARROWS - clickbar mit Reverse Info
+            EnhancedAnimatedArrows(
+                isReverseMode = isReverseMode,
+                isInputLikelyLeetspeak = isInputLikelyLeetspeak,
+                onToggleReverse = onToggleReverseMode,
                 modifier = Modifier.weight(1f)
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Clear,
-                    contentDescription = null,
-                    modifier = Modifier.size(18.dp)
-                )
-                Spacer(modifier = Modifier.width(6.dp)) // ✅ Reduziert von 8dp auf 6dp
-                Text("Clear")
-            }
+            )
 
-            // Animated arrows
-            AnimatedArrows()
-
+            // MODE SELECTOR BUTTON
             Button(
                 onClick = onLeetSelectorClick,
-                modifier = Modifier.weight(1f),
+                modifier = Modifier.weight(2f),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = MaterialTheme.colorScheme.secondary
                 )
@@ -508,7 +511,7 @@ fun ButtonSection(
                     contentDescription = null,
                     modifier = Modifier.size(18.dp)
                 )
-                Spacer(modifier = Modifier.width(6.dp)) // ✅ Reduziert von 8dp auf 6dp
+                Spacer(modifier = Modifier.width(6.dp))
                 Text(
                     text = currentMode,
                     maxLines = 1,
@@ -519,12 +522,18 @@ fun ButtonSection(
     }
 }
 
+// ✅ NEUE ENHANCED ANIMATED ARROWS - clickbar und informativ
 @Composable
-private fun AnimatedArrows() {
+private fun EnhancedAnimatedArrows(
+    isReverseMode: Boolean,
+    isInputLikelyLeetspeak: Boolean,
+    onToggleReverse: () -> Unit,
+    modifier: Modifier = Modifier
+) {
     val infiniteTransition = rememberInfiniteTransition(label = "arrows")
 
     val arrowAlpha by infiniteTransition.animateFloat(
-        initialValue = 0.3f,
+        initialValue = 0.4f,
         targetValue = 1.0f,
         animationSpec = infiniteRepeatable(
             animation = tween(1500, easing = FastOutSlowInEasing),
@@ -534,8 +543,8 @@ private fun AnimatedArrows() {
     )
 
     val arrowOffset by infiniteTransition.animateFloat(
-        initialValue = -2f,
-        targetValue = 2f,
+        initialValue = -3f,
+        targetValue = 3f,
         animationSpec = infiniteRepeatable(
             animation = tween(2000, easing = LinearEasing),
             repeatMode = RepeatMode.Reverse
@@ -543,43 +552,106 @@ private fun AnimatedArrows() {
         label = "arrow_offset"
     )
 
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(1.dp) // ✅ Reduziert von 2dp auf 1dp
+    // Pulsing effect für Leetspeak Detection
+    val pulseAlpha by infiniteTransition.animateFloat(
+        initialValue = 0.7f,
+        targetValue = 1.0f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1000, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "pulse_alpha"
+    )
+
+    Surface(
+        onClick = onToggleReverse,
+        modifier = modifier,
+        color = when {
+            isReverseMode -> MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.7f)
+            isInputLikelyLeetspeak -> MaterialTheme.colorScheme.secondaryContainer.copy(alpha = pulseAlpha * 0.5f)
+            else -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
+        },
+        shape = MaterialTheme.shapes.medium
     ) {
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(1.dp),
-            verticalAlignment = Alignment.CenterVertically
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center,
+            modifier = Modifier.padding(8.dp)
         ) {
-            Icon(
-                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                contentDescription = null,
-                modifier = Modifier
-                    .size(16.dp)
-                    .graphicsLayer(
-                        alpha = arrowAlpha,
-                        translationX = arrowOffset
-                    ),
-                tint = MaterialTheme.colorScheme.secondary
-            )
-            Icon(
-                imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-                contentDescription = null,
-                modifier = Modifier
-                    .size(16.dp)
-                    .graphicsLayer(
-                        alpha = arrowAlpha,
-                        translationX = -arrowOffset
-                    ),
-                tint = MaterialTheme.colorScheme.secondary
+            // Arrows
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(2.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                if (isReverseMode) {
+                    // Reverse arrows (nach links)
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = null,
+                        modifier = Modifier
+                            .size(20.dp)
+                            .graphicsLayer(
+                                alpha = arrowAlpha,
+                                translationX = -arrowOffset
+                            ),
+                        tint = MaterialTheme.colorScheme.tertiary
+                    )
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = null,
+                        modifier = Modifier
+                            .size(20.dp)
+                            .graphicsLayer(
+                                alpha = arrowAlpha * 0.7f,
+                                translationX = arrowOffset
+                            ),
+                        tint = MaterialTheme.colorScheme.tertiary
+                    )
+                } else {
+                    // Normal arrows (nach rechts)
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                        contentDescription = null,
+                        modifier = Modifier
+                            .size(20.dp)
+                            .graphicsLayer(
+                                alpha = arrowAlpha * 0.7f,
+                                translationX = arrowOffset
+                            ),
+                        tint = if (isInputLikelyLeetspeak) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                        contentDescription = null,
+                        modifier = Modifier
+                            .size(20.dp)
+                            .graphicsLayer(
+                                alpha = arrowAlpha,
+                                translationX = -arrowOffset
+                            ),
+                        tint = if (isInputLikelyLeetspeak) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(2.dp))
+
+            // Info Text
+            Text(
+                text = when {
+                    isReverseMode -> "Reverse"
+                    isInputLikelyLeetspeak -> "Leet erkannt!"
+                    else -> "Modus"
+                },
+                style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp),
+                color = when {
+                    isReverseMode -> MaterialTheme.colorScheme.tertiary
+                    isInputLikelyLeetspeak -> MaterialTheme.colorScheme.secondary
+                    else -> MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                },
+                fontWeight = if (isReverseMode || isInputLikelyLeetspeak) FontWeight.Bold else FontWeight.Normal
             )
         }
-
-        Text(
-            text = "Modes",
-            style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
-            color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.7f)
-        )
     }
 }
 
