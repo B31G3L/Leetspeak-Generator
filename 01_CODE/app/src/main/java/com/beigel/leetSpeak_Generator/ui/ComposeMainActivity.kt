@@ -25,6 +25,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.view.WindowCompat
@@ -37,6 +38,7 @@ import com.beigel.leetSpeak_Generator.viewmodel.MainIntent
 import com.beigel.leetSpeak_Generator.viewmodel.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
+import androidx.compose.foundation.layout.fillMaxSize
 
 @AndroidEntryPoint
 class ComposeMainActivity : ComponentActivity() {
@@ -229,7 +231,7 @@ fun MainScreen(
 
 // ✅ ÜBERARBEITETE INPUT CARD - mit showHeader Parameter
 @Composable
-private fun InputCard(
+fun InputCard(
     inputText: String,
     onInputChange: (String) -> Unit,
     onClearText: () -> Unit,
@@ -321,8 +323,9 @@ private fun InputCard(
 }
 
 // ✅ ÜBERARBEITETE OUTPUT CARD - mit showHeader Parameter
+
 @Composable
-private fun OutputCard(
+fun OutputCard(
     outputText: String,
     currentMode: String,
     onCopyClick: () -> Unit,
@@ -353,9 +356,10 @@ private fun OutputCard(
     Card(
         modifier = modifier,
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.3f)
+            containerColor = MaterialTheme.colorScheme.surface
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        border = null // ✅ Rahmen entfernt
     ) {
         Column(
             modifier = Modifier
@@ -447,10 +451,6 @@ private fun OutputCard(
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = MaterialTheme.colorScheme.secondary,
                     unfocusedBorderColor = MaterialTheme.colorScheme.secondary.copy(alpha = 0.5f),
-                    disabledBorderColor = MaterialTheme.colorScheme.secondary.copy(alpha = 0.5f),
-                    focusedContainerColor = MaterialTheme.colorScheme.surface,
-                    unfocusedContainerColor = MaterialTheme.colorScheme.surface,
-                    disabledContainerColor = MaterialTheme.colorScheme.surface
                 ),
                 shape = MaterialTheme.shapes.medium,
                 singleLine = false
@@ -461,7 +461,7 @@ private fun OutputCard(
 
 // ✅ BUTTON SECTION - bleibt unverändert
 @Composable
-private fun ButtonSection(
+fun ButtonSection(
     currentMode: String,
     onLeetSelectorClick: () -> Unit,
     onClearClick: () -> Unit,
