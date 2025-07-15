@@ -94,14 +94,14 @@ fun MainScreen(
     val currentLeet by viewModel.currentLeet.collectAsStateWithLifecycle()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    // ✅ EINFACHE Logik - nur diese 2 Variablen!
-    val hasInput = inputText.isNotEmpty()
-    val hasOutput = outputText.isNotEmpty()
-
-    // Keyboard Detection
+    // ✅ Keyboard Detection
     val density = LocalDensity.current
     val keyboardHeight = WindowInsets.ime.getBottom(density)
     val isKeyboardVisible = keyboardHeight > 100
+
+    // Content state
+    val hasInput = inputText.isNotEmpty()
+    val hasOutput = outputText.isNotEmpty()
 
     var showBottomSheet by remember { mutableStateOf(false) }
     var showAboutDialog by remember { mutableStateOf(false) }
@@ -119,6 +119,7 @@ fun MainScreen(
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = {
+            // ✅ Standard TopBar
             TopAppBar(
                 title = {
                     Text(
@@ -144,7 +145,7 @@ fun MainScreen(
         }
     ) { paddingValues ->
 
-        // ✅ EINFACHES LAYOUT - Keyboard reduziert die Gesamthöhe
+        // ✅ Layout angepasst für Keyboard
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -158,27 +159,28 @@ fun MainScreen(
                 )
         ) {
 
-            // ✅ CONTENT BEREICH - nimmt verfügbaren Platz
+            // ✅ CONTENT BEREICH
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f)
-                    .padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                    .padding(8.dp), // ✅ Reduziert von 16dp auf 8dp
+                verticalArrangement = Arrangement.spacedBy(8.dp) // ✅ Reduziert von 16dp auf 8dp
             ) {
 
-                // ✅ INPUT CARD - immer sichtbar
+                // ✅ INPUT CARD - Header immer anzeigen
                 InputCard(
                     inputText = inputText,
                     onInputChange = { inputText = it },
                     onClearText = { inputText = "" },
+                    showHeader = true, // ✅ Header immer anzeigen
                     modifier = Modifier
                         .fillMaxWidth()
                         .then(
                             if (hasOutput) {
-                                Modifier.weight(1f) // 50% wenn Output da ist
+                                Modifier.weight(1f)
                             } else {
-                                Modifier.weight(1f) // 100% wenn kein Output
+                                Modifier.weight(1f)
                             }
                         )
                 )
@@ -189,19 +191,22 @@ fun MainScreen(
                         outputText = outputText,
                         currentMode = currentModeDisplayName,
                         onCopyClick = { onCopyToClipboard(outputText) },
+                        showHeader = true, // ✅ Header immer anzeigen
                         modifier = Modifier
                             .fillMaxWidth()
-                            .weight(1f) // 50%
+                            .weight(1f)
                     )
                 }
             }
 
-            // ✅ BUTTON SECTION - immer unten
-            ButtonSection(
-                currentMode = currentModeDisplayName,
-                onLeetSelectorClick = { showBottomSheet = true },
-                onClearClick = { inputText = "" }
-            )
+            // ✅ BUTTON SECTION - nur ohne Tastatur
+            if (!isKeyboardVisible) {
+                ButtonSection(
+                    currentMode = currentModeDisplayName,
+                    onLeetSelectorClick = { showBottomSheet = true },
+                    onClearClick = { inputText = "" }
+                )
+            }
         }
 
         // Dialoge
@@ -222,25 +227,27 @@ fun MainScreen(
     }
 }
 
-// ✅ INPUT CARD - Eigene Card-Komponente
+// ✅ ÜBERARBEITETE INPUT CARD - mit showHeader Parameter
 @Composable
 private fun InputCard(
     inputText: String,
     onInputChange: (String) -> Unit,
     onClearText: () -> Unit,
+    showHeader: Boolean = true, // ✅ Header standardmäßig anzeigen
     modifier: Modifier = Modifier
 ) {
-    // ✅ ADAPTIVE TEXTGRÖSSE basierend auf Textlänge
+    // Adaptive Textgröße
     val adaptiveTextSize = remember(inputText.length) {
         when {
-            inputText.length <= 50 -> 18.sp      // Kurzer Text: Große Schrift
-            inputText.length <= 200 -> 16.sp     // Mittlerer Text: Normale Schrift
-            inputText.length <= 500 -> 14.sp     // Langer Text: Kleinere Schrift
-            else -> 12.sp                        // Sehr langer Text: Kleine Schrift
+            inputText.length <= 50 -> 18.sp
+            inputText.length <= 200 -> 16.sp
+            inputText.length <= 500 -> 14.sp
+            else -> 12.sp
         }
     }
 
     val adaptiveLineHeight = adaptiveTextSize * 1.4f
+
     Card(
         modifier = modifier,
         colors = CardDefaults.cardColors(
@@ -251,37 +258,39 @@ private fun InputCard(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp)
+                .padding(8.dp) // ✅ Reduziert von 16dp auf 8dp
         ) {
-            // Header
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "Plaintext",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Medium,
-                    color = MaterialTheme.colorScheme.primary
-                )
+            // ✅ Header immer anzeigen
+            if (showHeader) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Plaintext",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Medium,
+                        color = MaterialTheme.colorScheme.primary
+                    )
 
-                if (inputText.isNotEmpty()) {
-                    IconButton(
-                        onClick = onClearText,
-                        modifier = Modifier.size(32.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Clear,
-                            contentDescription = "Clear",
-                            modifier = Modifier.size(18.dp),
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
+                    if (inputText.isNotEmpty()) {
+                        IconButton(
+                            onClick = onClearText,
+                            modifier = Modifier.size(28.dp) // ✅ Reduziert von 32dp auf 28dp
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Clear,
+                                contentDescription = "Clear",
+                                modifier = Modifier.size(16.dp), // ✅ Reduziert von 18dp auf 16dp
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
                     }
                 }
-            }
 
-            Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(8.dp)) // ✅ Reduziert von 12dp auf 8dp
+            }
 
             // TextField
             OutlinedTextField(
@@ -311,23 +320,24 @@ private fun InputCard(
     }
 }
 
-// ✅ OUTPUT CARD - Eigene Card-Komponente
+// ✅ ÜBERARBEITETE OUTPUT CARD - mit showHeader Parameter
 @Composable
 private fun OutputCard(
     outputText: String,
     currentMode: String,
     onCopyClick: () -> Unit,
+    showHeader: Boolean = true, // ✅ Header standardmäßig anzeigen
     modifier: Modifier = Modifier
 ) {
     var showCopyFeedback by remember { mutableStateOf(false) }
 
-    // ✅ ADAPTIVE TEXTGRÖSSE auch für Output
+    // Adaptive Textgröße auch für Output
     val adaptiveTextSize = remember(outputText.length) {
         when {
-            outputText.length <= 50 -> 18.sp      // Kurzer Text: Große Schrift
-            outputText.length <= 200 -> 16.sp     // Mittlerer Text: Normale Schrift
-            outputText.length <= 500 -> 14.sp     // Langer Text: Kleinere Schrift
-            else -> 12.sp                         // Sehr langer Text: Kleine Schrift
+            outputText.length <= 50 -> 18.sp
+            outputText.length <= 200 -> 16.sp
+            outputText.length <= 500 -> 14.sp
+            else -> 12.sp
         }
     }
 
@@ -350,47 +360,79 @@ private fun OutputCard(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp)
+                .padding(8.dp) // ✅ Reduziert von 16dp auf 8dp
         ) {
-            // Header
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = currentMode,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Medium,
-                    color = MaterialTheme.colorScheme.secondary
-                )
-
-                // Copy button
-                IconButton(
-                    onClick = {
-                        onCopyClick()
-                        showCopyFeedback = true
-                    },
-                    modifier = Modifier.size(40.dp)
+            // ✅ Header immer anzeigen
+            if (showHeader) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    AnimatedContent(
-                        targetState = showCopyFeedback,
-                        transitionSpec = {
-                            scaleIn() + fadeIn() togetherWith scaleOut() + fadeOut()
+                    Text(
+                        text = currentMode,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Medium,
+                        color = MaterialTheme.colorScheme.secondary
+                    )
+
+                    // Copy button
+                    IconButton(
+                        onClick = {
+                            onCopyClick()
+                            showCopyFeedback = true
                         },
-                        label = "copy_feedback"
-                    ) { feedback ->
-                        Icon(
-                            imageVector = if (feedback) Icons.Default.Check else Icons.Default.ContentCopy,
-                            contentDescription = if (feedback) "Kopiert!" else "Kopieren",
-                            tint = MaterialTheme.colorScheme.secondary,
-                            modifier = Modifier.size(20.dp)
-                        )
+                        modifier = Modifier.size(36.dp) // ✅ Reduziert von 40dp auf 36dp
+                    ) {
+                        AnimatedContent(
+                            targetState = showCopyFeedback,
+                            transitionSpec = {
+                                scaleIn() + fadeIn() togetherWith scaleOut() + fadeOut()
+                            },
+                            label = "copy_feedback"
+                        ) { feedback ->
+                            Icon(
+                                imageVector = if (feedback) Icons.Default.Check else Icons.Default.ContentCopy,
+                                contentDescription = if (feedback) "Kopiert!" else "Kopieren",
+                                tint = MaterialTheme.colorScheme.secondary,
+                                modifier = Modifier.size(18.dp) // ✅ Reduziert von 20dp auf 18dp
+                            )
+                        }
                     }
                 }
-            }
 
-            Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(8.dp)) // ✅ Reduziert von 12dp auf 8dp
+            } else {
+                // ✅ Copy Button kompakt wenn Header da ist
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.End
+                ) {
+                    IconButton(
+                        onClick = {
+                            onCopyClick()
+                            showCopyFeedback = true
+                        },
+                        modifier = Modifier.size(28.dp) // ✅ Reduziert von 32dp auf 28dp
+                    ) {
+                        AnimatedContent(
+                            targetState = showCopyFeedback,
+                            transitionSpec = {
+                                scaleIn() + fadeIn() togetherWith scaleOut() + fadeOut()
+                            },
+                            label = "copy_feedback_compact"
+                        ) { feedback ->
+                            Icon(
+                                imageVector = if (feedback) Icons.Default.Check else Icons.Default.ContentCopy,
+                                contentDescription = if (feedback) "Kopiert!" else "Kopieren",
+                                tint = MaterialTheme.colorScheme.secondary,
+                                modifier = Modifier.size(16.dp) // ✅ Reduziert von 18dp auf 16dp
+                            )
+                        }
+                    }
+                }
+                Spacer(modifier = Modifier.height(6.dp)) // ✅ Reduziert von 8dp auf 6dp
+            }
 
             // Output TextField
             OutlinedTextField(
@@ -417,7 +459,7 @@ private fun OutputCard(
     }
 }
 
-// ✅ BUTTON SECTION - Vereinfacht
+// ✅ BUTTON SECTION - bleibt unverändert
 @Composable
 private fun ButtonSection(
     currentMode: String,
@@ -432,9 +474,9 @@ private fun ButtonSection(
     ) {
         Row(
             modifier = Modifier
-                .padding(16.dp)
+                .padding(12.dp) // ✅ Reduziert von 16dp auf 12dp
                 .fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp), // ✅ Reduziert von 16dp auf 12dp
             verticalAlignment = Alignment.CenterVertically
         ) {
 
@@ -447,7 +489,7 @@ private fun ButtonSection(
                     contentDescription = null,
                     modifier = Modifier.size(18.dp)
                 )
-                Spacer(modifier = Modifier.width(8.dp))
+                Spacer(modifier = Modifier.width(6.dp)) // ✅ Reduziert von 8dp auf 6dp
                 Text("Clear")
             }
 
@@ -466,7 +508,7 @@ private fun ButtonSection(
                     contentDescription = null,
                     modifier = Modifier.size(18.dp)
                 )
-                Spacer(modifier = Modifier.width(8.dp))
+                Spacer(modifier = Modifier.width(6.dp)) // ✅ Reduziert von 8dp auf 6dp
                 Text(
                     text = currentMode,
                     maxLines = 1,
@@ -503,7 +545,7 @@ private fun AnimatedArrows() {
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(2.dp)
+        verticalArrangement = Arrangement.spacedBy(1.dp) // ✅ Reduziert von 2dp auf 1dp
     ) {
         Row(
             horizontalArrangement = Arrangement.spacedBy(1.dp),
