@@ -11,6 +11,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -89,13 +90,13 @@ fun MainScreen(
     var inputText by remember { mutableStateOf("") }
     var outputText by remember { mutableStateOf("") }
 
-    // ✅ ERWEITERT: ViewModel State mit Reverse
+    // ViewModel State mit Reverse
     val currentModeDisplayName by viewModel.currentModeDisplayName.collectAsStateWithLifecycle()
     val currentMode by viewModel.currentMode.collectAsStateWithLifecycle()
     val currentLeet by viewModel.currentLeet.collectAsStateWithLifecycle()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val isReverseMode by viewModel.isReverseMode.collectAsStateWithLifecycle() // ✅ NEU
-    val isInputLikelyLeetspeak by viewModel.isInputLikelyLeetspeak.collectAsStateWithLifecycle() // ✅ NEU
+    val isReverseMode by viewModel.isReverseMode.collectAsStateWithLifecycle()
+    val isInputLikelyLeetspeak by viewModel.isInputLikelyLeetspeak.collectAsStateWithLifecycle()
 
     // Keyboard Detection
     val density = LocalDensity.current
@@ -110,7 +111,7 @@ fun MainScreen(
     var showAboutDialog by remember { mutableStateOf(false) }
     val context = LocalContext.current
 
-    // ✅ ERWEITERT: Translation mit Reverse Support
+    // Translation mit Reverse Support
     LaunchedEffect(inputText, currentMode, currentLeet, isReverseMode) {
         outputText = if (inputText.isEmpty()) {
             ""
@@ -135,7 +136,7 @@ fun MainScreen(
                             style = MaterialTheme.typography.headlineSmall.copy(fontSize = 22.sp)
                         )
 
-                        // ✅ NEU: Reverse Mode Indicator
+                        // Reverse Mode Indicator
                         if (isReverseMode) {
                             Spacer(modifier = Modifier.width(8.dp))
                             Surface(
@@ -152,7 +153,7 @@ fun MainScreen(
                             }
                         }
 
-                        // ✅ NEU: Leetspeak Detection Indicator
+                        // Leetspeak Detection Indicator
                         if (!isReverseMode && isInputLikelyLeetspeak) {
                             Spacer(modifier = Modifier.width(8.dp))
                             Surface(
@@ -209,7 +210,7 @@ fun MainScreen(
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
 
-                // INPUT CARD - Header immer anzeigen
+                // ✅ INPUT CARD mit Reverse-Modus Support
                 InputCard(
                     inputText = inputText,
                     onInputChange = {
@@ -218,6 +219,7 @@ fun MainScreen(
                     },
                     onClearText = { inputText = "" },
                     showHeader = true,
+                    isReverseMode = isReverseMode, // ✅ NEU: Reverse-Modus Parameter
                     modifier = Modifier
                         .fillMaxWidth()
                         .then(
@@ -229,13 +231,14 @@ fun MainScreen(
                         )
                 )
 
-                // OUTPUT CARD - nur wenn Output vorhanden
+                // ✅ OUTPUT CARD mit Reverse-Modus Support
                 if (hasOutput) {
                     OutputCard(
                         outputText = outputText,
                         currentMode = currentModeDisplayName,
                         onCopyClick = { onCopyToClipboard(outputText) },
                         showHeader = true,
+                        isReverseMode = isReverseMode, // ✅ NEU: Reverse-Modus Parameter
                         modifier = Modifier
                             .fillMaxWidth()
                             .weight(1f)
@@ -243,7 +246,7 @@ fun MainScreen(
                 }
             }
 
-            // ✅ ERWEITERTE BUTTON SECTION - ohne Clear Button, mit Reverse
+            // Button Section
             if (!isKeyboardVisible) {
                 EnhancedButtonSection(
                     currentMode = currentModeDisplayName,
@@ -275,13 +278,14 @@ fun MainScreen(
     }
 }
 
-// INPUT CARD - unverändert
+
 @Composable
 fun InputCard(
     inputText: String,
     onInputChange: (String) -> Unit,
     onClearText: () -> Unit,
     showHeader: Boolean = true,
+    isReverseMode: Boolean = false, // ✅ NEU: Reverse-Modus Parameter
     modifier: Modifier = Modifier
 ) {
     // Adaptive Textgröße
@@ -296,12 +300,29 @@ fun InputCard(
 
     val adaptiveLineHeight = adaptiveTextSize * 1.4f
 
+    val cardColors =  CardDefaults.cardColors(
+        containerColor = MaterialTheme.colorScheme.surface
+    )
+
+    val headerTextColor = if (isReverseMode) {
+        MaterialTheme.colorScheme.secondary
+    } else {
+        MaterialTheme.colorScheme.primary
+    }
+
+    val borderColor = if (isReverseMode) {
+        MaterialTheme.colorScheme.secondary
+    } else {
+        MaterialTheme.colorScheme.primary
+    }
+
     Card(
         modifier = modifier,
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        colors = cardColors,
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        border = if (isReverseMode) {
+            BorderStroke(1.dp, borderColor.copy(alpha = 0.5f))
+        } else null
     ) {
         Column(
             modifier = Modifier
@@ -315,10 +336,10 @@ fun InputCard(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "Plaintext",
+                        text = if (isReverseMode) "Leetspeak Input" else "Plaintext",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Medium,
-                        color = MaterialTheme.colorScheme.primary
+                        color = headerTextColor
                     )
 
                     if (inputText.isNotEmpty()) {
@@ -345,7 +366,11 @@ fun InputCard(
                 modifier = Modifier.fillMaxSize(),
                 placeholder = {
                     Text(
-                        text = "Hier deinen Text eingeben...",
+                        text = if (isReverseMode) {
+                            "Leetspeak Text eingeben..."
+                        } else {
+                            "Hier deinen Text eingeben..."
+                        },
                         style = MaterialTheme.typography.bodyLarge.copy(
                             fontSize = adaptiveTextSize
                         )
@@ -356,8 +381,8 @@ fun InputCard(
                     lineHeight = adaptiveLineHeight
                 ),
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = MaterialTheme.colorScheme.primary,
-                    unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f)
+                    focusedBorderColor = borderColor,
+                    unfocusedBorderColor = borderColor.copy(alpha = 0.5f)
                 ),
                 shape = MaterialTheme.shapes.medium,
                 singleLine = false
@@ -366,13 +391,13 @@ fun InputCard(
     }
 }
 
-// OUTPUT CARD - unverändert
 @Composable
 fun OutputCard(
     outputText: String,
     currentMode: String,
     onCopyClick: () -> Unit,
     showHeader: Boolean = true,
+    isReverseMode: Boolean = false, // ✅ NEU: Reverse-Modus Parameter
     modifier: Modifier = Modifier
 ) {
     var showCopyFeedback by remember { mutableStateOf(false) }
@@ -395,12 +420,29 @@ fun OutputCard(
         }
     }
 
+    val cardColors =  CardDefaults.cardColors(
+        containerColor = MaterialTheme.colorScheme.surface
+    )
+
+    val headerTextColor = if (isReverseMode) {
+        MaterialTheme.colorScheme.primary
+    } else {
+        MaterialTheme.colorScheme.secondary
+    }
+
+    val borderColor = if (isReverseMode) {
+        MaterialTheme.colorScheme.primary
+    } else {
+        MaterialTheme.colorScheme.secondary
+    }
+
     Card(
         modifier = modifier,
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        colors = cardColors,
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        border = if (!isReverseMode) {
+            BorderStroke(1.dp, borderColor.copy(alpha = 0.5f))
+        } else null
     ) {
         Column(
             modifier = Modifier
@@ -414,10 +456,10 @@ fun OutputCard(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = currentMode,
+                        text = if (isReverseMode) "Plaintext Output" else currentMode,
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Medium,
-                        color = MaterialTheme.colorScheme.secondary
+                        color = headerTextColor
                     )
 
                     IconButton(
@@ -437,7 +479,7 @@ fun OutputCard(
                             Icon(
                                 imageVector = if (feedback) Icons.Default.Check else Icons.Default.ContentCopy,
                                 contentDescription = if (feedback) "Kopiert!" else "Kopieren",
-                                tint = MaterialTheme.colorScheme.secondary,
+                                tint = headerTextColor,
                                 modifier = Modifier.size(18.dp)
                             )
                         }
@@ -457,8 +499,8 @@ fun OutputCard(
                     lineHeight = adaptiveLineHeight
                 ),
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = MaterialTheme.colorScheme.secondary,
-                    unfocusedBorderColor = MaterialTheme.colorScheme.secondary.copy(alpha = 0.5f),
+                    focusedBorderColor = borderColor,
+                    unfocusedBorderColor = borderColor.copy(alpha = 0.5f),
                 ),
                 shape = MaterialTheme.shapes.medium,
                 singleLine = false
