@@ -39,6 +39,7 @@ import com.beigel.leetSpeak_Generator.viewmodel.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.ui.text.style.TextAlign
 
 @AndroidEntryPoint
 class ComposeMainActivity : ComponentActivity() {
@@ -87,8 +88,8 @@ fun MainScreen(
     onCopyToClipboard: (String) -> Unit
 ) {
     // Lokaler State
-    var inputText by remember { mutableStateOf("") }
-    var outputText by remember { mutableStateOf("") }
+    val inputText by viewModel.inputText.collectAsStateWithLifecycle()
+    val outputText by viewModel.outputText.collectAsStateWithLifecycle()
 
     // ViewModel State mit Reverse
     val currentModeDisplayName by viewModel.currentModeDisplayName.collectAsStateWithLifecycle()
@@ -110,17 +111,19 @@ fun MainScreen(
     var showBottomSheet by remember { mutableStateOf(false) }
     var showAboutDialog by remember { mutableStateOf(false) }
     val context = LocalContext.current
-
-    // Translation mit Reverse Support
-    LaunchedEffect(inputText, currentMode, currentLeet, isReverseMode) {
-        outputText = if (inputText.isEmpty()) {
-            ""
-        } else if (isReverseMode) {
-            com.beigel.leetSpeak_Generator.translation.ReverseTranslator.reverseTranslate(inputText, currentMode, currentLeet)
-        } else {
-            LeetTranslator.translate(inputText, currentMode, currentLeet)
-        }
+    val inputTitle = if (isReverseMode) {
+        "Input: $currentModeDisplayName"
+    } else {
+        "Input: Plaintext"
     }
+
+    val outputTitle = if (isReverseMode) {
+        "Output: Plaintext"
+    } else {
+        "Output: $currentModeDisplayName"
+    }
+
+
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -214,12 +217,14 @@ fun MainScreen(
                 InputCard(
                     inputText = inputText,
                     onInputChange = {
-                        inputText = it
-                        viewModel.updateInputText(it)
+                        viewModel.updateInputText(it) // ✅ Direkt an ViewModel
                     },
-                    onClearText = { inputText = "" },
+                    onClearText = {
+                        viewModel.clearInput() // ✅ Direkt an ViewModel
+                    },
                     showHeader = true,
                     isReverseMode = isReverseMode, // ✅ NEU: Reverse-Modus Parameter
+                    title = inputTitle, // ✅ Dynamischer Titel
                     modifier = Modifier
                         .fillMaxWidth()
                         .then(
@@ -235,7 +240,7 @@ fun MainScreen(
                 if (hasOutput) {
                     OutputCard(
                         outputText = outputText,
-                        currentMode = currentModeDisplayName,
+                        currentMode = outputTitle,
                         onCopyClick = { onCopyToClipboard(outputText) },
                         showHeader = true,
                         isReverseMode = isReverseMode, // ✅ NEU: Reverse-Modus Parameter
@@ -286,6 +291,7 @@ fun InputCard(
     onClearText: () -> Unit,
     showHeader: Boolean = true,
     isReverseMode: Boolean = false, // ✅ NEU: Reverse-Modus Parameter
+    title: String = "Input: Plaintext", // ✅ NEU: Title Parameter
     modifier: Modifier = Modifier
 ) {
     // Adaptive Textgröße
@@ -336,7 +342,7 @@ fun InputCard(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = if (isReverseMode) "Leetspeak Input" else "Plaintext",
+                        text = title,
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Medium,
                         color = headerTextColor
@@ -456,7 +462,7 @@ fun OutputCard(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = if (isReverseMode) "Plaintext Output" else currentMode,
+                        text = currentMode,
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Medium,
                         color = headerTextColor
@@ -540,26 +546,53 @@ fun EnhancedButtonSection(
                 modifier = Modifier.weight(1f)
             )
 
-            // MODE SELECTOR BUTTON
-            Button(
-                onClick = onLeetSelectorClick,
-                modifier = Modifier.weight(2f),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.secondary
-                )
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Transform,
-                    contentDescription = null,
-                    modifier = Modifier.size(18.dp)
-                )
-                Spacer(modifier = Modifier.width(6.dp))
-                Text(
-                    text = currentMode,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-            }
+            // ✅ MODE SELECTOR BUTTON - Jetzt mit gleichem Design wie Reverse Button
+            ModeSelectorButton(
+                currentMode = currentMode,
+                onLeetSelectorClick = onLeetSelectorClick,
+                modifier = Modifier.weight(2f)
+            )
+        }
+    }
+}
+@Composable
+private fun ModeSelectorButton(
+    currentMode: String,
+    onLeetSelectorClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Surface(
+        onClick = onLeetSelectorClick,
+        modifier = modifier.height(48.dp),
+        color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f),
+        shape = MaterialTheme.shapes.medium
+    ) {
+        Row(
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .fillMaxHeight()
+                .padding(horizontal = 12.dp, vertical = 8.dp)
+        ) {
+            // Transform Icon
+            Icon(
+                imageVector = Icons.Default.Transform,
+                contentDescription = null,
+                modifier = Modifier.size(20.dp),
+                tint = MaterialTheme.colorScheme.primary
+            )
+
+            Spacer(modifier = Modifier.width(8.dp))
+
+            // Mode Text - größere Schrift
+            Text(
+                text = currentMode,
+                style = MaterialTheme.typography.labelMedium.copy(fontSize = 12.sp), // ✅ Größere Schrift
+                color = MaterialTheme.colorScheme.primary,
+                fontWeight = FontWeight.Bold,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
         }
     }
 }

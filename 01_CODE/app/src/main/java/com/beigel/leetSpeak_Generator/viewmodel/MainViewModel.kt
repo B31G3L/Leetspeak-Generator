@@ -131,27 +131,27 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    /**
-     * ✅ NEU: Toggle Reverse Mode mit Input/Output Swap
-     */
     fun toggleReverseMode() {
         val currentInput = _inputText.value
-        val currentOutput = outputText.value
+        val currentMode = _currentMode.value
+        val currentLeet = currentLeet.value
+        val currentReverseMode = _isReverseMode.value
 
-        // Reverse Mode umschalten
-        _isReverseMode.value = !_isReverseMode.value
-
-        // Input und Output tauschen wenn beide vorhanden sind
-        if (currentInput.isNotEmpty() && currentOutput.isNotEmpty()) {
-            _inputText.value = currentOutput
+        val currentOutputBeforeToggle = if (currentInput.isNotEmpty()) {
+            if (currentReverseMode) {
+                ReverseTranslator.reverseTranslate(currentInput, currentMode, currentLeet)
+            } else {
+                LeetTranslator.translate(currentInput, currentMode, currentLeet)
+            }
+        } else {
+            ""
         }
 
-        updateUiState {
-            copy(successMessage = if (_isReverseMode.value) {
-                "Reverse-Modus aktiviert - Input und Output getauscht"
-            } else {
-                "Normal-Modus aktiviert - Input und Output getauscht"
-            })
+
+        _isReverseMode.value = !_isReverseMode.value
+
+        if (currentOutputBeforeToggle.isNotEmpty()) {
+            _inputText.value = currentOutputBeforeToggle
         }
     }
 
@@ -323,7 +323,6 @@ class MainViewModel @Inject constructor(
             updateUiState { copy(errorMessage = "No text to copy") }
         }
     }
-
     /**
      * Clears current input text
      */
