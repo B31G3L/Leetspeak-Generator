@@ -1,6 +1,7 @@
 package com.beigel.leetSpeak_Generator.di
 
 import android.content.Context
+import com.beigel.leetSpeak_Generator.data.ThemePreferences
 import com.beigel.leetSpeak_Generator.repository.LeetRepository
 import dagger.Module
 import dagger.Provides
@@ -25,21 +26,11 @@ object AppModule {
         return LeetRepository(context)
     }
 
-    // Falls später weitere Dependencies benötigt werden:
-
-    /*
     @Provides
     @Singleton
-    fun provideSharedPreferences(
+    fun provideThemePreferences(
         @ApplicationContext context: Context
-    ): SharedPreferences {
-        return context.getSharedPreferences("leetspeak_prefs", Context.MODE_PRIVATE)
+    ): ThemePreferences {
+        return ThemePreferences(context)
     }
-
-    @Provides
-    @Singleton
-    fun provideGson(): Gson {
-        return Gson()
-    }
-    */
 }

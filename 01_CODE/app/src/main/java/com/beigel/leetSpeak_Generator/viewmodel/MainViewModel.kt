@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.beigel.leetSpeak_Generator.data.CustomLeet
 import com.beigel.leetSpeak_Generator.data.LeetOption
+import com.beigel.leetSpeak_Generator.data.ThemePreferences
 import com.beigel.leetSpeak_Generator.repository.LeetRepository
 import com.beigel.leetSpeak_Generator.translation.LeetTranslator
 import com.beigel.leetSpeak_Generator.translation.ReverseTranslator
@@ -18,7 +19,8 @@ import javax.inject.Inject
  */
 @HiltViewModel
 class MainViewModel @Inject constructor(
-    private val repository: LeetRepository
+    private val repository: LeetRepository,
+    private val themePreferences: ThemePreferences
 ) : ViewModel() {
 
     // Input state
@@ -100,6 +102,13 @@ class MainViewModel @Inject constructor(
         .stateIn(viewModelScope, SharingStarted.Lazily, false)
 
     private var debounceJob: Job? = null
+
+    val themeMode: StateFlow<String> = themePreferences.themeMode
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = ThemePreferences.THEME_SYSTEM
+        )
 
     init {
         loadInitialState()

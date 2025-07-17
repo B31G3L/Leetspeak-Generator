@@ -28,6 +28,31 @@
             </intent-filter>
         </activity>
 
+        <!-- Settings Activity -->
+        <activity
+            android:name=".ui.settings.SettingsActivity"
+            android:exported="false"
+            android:label="@string/settings"
+            android:theme="@style/Theme.LeetspeakGenerator"
+            android:parentActivityName=".ui.ComposeMainActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".ui.ComposeMainActivity" />
+        </activity>
+
+        <!-- Widget Provider -->
+        <receiver
+            android:name=".widget.LeetWidgetProvider"
+            android:exported="true"
+            android:label="@string/widget_description">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_info" />
+        </receiver>
+
     </application>
 
 </manifest>

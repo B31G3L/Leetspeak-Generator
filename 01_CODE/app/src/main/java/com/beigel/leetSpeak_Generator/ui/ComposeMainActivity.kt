@@ -3,6 +3,7 @@ package com.beigel.leetSpeak_Generator.ui
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.os.VibrationEffect
 import android.os.Vibrator
@@ -40,6 +41,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.ui.text.style.TextAlign
+import com.beigel.leetSpeak_Generator.ui.settings.SettingsActivity
 
 @AndroidEntryPoint
 class ComposeMainActivity : ComponentActivity() {
@@ -64,8 +66,14 @@ class ComposeMainActivity : ComponentActivity() {
             LeetspeakGeneratorTheme {
                 MainScreen(
                     viewModel = viewModel,
-                    onCopyToClipboard = { text ->
-                        copyToClipboardWithFeedback(text)
+                    onCopyToClipboard = { text -> copyToClipboardWithFeedback(text) },
+                    onOpenSettings = {
+                        startActivity(
+                            Intent(
+                                this@ComposeMainActivity,
+                                SettingsActivity::class.java
+                            )
+                        )
                     }
                 )
             }
@@ -85,7 +93,9 @@ class ComposeMainActivity : ComponentActivity() {
 @Composable
 fun MainScreen(
     viewModel: MainViewModel,
-    onCopyToClipboard: (String) -> Unit
+    onCopyToClipboard: (String) -> Unit,
+    onOpenSettings: () -> Unit
+
 ) {
     // Lokaler State
     val inputText by viewModel.inputText.collectAsStateWithLifecycle()
@@ -135,9 +145,11 @@ fun MainScreen(
                     ) {
                         Text(
                             "Leetspeak Generator",
+
                             fontWeight = FontWeight.Bold,
                             style = MaterialTheme.typography.headlineSmall.copy(fontSize = 22.sp)
                         )
+
 
                         // Reverse Mode Indicator
                         if (isReverseMode) {
@@ -185,6 +197,9 @@ fun MainScreen(
                             contentDescription = "About",
                             modifier = Modifier.size(24.dp)
                         )
+                    }
+                    IconButton(onClick = onOpenSettings) {
+                        Icon(Icons.Default.Settings, "Einstellungen")
                     }
                 }
             )

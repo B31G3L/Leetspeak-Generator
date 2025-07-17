@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Light Theme Widget Colors -->
+    <color name="widget_background">#FFFFFF</color>
+    <color name="widget_border">#E0E0E0</color>
+    <color name="widget_text_primary">#212121</color>
+    <color name="widget_text_secondary">#2563EB</color>
+    <color name="widget_text_hint">#757575</color>
+</resources>

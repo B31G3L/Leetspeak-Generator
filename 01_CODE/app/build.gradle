@@ -102,4 +102,14 @@ dependencies {
     androidTestImplementation libs.androidx.ui.test.junit4
     debugImplementation libs.androidx.ui.tooling
     debugImplementation libs.androidx.ui.test.manifest
+
+    // DataStore für Settings
+    implementation libs.androidx.datastore.preferences
+
+    // LazyColumn für Settings
+    implementation libs.androidx.foundation
+
+    // Widget Support
+    implementation libs.androidx.glance.appwidget
+    implementation libs.androidx.glance.material3
 }
