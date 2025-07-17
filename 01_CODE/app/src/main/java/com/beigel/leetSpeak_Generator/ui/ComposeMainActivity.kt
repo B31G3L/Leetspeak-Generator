@@ -35,13 +35,15 @@ import com.beigel.leetSpeak_Generator.translation.LeetTranslator
 import com.beigel.leetSpeak_Generator.ui.components.AboutDialog
 import com.beigel.leetSpeak_Generator.ui.components.LeetSelectorBottomSheet
 import com.beigel.leetSpeak_Generator.ui.theme.LeetspeakGeneratorTheme
-import com.beigel.leetSpeak_Generator.viewmodel.MainIntent
 import com.beigel.leetSpeak_Generator.viewmodel.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.ui.text.style.TextAlign
+import com.beigel.leetSpeak_Generator.presentation.intent.MainIntent
+import com.beigel.leetSpeak_Generator.presentation.intent.MainUiState
 import com.beigel.leetSpeak_Generator.ui.settings.SettingsActivity
+
 
 @AndroidEntryPoint
 class ComposeMainActivity : ComponentActivity() {
@@ -747,11 +749,11 @@ private fun EnhancedAnimatedArrows(
 
 @Composable
 private fun HandleUiState(
-    uiState: com.beigel.leetSpeak_Generator.viewmodel.MainUiState,
+    uiState: com.beigel.leetSpeak_Generator.domain.usecase.ui.UiStateManagementUseCase.UiState,
     viewModel: MainViewModel,
     context: Context
 ) {
-    uiState.successMessage?.let { message ->
+    uiState.successMessage.let { message ->
         LaunchedEffect(message) {
             android.widget.Toast.makeText(
                 context,
@@ -762,7 +764,7 @@ private fun HandleUiState(
         }
     }
 
-    uiState.errorMessage?.let { message ->
+    uiState.errorMessage.let { message ->
         LaunchedEffect(message) {
             android.widget.Toast.makeText(
                 context,

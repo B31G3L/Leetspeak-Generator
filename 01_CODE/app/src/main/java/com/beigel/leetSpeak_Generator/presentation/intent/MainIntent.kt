@@ -1,0 +1,38 @@
+package com.beigel.leetSpeak_Generator.presentation.intent
+
+import com.beigel.leetSpeak_Generator.data.CustomLeet
+import com.beigel.leetSpeak_Generator.data.LeetOption
+
+/**
+ * UI Intents für MainViewModel
+ * Ausgelagert für bessere Modularität und Import-Handling
+ */
+sealed class MainIntent {
+    data class UpdateInput(val text: String) : MainIntent()
+    data class ChangeMode(val leetOption: LeetOption) : MainIntent()
+    data class ToggleFavorite(val leetOption: LeetOption) : MainIntent()
+    data class CreateLeet(
+        val name: String,
+        val iconResId: Int,
+        val useExtendedDefaults: Boolean = false
+    ) : MainIntent()
+    data class UpdateLeet(val index: Int, val leet: CustomLeet) : MainIntent()
+    data class DeleteLeet(val index: Int) : MainIntent()
+    object CopyToClipboard : MainIntent()
+    object ClearInput : MainIntent()
+    object ClearError : MainIntent()
+    object ClearSuccess : MainIntent()
+    object ToggleReverseMode : MainIntent()
+}
+
+/**
+ * UI State für MainViewModel
+ * Ausgelagert für bessere Struktur
+ */
+data class MainUiState(
+    val isLoading: Boolean = false,
+    val errorMessage: String? = null,
+    val successMessage: String? = null,
+    val selectedLeetOption: LeetOption? = null,
+    val showBottomSheet: Boolean = false
+)
