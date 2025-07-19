@@ -207,11 +207,11 @@ fun MainScreen(
             )
         },
         bottomBar = {
-            // Bottom App Bar - mit optimierter Animation
+            // Bottom App Bar - Gleiche Farben wie Top App Bar
             BottomAppBar(
                 containerColor = MaterialTheme.colorScheme.surface,
                 contentColor = MaterialTheme.colorScheme.onSurface,
-                tonalElevation = 8.dp,
+                tonalElevation = 0.dp, // Gleiche Elevation wie Top App Bar
                 modifier = Modifier.then(
                     if (isKeyboardVisible) {
                         // Bei Tastatur: Kleinerer Offset für mehr Platznutzung
@@ -353,9 +353,7 @@ fun InputCard(
         modifier = modifier,
         colors = cardColors,
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        border = if (isReverseMode) {
-            BorderStroke(1.dp, borderColor.copy(alpha = 0.5f))
-        } else null
+        border = BorderStroke(1.dp, borderColor.copy(alpha = 0.3f)) // ✅ Immer Border
     ) {
         Column(
             modifier = Modifier
@@ -473,9 +471,7 @@ fun OutputCard(
         modifier = modifier,
         colors = cardColors,
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        border = if (!isReverseMode) {
-            BorderStroke(1.dp, borderColor.copy(alpha = 0.5f))
-        } else null
+        border = BorderStroke(1.dp, borderColor.copy(alpha = 0.3f)) // ✅ Immer Border
     ) {
         Column(
             modifier = Modifier
