@@ -65,7 +65,15 @@ class ComposeMainActivity : ComponentActivity() {
         }
 
         setContent {
-            LeetspeakGeneratorTheme {
+            // Theme aus Settings laden und überwachen
+            val themeMode by viewModel.themeMode.collectAsStateWithLifecycle()
+            val isDarkTheme = when (themeMode) {
+                com.beigel.leetSpeak_Generator.data.ThemePreferences.THEME_DARK -> true
+                com.beigel.leetSpeak_Generator.data.ThemePreferences.THEME_LIGHT -> false
+                else -> androidx.compose.foundation.isSystemInDarkTheme()
+            }
+
+            LeetspeakGeneratorTheme(darkTheme = isDarkTheme) {
                 MainScreen(
                     viewModel = viewModel,
                     onCopyToClipboard = { text -> copyToClipboardWithFeedback(text) },
