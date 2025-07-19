@@ -205,79 +205,89 @@ fun MainScreen(
                     }
                 }
             )
-        }
-    ) { paddingValues ->
-
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .then(
+        },
+        bottomBar = {
+            // Bottom App Bar - mit optimierter Animation
+            BottomAppBar(
+                containerColor = MaterialTheme.colorScheme.surface,
+                contentColor = MaterialTheme.colorScheme.onSurface,
+                tonalElevation = 8.dp,
+                modifier = Modifier.then(
                     if (isKeyboardVisible) {
-                        Modifier.padding(bottom = with(density) { keyboardHeight.toDp() })
+                        // Bei Tastatur: Kleinerer Offset für mehr Platznutzung
+                        Modifier.offset(y = 56.dp)
                     } else {
                         Modifier
                     }
                 )
-        ) {
-
-            // CONTENT BEREICH
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f)
-                    .padding(8.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-
-                // ✅ INPUT CARD mit Reverse-Modus Support
-                InputCard(
-                    inputText = inputText,
-                    onInputChange = {
-                        viewModel.updateInputText(it) // ✅ Direkt an ViewModel
-                    },
-                    onClearText = {
-                        viewModel.clearInput() // ✅ Direkt an ViewModel
-                    },
-                    showHeader = true,
-                    isReverseMode = isReverseMode, // ✅ NEU: Reverse-Modus Parameter
-                    title = inputTitle, // ✅ Dynamischer Titel
+                Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .then(
-                            if (hasOutput) {
-                                Modifier.weight(1f)
-                            } else {
-                                Modifier.weight(1f)
-                            }
-                        )
-                )
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    // ✅ ENHANCED ANIMATED ARROWS
+                    EnhancedAnimatedArrows(
+                        isReverseMode = isReverseMode,
+                        isInputLikelyLeetspeak = isInputLikelyLeetspeak,
+                        onToggleReverse = {
+                            viewModel.handleIntent(MainIntent.ToggleReverseMode)
+                        },
+                        modifier = Modifier.weight(1f)
+                    )
 
-                // ✅ OUTPUT CARD mit Reverse-Modus Support
-                if (hasOutput) {
-                    OutputCard(
-                        outputText = outputText,
-                        currentMode = outputTitle,
-                        onCopyClick = { onCopyToClipboard(outputText) },
-                        showHeader = true,
-                        isReverseMode = isReverseMode, // ✅ NEU: Reverse-Modus Parameter
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .weight(1f)
+                    // ✅ MODE SELECTOR BUTTON
+                    ModeSelectorButton(
+                        currentMode = currentModeDisplayName,
+                        onLeetSelectorClick = { showBottomSheet = true },
+                        modifier = Modifier.weight(2f)
                     )
                 }
             }
+        }
+    ) { paddingValues ->
 
-            // Button Section
-            if (!isKeyboardVisible) {
-                EnhancedButtonSection(
-                    currentMode = currentModeDisplayName,
+        // CONTENT BEREICH - Einfache aber effektive Tastatur-Anpassung
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .consumeWindowInsets(paddingValues)
+                .imePadding() // Das ist der Schlüssel für Tastatur-Anpassung
+                .padding(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+
+            // ✅ INPUT CARD - Nutzt verfügbaren Raum optimal
+            InputCard(
+                inputText = inputText,
+                onInputChange = {
+                    viewModel.updateInputText(it)
+                },
+                onClearText = {
+                    viewModel.clearInput()
+                },
+                showHeader = true,
+                isReverseMode = isReverseMode,
+                title = inputTitle,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
+            )
+
+            // ✅ OUTPUT CARD
+            if (hasOutput) {
+                OutputCard(
+                    outputText = outputText,
+                    currentMode = outputTitle,
+                    onCopyClick = { onCopyToClipboard(outputText) },
+                    showHeader = true,
                     isReverseMode = isReverseMode,
-                    isInputLikelyLeetspeak = isInputLikelyLeetspeak,
-                    onLeetSelectorClick = { showBottomSheet = true },
-                    onToggleReverseMode = {
-                        viewModel.handleIntent(MainIntent.ToggleReverseMode)
-                    }
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
                 )
             }
         }
@@ -532,46 +542,7 @@ fun OutputCard(
     }
 }
 
-// ✅ NEUE ENHANCED BUTTON SECTION - ohne Clear Button
-@Composable
-fun EnhancedButtonSection(
-    currentMode: String,
-    isReverseMode: Boolean,
-    isInputLikelyLeetspeak: Boolean,
-    onLeetSelectorClick: () -> Unit,
-    onToggleReverseMode: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Surface(
-        modifier = modifier.fillMaxWidth(),
-        color = MaterialTheme.colorScheme.surface,
-        shadowElevation = 4.dp
-    ) {
-        Row(
-            modifier = Modifier
-                .padding(12.dp)
-                .fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-
-            // ✅ ERWEITERTE ANIMATED ARROWS - clickbar mit Reverse Info
-            EnhancedAnimatedArrows(
-                isReverseMode = isReverseMode,
-                isInputLikelyLeetspeak = isInputLikelyLeetspeak,
-                onToggleReverse = onToggleReverseMode,
-                modifier = Modifier.weight(1f)
-            )
-
-            // ✅ MODE SELECTOR BUTTON - Jetzt mit gleichem Design wie Reverse Button
-            ModeSelectorButton(
-                currentMode = currentMode,
-                onLeetSelectorClick = onLeetSelectorClick,
-                modifier = Modifier.weight(2f)
-            )
-        }
-    }
-}
+// ✅ MODE SELECTOR BUTTON - Standalone Komponente
 @Composable
 private fun ModeSelectorButton(
     currentMode: String,
@@ -604,7 +575,7 @@ private fun ModeSelectorButton(
             // Mode Text - größere Schrift
             Text(
                 text = currentMode,
-                style = MaterialTheme.typography.labelMedium.copy(fontSize = 12.sp), // ✅ Größere Schrift
+                style = MaterialTheme.typography.labelMedium.copy(fontSize = 12.sp),
                 color = MaterialTheme.colorScheme.primary,
                 fontWeight = FontWeight.Bold,
                 maxLines = 1,
@@ -753,7 +724,7 @@ private fun HandleUiState(
     viewModel: MainViewModel,
     context: Context
 ) {
-    uiState.successMessage.let { message ->
+    uiState.successMessage?.let { message ->
         LaunchedEffect(message) {
             android.widget.Toast.makeText(
                 context,
@@ -764,7 +735,7 @@ private fun HandleUiState(
         }
     }
 
-    uiState.errorMessage.let { message ->
+    uiState.errorMessage?.let { message ->
         LaunchedEffect(message) {
             android.widget.Toast.makeText(
                 context,
