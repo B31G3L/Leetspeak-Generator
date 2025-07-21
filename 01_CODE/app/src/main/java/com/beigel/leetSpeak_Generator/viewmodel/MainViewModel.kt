@@ -10,7 +10,6 @@ import com.beigel.leetSpeak_Generator.domain.usecase.translation.TranslationMana
 import com.beigel.leetSpeak_Generator.domain.usecase.ui.UiManagerUseCase
 import com.beigel.leetSpeak_Generator.manager.LeetManager
 import com.beigel.leetSpeak_Generator.presentation.intent.MainIntent
-import com.beigel.leetSpeak_Generator.presentation.intent.MainUiState
 import com.beigel.leetSpeak_Generator.repository.LeetRepository
 import com.beigel.leetSpeak_Generator.translation.LeetTranslator
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -30,7 +29,7 @@ class MainViewModel @Inject constructor(
     private val leetManager: LeetManagerUseCase,
     private val uiManager: UiManagerUseCase,
     private val repository: LeetRepository,
-    private val themePreferences: ThemePreferences
+    private val themePreferences: ThemePreferences // NEU hinzufügen
 ) : ViewModel() {
 
     // State Flows aus Use Cases
@@ -47,11 +46,11 @@ class MainViewModel @Inject constructor(
     val favoriteLeetOptions = leetManager.getFavoriteLeetOptions()
 
     // Theme State
-    val themeMode: StateFlow<String> = themePreferences.themeMode
+    val defaultViewExpanded: StateFlow<Boolean> = themePreferences.defaultViewExpanded
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
-            initialValue = ThemePreferences.THEME_SYSTEM
+            initialValue = false
         )
 
     // Computed State Flows
@@ -86,6 +85,13 @@ class MainViewModel @Inject constructor(
 
     val shouldShowOutput: StateFlow<Boolean> = outputText.map { it.isNotEmpty() }
         .stateIn(viewModelScope, SharingStarted.Lazily, false)
+    val themeMode: StateFlow<String> = themePreferences.themeMode
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = ThemePreferences.THEME_SYSTEM
+        )
+
 
     init {
         initializeApp()

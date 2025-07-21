@@ -1,3 +1,4 @@
+// LeetSelectorBottomSheet.kt
 package com.beigel.leetSpeak_Generator.ui.components
 
 import androidx.compose.foundation.layout.*
@@ -15,8 +16,7 @@ import com.beigel.leetSpeak_Generator.viewmodel.MainViewModel
 
 /**
  * Hauptkomponente für die Leet-Auswahl als Bottom Sheet
- * Refactored: Von 500+ Zeilen auf ~80 Zeilen durch Komponentenaufteilung
- * FIXED: Korrekte Imports für MainIntent
+ * Mit Settings-Integration für Standard-Ansicht
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -28,6 +28,7 @@ fun LeetSelectorBottomSheet(
     // State Collection
     val leetOptions by viewModel.leetOptions.collectAsStateWithLifecycle(initialValue = emptyList())
     val favoriteLeetOptions by viewModel.favoriteLeetOptions.collectAsStateWithLifecycle(initialValue = emptyList())
+    val defaultViewExpanded by viewModel.defaultViewExpanded.collectAsStateWithLifecycle()
 
     // Dialog States
     var showLeetCreationDialog by remember { mutableStateOf(false) }
@@ -74,7 +75,7 @@ fun LeetSelectorBottomSheet(
                 }
             )
 
-            // Alle Optionen Sektion
+            // Alle Optionen Sektion mit Settings-Integration
             AllOptionsSection(
                 leetOptions = leetOptions,
                 onOptionSelected = { option ->
@@ -91,7 +92,8 @@ fun LeetSelectorBottomSheet(
                 onShowTable = { option ->
                     currentTableOption = option
                     showTranslationTableDialog = true
-                }
+                },
+                defaultViewExpanded = defaultViewExpanded // Settings werden verwendet
             )
 
             // Spacer für bessere Bedienung

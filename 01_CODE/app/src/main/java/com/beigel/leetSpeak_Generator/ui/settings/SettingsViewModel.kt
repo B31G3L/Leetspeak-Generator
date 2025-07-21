@@ -1,3 +1,4 @@
+// SettingsViewModel.kt
 package com.beigel.leetSpeak_Generator.ui.settings
 
 import androidx.lifecycle.ViewModel
@@ -24,6 +25,13 @@ class SettingsViewModel @Inject constructor(
             initialValue = ThemePreferences.THEME_SYSTEM
         )
 
+    val defaultViewExpanded: StateFlow<Boolean> = themePreferences.defaultViewExpanded
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = false
+        )
+
     val favoriteLeet: StateFlow<String?> = leetRepository.getFavoriteLeetOptions()
         .map { favorites ->
             favorites.firstOrNull()?.name
@@ -36,5 +44,9 @@ class SettingsViewModel @Inject constructor(
 
     suspend fun setTheme(theme: String) {
         themePreferences.setTheme(theme)
+    }
+
+    suspend fun setDefaultViewExpanded(expanded: Boolean) {
+        themePreferences.setDefaultViewExpanded(expanded)
     }
 }

@@ -1,3 +1,4 @@
+// SettingsActivity.kt
 package com.beigel.leetSpeak_Generator.ui.settings
 
 import android.os.Bundle
@@ -6,9 +7,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
@@ -62,6 +61,7 @@ fun SettingsScreen(
     val scope = rememberCoroutineScope()
 
     val themeMode by viewModel.themeMode.collectAsStateWithLifecycle()
+    val defaultViewExpanded by viewModel.defaultViewExpanded.collectAsStateWithLifecycle()
 
     Scaffold(
         topBar = {
@@ -93,6 +93,23 @@ fun SettingsScreen(
                         onThemeSelected = { theme ->
                             scope.launch {
                                 viewModel.setTheme(theme)
+                            }
+                        }
+                    )
+                }
+            }
+
+            // View Settings
+            item {
+                SettingsSection(
+                    title = "Ansicht",
+                    icon = Icons.Default.ViewModule
+                ) {
+                    ViewSelector(
+                        defaultViewExpanded = defaultViewExpanded,
+                        onViewSelected = { expanded ->
+                            scope.launch {
+                                viewModel.setDefaultViewExpanded(expanded)
                             }
                         }
                     )
@@ -229,6 +246,77 @@ fun ThemeSelector(
 }
 
 @Composable
+fun ViewSelector(
+    defaultViewExpanded: Boolean,
+    onViewSelected: (Boolean) -> Unit
+) {
+    val viewOptions = listOf(
+        ViewOption(
+            key = false,
+            name = "Grid-Ansicht",
+            description = "Kompakte 2-spaltige Darstellung",
+            icon = Icons.Default.GridView
+        ),
+        ViewOption(
+            key = true,
+            name = "Listen-Ansicht",
+            description = "Detaillierte Darstellung mit allen Buttons",
+            icon = Icons.Default.List
+        )
+    )
+
+    Column {
+        Text(
+            text = "Standard-Ansicht für 'Alle Modi'",
+            style = MaterialTheme.typography.titleSmall,
+            fontWeight = FontWeight.Medium,
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
+
+        viewOptions.forEach { viewOption ->
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .selectable(
+                        selected = defaultViewExpanded == viewOption.key,
+                        onClick = { onViewSelected(viewOption.key) }
+                    )
+                    .padding(vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                RadioButton(
+                    selected = defaultViewExpanded == viewOption.key,
+                    onClick = { onViewSelected(viewOption.key) },
+                    colors = RadioButtonDefaults.colors(
+                        selectedColor = MaterialTheme.colorScheme.secondary
+                    )
+                )
+                Spacer(modifier = Modifier.width(12.dp))
+                Icon(
+                    imageVector = viewOption.icon,
+                    contentDescription = null,
+                    modifier = Modifier.size(20.dp),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Spacer(modifier = Modifier.width(12.dp))
+                Column {
+                    Text(
+                        text = viewOption.name,
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontWeight = FontWeight.Medium
+                    )
+                    Text(
+                        text = viewOption.description,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
 fun WidgetSettings(viewModel: SettingsViewModel) {
     val favoriteLeet by viewModel.favoriteLeet.collectAsStateWithLifecycle()
 
@@ -314,6 +402,13 @@ fun AboutSection() {
 
 data class ThemeOption(
     val key: String,
+    val name: String,
+    val description: String,
+    val icon: ImageVector
+)
+
+data class ViewOption(
+    val key: Boolean,
     val name: String,
     val description: String,
     val icon: ImageVector

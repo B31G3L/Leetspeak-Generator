@@ -1,12 +1,9 @@
-
-// 1. ThemePreferences.kt
 package com.beigel.leetSpeak_Generator.data
 
 import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
-import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -16,7 +13,9 @@ val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "se
 class ThemePreferences(private val context: Context) {
 
     companion object {
-        private val THEME_KEY = stringPreferencesKey("theme_preference")
+        private val THEME_KEY = androidx.datastore.preferences.core.stringPreferencesKey("theme_preference")
+        private val DEFAULT_VIEW_EXPANDED_KEY = androidx.datastore.preferences.core.booleanPreferencesKey("default_view_expanded")
+
         const val THEME_SYSTEM = "system"
         const val THEME_LIGHT = "light"
         const val THEME_DARK = "dark"
@@ -26,9 +25,19 @@ class ThemePreferences(private val context: Context) {
         preferences[THEME_KEY] ?: THEME_SYSTEM
     }
 
+    val defaultViewExpanded: Flow<Boolean> = context.dataStore.data.map { preferences ->
+        preferences[DEFAULT_VIEW_EXPANDED_KEY] ?: false
+    }
+
     suspend fun setTheme(theme: String) {
         context.dataStore.edit { preferences ->
             preferences[THEME_KEY] = theme
+        }
+    }
+
+    suspend fun setDefaultViewExpanded(expanded: Boolean) {
+        context.dataStore.edit { preferences ->
+            preferences[DEFAULT_VIEW_EXPANDED_KEY] = expanded
         }
     }
 }

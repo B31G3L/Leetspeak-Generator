@@ -14,6 +14,7 @@ import javax.inject.Singleton
  * Hilt Module für Dependency Injection
  * Stellt alle benötigten Dependencies zur Verfügung
  */
+
 @Module(includes = [DomainModule::class])
 @InstallIn(SingletonComponent::class)
 object AppModule {
