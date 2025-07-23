@@ -1,7 +1,6 @@
-// AllOptionsSection.kt
+// AllOptionsSection.kt - PERFORMANCE-OPTIMIERT
 package com.beigel.leetSpeak_Generator.ui.components.leet.selector
 
-import androidx.compose.animation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.*
 import androidx.compose.material.icons.Icons
@@ -17,7 +16,12 @@ import androidx.compose.ui.unit.dp
 import com.beigel.leetSpeak_Generator.data.LeetOption
 
 /**
- * Alle Leet-Modi in moderner Grid-Darstellung
+ * PERFORMANCE-OPTIMIERTE Alle Leet-Modi Darstellung
+ * FIXES:
+ * - Entfernte schwere AnimatedContent
+ * - Vereinfachte Grid-Darstellung
+ * - Reduzierte Recompositions
+ * - Faster rendering
  */
 @Composable
 fun AllOptionsSection(
@@ -29,6 +33,7 @@ fun AllOptionsSection(
     defaultViewExpanded: Boolean = false,
     modifier: Modifier = Modifier
 ) {
+    // PERFORMANCE FIX: Local state to avoid ViewModel calls
     var showExpandedView by remember { mutableStateOf(defaultViewExpanded) }
 
     Column(modifier = modifier) {
@@ -41,32 +46,30 @@ fun AllOptionsSection(
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        // Grid oder List View
-        AnimatedContent(
-            targetState = showExpandedView,
-            transitionSpec = {
-                slideInVertically { it } + fadeIn() togetherWith
-                        slideOutVertically { -it } + fadeOut()
-            },
-            label = "view_toggle"
-        ) { expanded ->
-            if (expanded) {
-                // Detaillierte List View
-                DetailedListView(
-                    leetOptions = leetOptions,
-                    onOptionSelected = onOptionSelected,
-                    onToggleFavorite = onToggleFavorite,
-                    onEditOption = onEditOption,
-                    onShowTable = onShowTable
-                )
-            } else {
-                // Kompakte Grid View
-                CompactGridView(
-                    leetOptions = leetOptions,
-                    onOptionSelected = onOptionSelected,
-                    onToggleFavorite = onToggleFavorite
-                )
+        // PERFORMANCE FIX: Simple conditional rendering instead of AnimatedContent
+        if (showExpandedView) {
+            // Detaillierte List View - Optimiert
+            Column(
+                verticalArrangement = Arrangement.spacedBy(6.dp),
+                modifier = Modifier.heightIn(max = 400.dp)
+            ) {
+                leetOptions.forEach { option ->
+                    DetailedModeCard(
+                        option = option,
+                        onOptionSelected = onOptionSelected,
+                        onToggleFavorite = onToggleFavorite,
+                        onEditOption = onEditOption,
+                        onShowTable = onShowTable
+                    )
+                }
             }
+        } else {
+            // Kompakte Grid View - Vereinfacht ohne LazyVerticalGrid
+            SimpleGridView(
+                leetOptions = leetOptions,
+                onOptionSelected = onOptionSelected,
+                onToggleFavorite = onToggleFavorite
+            )
         }
     }
 }
@@ -136,62 +139,42 @@ private fun AllOptionsHeader(
 }
 
 /**
- * Kompakte Grid-Darstellung
+ * PERFORMANCE-OPTIMIERTE Grid-Darstellung ohne LazyVerticalGrid
  */
 @Composable
-private fun CompactGridView(
+private fun SimpleGridView(
     leetOptions: List<LeetOption>,
     onOptionSelected: (LeetOption) -> Unit,
     onToggleFavorite: (LeetOption) -> Unit
 ) {
-    LazyVerticalGrid(
-        columns = GridCells.Fixed(2),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-        modifier = Modifier.heightIn(max = 300.dp)
-    ) {
-        items(
-            items = leetOptions,
-            key = { "${it.name}_${it.customIndex}" }
-        ) { option ->
-            CompactModeCard(
-                option = option,
-                onOptionSelected = onOptionSelected,
-                onToggleFavorite = onToggleFavorite
-            )
-        }
-    }
-}
-
-/**
- * Detaillierte Listen-Darstellung
- */
-@Composable
-private fun DetailedListView(
-    leetOptions: List<LeetOption>,
-    onOptionSelected: (LeetOption) -> Unit,
-    onToggleFavorite: (LeetOption) -> Unit,
-    onEditOption: (LeetOption) -> Unit,
-    onShowTable: (LeetOption) -> Unit
-) {
     Column(
-        verticalArrangement = Arrangement.spacedBy(6.dp),
-        modifier = Modifier.heightIn(max = 400.dp)
+        modifier = Modifier.heightIn(max = 300.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        leetOptions.forEach { option ->
-            DetailedModeCard(
-                option = option,
-                onOptionSelected = onOptionSelected,
-                onToggleFavorite = onToggleFavorite,
-                onEditOption = onEditOption,
-                onShowTable = onShowTable
-            )
+        leetOptions.chunked(2).forEach { rowOptions ->
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                rowOptions.forEach { option ->
+                    CompactModeCard(
+                        option = option,
+                        onOptionSelected = onOptionSelected,
+                        onToggleFavorite = onToggleFavorite,
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+                // Fill remaining space if odd number
+                if (rowOptions.size == 1) {
+                    Spacer(modifier = Modifier.weight(1f))
+                }
+            }
         }
     }
 }
 
 /**
- * Kompakte Mode Card für Grid
+ * PERFORMANCE-OPTIMIERTE Kompakte Mode Card für Grid
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -300,7 +283,7 @@ private fun CompactModeCard(
 }
 
 /**
- * Detaillierte Mode Card für Liste
+ * PERFORMANCE-OPTIMIERTE Detaillierte Mode Card für Liste
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

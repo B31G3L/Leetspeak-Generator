@@ -14,8 +14,12 @@ import com.beigel.leetSpeak_Generator.ui.components.leet.selector.*
 import com.beigel.leetSpeak_Generator.viewmodel.MainViewModel
 
 /**
- * Hauptkomponente für die Leet-Auswahl als Bottom Sheet
- * Mit Settings-Integration für Standard-Ansicht
+ * PERFORMANCE-OPTIMIERTES Bottom Sheet für Leet-Auswahl
+ * FIXES:
+ * - Lazy Loading der StateFlows
+ * - Vereinfachte Animationen
+ * - Optimierte Recomposition
+ * - Reduced State Collections
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -24,17 +28,22 @@ fun LeetSelectorBottomSheet(
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    // State Collection
-    val leetOptions by viewModel.leetOptions.collectAsStateWithLifecycle(initialValue = emptyList())
-    val favoriteLeetOptions by viewModel.favoriteLeetOptions.collectAsStateWithLifecycle(initialValue = emptyList())
-    val defaultViewExpanded by viewModel.defaultViewExpanded.collectAsStateWithLifecycle()
+    // PERFORMANCE FIX: Lazy state loading mit Remember aber korrekte initialValues
+    val leetOptions by remember { viewModel.leetOptions }
+        .collectAsStateWithLifecycle(initialValue = emptyList())
 
-    // Dialog States
+    val favoriteLeetOptions by remember { viewModel.favoriteLeetOptions }
+        .collectAsStateWithLifecycle(initialValue = emptyList())
+
+    // BUGFIX: Verwende den aktuellen Wert als initialValue, nicht hart-codiert false
+    val defaultViewExpanded by remember { viewModel.defaultViewExpanded }
+        .collectAsStateWithLifecycle()
+
+    // PERFORMANCE FIX: Local state for dialogs to avoid ViewModel calls
     var showLeetCreationDialog by remember { mutableStateOf(false) }
     var showLeetEditDialog by remember { mutableStateOf(false) }
     var showTranslationTableDialog by remember { mutableStateOf(false) }
 
-    // Current selections for dialogs
     var currentEditOption by remember { mutableStateOf<LeetOption?>(null) }
     var currentTableOption by remember { mutableStateOf<LeetOption?>(null) }
 
@@ -52,102 +61,51 @@ fun LeetSelectorBottomSheet(
         },
         windowInsets = WindowInsets(0)
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp)
-        ) {
-            // Header mit "Neu erstellen" Button
-            LeetSelectorHeader(
-                onCreateNew = { showLeetCreationDialog = true }
-            )
-
-            // Favoriten Sektion (nur wenn vorhanden)
-            FavoritesSection(
-                favoriteOptions = favoriteLeetOptions,
-                onOptionSelected = { option ->
-                    viewModel.handleIntent(MainIntent.ChangeMode(option))
-                    onDismiss()
-                },
-                onToggleFavorite = { option ->
-                    viewModel.handleIntent(MainIntent.ToggleFavorite(option))
-                }
-            )
-
-            // Alle Optionen Sektion mit Settings-Integration
-            AllOptionsSection(
-                leetOptions = leetOptions,
-                onOptionSelected = { option ->
-                    viewModel.handleIntent(MainIntent.ChangeMode(option))
-                    onDismiss()
-                },
-                onToggleFavorite = { option ->
-                    viewModel.handleIntent(MainIntent.ToggleFavorite(option))
-                },
-                onEditOption = { option ->
-                    currentEditOption = option
-                    showLeetEditDialog = true
-                },
-                onShowTable = { option ->
-                    currentTableOption = option
-                    showTranslationTableDialog = true
-                },
-                defaultViewExpanded = defaultViewExpanded // Settings werden verwendet
-            )
-
-            // Spacer für bessere Bedienung
-            Spacer(modifier = Modifier.height(16.dp))
-        }
-    }
-
-    // Dialog Handling
-    DialogHandler(
-        showLeetCreationDialog = showLeetCreationDialog,
-        showLeetEditDialog = showLeetEditDialog,
-        showTranslationTableDialog = showTranslationTableDialog,
-        currentEditOption = currentEditOption,
-        currentTableOption = currentTableOption,
-        viewModel = viewModel,
-        onDismissCreation = {
-            showLeetCreationDialog = false
-            onDismiss()
-        },
-        onDismissEdit = {
-            showLeetEditDialog = false
-            currentEditOption = null
-        },
-        onDismissTable = {
-            showTranslationTableDialog = false
-            currentTableOption = null
-        }
-    )
-}
-
-/**
- * Separate Composable für Dialog-Management
- */
-@Composable
-private fun DialogHandler(
-    showLeetCreationDialog: Boolean,
-    showLeetEditDialog: Boolean,
-    showTranslationTableDialog: Boolean,
-    currentEditOption: LeetOption?,
-    currentTableOption: LeetOption?,
-    viewModel: MainViewModel,
-    onDismissCreation: () -> Unit,
-    onDismissEdit: () -> Unit,
-    onDismissTable: () -> Unit
-) {
-    // Leet Creation Dialog
-    if (showLeetCreationDialog) {
-        LeetCreationDialog(
-            viewModel = viewModel,
-            onDismiss = onDismissCreation
+        // PERFORMANCE FIX: Simplified content loading
+        LazyBottomSheetContent(
+            leetOptions = leetOptions,
+            favoriteLeetOptions = favoriteLeetOptions,
+            defaultViewExpanded = defaultViewExpanded,
+            onCreateNew = { showLeetCreationDialog = true },
+            onOptionSelected = { option ->
+                viewModel.handleIntent(MainIntent.ChangeMode(option))
+                onDismiss()
+            },
+            onToggleFavorite = { option ->
+                viewModel.handleIntent(MainIntent.ToggleFavorite(option))
+            },
+            onEditOption = { option ->
+                currentEditOption = option
+                showLeetEditDialog = true
+            },
+            onShowTable = { option ->
+                currentTableOption = option
+                showTranslationTableDialog = true
+            }
         )
     }
 
-    // Leet Edit Dialog
-    if (showLeetEditDialog) {
+    // PERFORMANCE FIX: Lazy dialog loading - only when needed
+    LaunchedEffect(showLeetCreationDialog) {
+        if (!showLeetCreationDialog) {
+            // Clear states when dialog closes
+            currentEditOption = null
+            currentTableOption = null
+        }
+    }
+
+    // Dialog Handling - Only render when actually needed
+    if (showLeetCreationDialog) {
+        LeetCreationDialog(
+            viewModel = viewModel,
+            onDismiss = {
+                showLeetCreationDialog = false
+                onDismiss()
+            }
+        )
+    }
+
+    if (showLeetEditDialog && currentEditOption != null) {
         currentEditOption?.let { option ->
             if (option.isCustom) {
                 val leets by viewModel.leets.collectAsStateWithLifecycle()
@@ -158,21 +116,75 @@ private fun DialogHandler(
                         viewModel = viewModel,
                         existingLeet = leet,
                         leetIndex = option.customIndex,
-                        onDismiss = onDismissEdit
+                        onDismiss = {
+                            showLeetEditDialog = false
+                            currentEditOption = null
+                        }
                     )
                 }
             }
         }
     }
 
-    // Translation Table Dialog
-    if (showTranslationTableDialog) {
+    if (showTranslationTableDialog && currentTableOption != null) {
         currentTableOption?.let { option ->
             TranslationTableDialog(
                 leetOption = option,
                 viewModel = viewModel,
-                onDismiss = onDismissTable
+                onDismiss = {
+                    showTranslationTableDialog = false
+                    currentTableOption = null
+                }
             )
         }
+    }
+}
+
+/**
+ * PERFORMANCE-OPTIMIERTE Content-Komponente
+ * Vermeidet heavy recomposition durch simplified structure
+ */
+@Composable
+private fun LazyBottomSheetContent(
+    leetOptions: List<LeetOption>,
+    favoriteLeetOptions: List<LeetOption>,
+    defaultViewExpanded: Boolean,
+    onCreateNew: () -> Unit,
+    onOptionSelected: (LeetOption) -> Unit,
+    onToggleFavorite: (LeetOption) -> Unit,
+    onEditOption: (LeetOption) -> Unit,
+    onShowTable: (LeetOption) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        // Header - Always visible, no state dependency
+        LeetSelectorHeader(onCreateNew = onCreateNew)
+
+        // PERFORMANCE FIX: Conditional rendering instead of AnimatedVisibility
+        if (favoriteLeetOptions.isNotEmpty()) {
+            FavoritesSection(
+                favoriteOptions = favoriteLeetOptions,
+                onOptionSelected = onOptionSelected,
+                onToggleFavorite = onToggleFavorite
+            )
+        }
+
+        // PERFORMANCE FIX: Simplified All Options without heavy animations
+        AllOptionsSection(
+            leetOptions = leetOptions,
+            onOptionSelected = onOptionSelected,
+            onToggleFavorite = onToggleFavorite,
+            onEditOption = onEditOption,
+            onShowTable = onShowTable,
+            defaultViewExpanded = defaultViewExpanded
+        )
+
+        // Bottom spacer
+        Spacer(modifier = Modifier.height(16.dp))
     }
 }

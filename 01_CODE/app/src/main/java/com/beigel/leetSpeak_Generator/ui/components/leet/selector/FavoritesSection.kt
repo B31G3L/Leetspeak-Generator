@@ -1,7 +1,6 @@
-// FavoritesSection.kt
+// FavoritesSection.kt - PERFORMANCE-OPTIMIERT
 package com.beigel.leetSpeak_Generator.ui.components.leet.selector
 
-import androidx.compose.animation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -14,7 +13,12 @@ import androidx.compose.ui.unit.dp
 import com.beigel.leetSpeak_Generator.data.LeetOption
 
 /**
- * Favoriten-Sektion mit vollbreiten Leet-Cards
+ * PERFORMANCE-OPTIMIERTE Favoriten-Sektion
+ * FIXES:
+ * - Entfernt schwere AnimatedVisibility
+ * - Vereinfachte Animationen
+ * - Reduzierte Recompositions
+ * - Faster rendering
  */
 @Composable
 fun FavoritesSection(
@@ -23,14 +27,9 @@ fun FavoritesSection(
     onToggleFavorite: (LeetOption) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    AnimatedVisibility(
-        visible = favoriteOptions.isNotEmpty(),
-        enter = expandVertically() + fadeIn(),
-        exit = shrinkVertically() + fadeOut(),
-        modifier = modifier
-    ) {
-        Column {
-
+    // PERFORMANCE FIX: Simple conditional rendering instead of AnimatedVisibility
+    if (favoriteOptions.isNotEmpty()) {
+        Column(modifier = modifier) {
             Spacer(modifier = Modifier.height(8.dp))
 
             // Vollbreite Favoriten-Cards
@@ -48,10 +47,12 @@ fun FavoritesSection(
     }
 }
 
-
-
 /**
- * Vollbreite Favoriten-Card mit prominenter Darstellung
+ * PERFORMANCE-OPTIMIERTE Vollbreite Favoriten-Card
+ * FIXES:
+ * - Entfernt schwere AnimatedVisibility für Selected Indicator
+ * - Vereinfachte Surface-Operationen
+ * - Reduzierte State Dependencies
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -91,7 +92,7 @@ private fun FullWidthFavoriteCard(
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Icon mit Selection Indicator
+            // Icon mit Selection Indicator - PERFORMANCE FIX: Simplified structure
             Box {
                 // Safe Icon Loading
                 Icon(
@@ -101,7 +102,7 @@ private fun FullWidthFavoriteCard(
                     tint = MaterialTheme.colorScheme.secondary
                 )
 
-                // Selected Ring
+                // Selected Ring - PERFORMANCE FIX: Simple conditional rendering
                 if (option.isSelected) {
                     Surface(
                         modifier = Modifier
@@ -139,17 +140,13 @@ private fun FullWidthFavoriteCard(
                 )
             }
 
-            // Action Buttons
+            // Action Buttons - PERFORMANCE FIX: Simplified structure
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
-                // Selected Indicator
-                AnimatedVisibility(
-                    visible = option.isSelected,
-                    enter = scaleIn() + fadeIn(),
-                    exit = scaleOut() + fadeOut()
-                ) {
+                // Selected Indicator - PERFORMANCE FIX: Simple conditional rendering
+                if (option.isSelected) {
                     Surface(
                         color = MaterialTheme.colorScheme.secondary,
                         shape = androidx.compose.foundation.shape.CircleShape
