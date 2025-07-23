@@ -22,6 +22,7 @@ import javax.inject.Inject
  * Von 350+ Zeilen auf ~150 Zeilen reduziert (-57%)
  * Business Logic ist jetzt in Use Cases ausgelagert
  * UPDATED: Korrekte Imports für MainIntent und MainUiState
+ * BUGFIX: Settings werden jetzt sofort beim Start geladen
  */
 @HiltViewModel
 class MainViewModel @Inject constructor(
@@ -29,7 +30,7 @@ class MainViewModel @Inject constructor(
     private val leetManager: LeetManagerUseCase,
     private val uiManager: UiManagerUseCase,
     private val repository: LeetRepository,
-    private val themePreferences: ThemePreferences // NEU hinzufügen
+    private val themePreferences: ThemePreferences
 ) : ViewModel() {
 
     // State Flows aus Use Cases
@@ -45,12 +46,19 @@ class MainViewModel @Inject constructor(
     val leetOptions = leetManager.getLeetOptions()
     val favoriteLeetOptions = leetManager.getFavoriteLeetOptions()
 
-    // Theme State
+    // Theme State - BUGFIX: Sofort laden mit Eagerly
     val defaultViewExpanded: StateFlow<Boolean> = themePreferences.defaultViewExpanded
         .stateIn(
             scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
+            started = SharingStarted.Eagerly, // BUGFIX: Eagerly statt WhileSubscribed
             initialValue = false
+        )
+
+    val themeMode: StateFlow<String> = themePreferences.themeMode
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.Eagerly, // BUGFIX: Eagerly statt WhileSubscribed
+            initialValue = ThemePreferences.THEME_SYSTEM
         )
 
     // Computed State Flows
@@ -85,13 +93,6 @@ class MainViewModel @Inject constructor(
 
     val shouldShowOutput: StateFlow<Boolean> = outputText.map { it.isNotEmpty() }
         .stateIn(viewModelScope, SharingStarted.Lazily, false)
-    val themeMode: StateFlow<String> = themePreferences.themeMode
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
-            initialValue = ThemePreferences.THEME_SYSTEM
-        )
-
 
     init {
         initializeApp()

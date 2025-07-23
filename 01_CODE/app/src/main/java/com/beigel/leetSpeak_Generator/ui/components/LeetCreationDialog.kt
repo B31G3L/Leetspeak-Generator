@@ -1,4 +1,4 @@
-package com.beigel.leetSpeak_Generator.ui.components.leet.creation
+package com.beigel.leetSpeak_Generator.ui.components
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -15,12 +15,20 @@ import androidx.compose.ui.window.DialogProperties
 import com.beigel.leetSpeak_Generator.R
 import com.beigel.leetSpeak_Generator.data.CustomLeet
 import com.beigel.leetSpeak_Generator.presentation.intent.MainIntent
+import com.beigel.leetSpeak_Generator.ui.components.leet.creation.IconPickerDialog
+import com.beigel.leetSpeak_Generator.ui.components.leet.creation.LeetInfoCard
+import com.beigel.leetSpeak_Generator.ui.components.leet.creation.TemplateHelpers
+import com.beigel.leetSpeak_Generator.ui.components.leet.creation.TemplatePickerDialog
+import com.beigel.leetSpeak_Generator.ui.components.leet.creation.TemplateSelectionCard
+import com.beigel.leetSpeak_Generator.ui.components.leet.creation.TemplateType
+import com.beigel.leetSpeak_Generator.ui.components.leet.creation.TranslationTableCard
 import com.beigel.leetSpeak_Generator.viewmodel.MainViewModel
 
 /**
  * Refactored Leet Creation Dialog - Von 800+ auf ~150 Zeilen
  * Aufgeteilt in modulare, wiederverwendbare Komponenten
  * FIXED: Korrekte Imports für MainIntent
+ * FIXED: Template wird jetzt automatisch beim ersten Laden angewendet
  */
 @Composable
 fun LeetCreationDialog(
@@ -185,18 +193,25 @@ private fun LeetCreationDialogManager(
 
 /**
  * State Management für Leet Creation Dialog
+ * FIXED: Template wird jetzt automatisch beim ersten Laden angewendet
  */
 @Composable
 private fun rememberLeetCreationDialogState(
     existingLeet: CustomLeet?
 ): LeetCreationDialogState {
     return remember(existingLeet) {
-        LeetCreationDialogState(existingLeet)
+        LeetCreationDialogState(existingLeet).apply {
+            // BUGFIX: Template automatisch beim ersten Laden anwenden
+            if (existingLeet == null) {
+                applyTemplate()
+            }
+        }
     }
 }
 
 /**
  * State-Klasse für Dialog-Verwaltung
+ * FIXED: Template wird jetzt korrekt beim ersten Laden angewendet
  */
 class LeetCreationDialogState(existingLeet: CustomLeet?) {
     val alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
@@ -223,6 +238,10 @@ class LeetCreationDialogState(existingLeet: CustomLeet?) {
     val displayName: String
         get() = if (baseName.isBlank()) "Neues Leet" else "$baseName-Leet"
 
+    /**
+     * IMPROVED: Wendet das Template auf die Übersetzungstabelle an
+     * Diese Funktion wird jetzt automatisch beim ersten Laden aufgerufen
+     */
     fun applyTemplate() {
         TemplateHelpers.applyTemplate(selectedTemplate, translationStates, alphabet)
     }
