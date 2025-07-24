@@ -1,21 +1,19 @@
 package com.beigel.leetSpeak_Generator.data
 
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Extension
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.TextFields
+import androidx.compose.material.icons.filled.*
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.beigel.leetSpeak_Generator.manager.LeetManager
 
 /**
  * Represents a leet translation option in the UI
- * FIXED: Verwendet Material Icons statt Drawable Resources
+ * Converted to Kotlin data class with improved immutability and Material Icons
  */
 data class LeetOption(
     val mode: Int,
     val name: String,
     val description: String,
-    val iconImageVector: ImageVector, // ✅ Material Icon statt iconResId
+    val iconImageVector: ImageVector,
     val isCustom: Boolean = false,
     val customIndex: Int = -1,
     var isSelected: Boolean = false,
@@ -60,15 +58,12 @@ data class LeetOption(
         /**
          * Creates a Simple Leet option
          */
-        fun createSimple(
-            isSelected: Boolean = false,
-            isFavorite: Boolean = false
-        ): LeetOption =
+        fun createSimple(isSelected: Boolean = false, isFavorite: Boolean = false): LeetOption =
             LeetOption(
                 mode = LeetManager.MODE_SIMPLE,
                 name = "Simple Leet",
                 description = "Einfache Leetspeak-Übersetzung",
-                iconImageVector = Icons.Default.TextFields, // ✅ Material Icon
+                iconImageVector = Icons.Default.TextFields,
                 isCustom = false,
                 customIndex = -1,
                 isSelected = isSelected,
@@ -78,15 +73,12 @@ data class LeetOption(
         /**
          * Creates an Extended Leet option
          */
-        fun createExtended(
-            isSelected: Boolean = false,
-            isFavorite: Boolean = false
-        ): LeetOption =
+        fun createExtended(isSelected: Boolean = false, isFavorite: Boolean = false): LeetOption =
             LeetOption(
                 mode = LeetManager.MODE_EXTENDED,
                 name = "Extended Leet",
                 description = "Erweiterte Leetspeak-Übersetzung",
-                iconImageVector = Icons.Default.Extension, // ✅ Material Icon
+                iconImageVector = Icons.Default.Extension,
                 isCustom = false,
                 customIndex = -1,
                 isSelected = isSelected,
@@ -106,7 +98,7 @@ data class LeetOption(
                 mode = LeetManager.MODE_CUSTOM,
                 name = leet.name,
                 description = "Benutzerdefiniertes Leet",
-                iconImageVector = leet.iconImageVector, // ✅ Verwendet das Material Icon vom Leet
+                iconImageVector = leet.iconImageVector,
                 isCustom = true,
                 customIndex = customIndex,
                 isSelected = isSelected,

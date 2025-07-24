@@ -14,31 +14,60 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 
+
 /**
  * Dialog für Icon-Auswahl mit Material Icons
- * FIXED: Verwendet nur Material Icons - keine Drawable Resources
+ * Komplett überarbeitet für bessere Performance und Material Design
  */
 @Composable
 fun IconPickerDialog(
-    selectedIcon: ImageVector, // ✅ Material Icon als Parameter
-    onIconSelected: (ImageVector) -> Unit, // ✅ Gibt Material Icon zurück
+    selectedIcon: ImageVector,
+    onIconSelected: (ImageVector) -> Unit,
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    // Material Icons als sichere Alternative zu Drawable Resources
+    // Kuratierte Liste von Material Icons für verschiedene Leet-Kategorien
     val availableIcons = listOf(
+        // Basis Icons
         Icons.Default.Settings,
-        Icons.Default.Star,
-        Icons.Default.Favorite,
         Icons.Default.Build,
         Icons.Default.Code,
         Icons.Default.Computer,
+
+        // Gaming & Entertainment
         Icons.Default.Games,
+        Icons.Default.SportsEsports,
+        Icons.Default.Gamepad,
         Icons.Default.Sports,
         Icons.Default.Movie,
-        Icons.Default.Book,
-        Icons.Default.School,
+        Icons.Default.Videocam,
+        Icons.Default.PhotoCamera,
+
+        // Tech & Science
+        Icons.Default.Science,
+        Icons.Default.Memory,
+        Icons.Default.Storage,
+        Icons.Default.Psychology,
+        Icons.Default.AutoAwesome,
+        Icons.Default.Widgets,
+        Icons.Default.Extension,
+
+        // Creative & Design
+        Icons.Default.Palette,
+        Icons.Default.Brush,
+        Icons.Default.Create,
+        Icons.Default.Diamond,
+        Icons.Default.Star,
+        Icons.Default.Favorite,
+
+        // Professional
         Icons.Default.Work,
+        Icons.Default.Business,
+        Icons.Default.School,
+        Icons.Default.Book,
+        Icons.Default.Assignment,
+
+        // Lifestyle
         Icons.Default.Home,
         Icons.Default.Flight,
         Icons.Default.Restaurant,
@@ -46,41 +75,44 @@ fun IconPickerDialog(
         Icons.Default.Pets,
         Icons.Default.Face,
         Icons.Default.Group,
-        Icons.Default.Business,
-        Icons.Default.Science,
-        Icons.Default.PhotoCamera,
-        Icons.Default.Videocam,
-        Icons.Default.Gamepad,
-        Icons.Default.SportsEsports,
+
+        // Audio & Music
         Icons.Default.Headphones,
         Icons.Default.Mic,
+        Icons.Default.MusicNote,
+        Icons.Default.VolumeUp,
+
+        // Security & Tools
         Icons.Default.Security,
         Icons.Default.Shield,
         Icons.Default.Lock,
         Icons.Default.Key,
-        Icons.Default.Diamond,
-        Icons.Default.EmojiEvents,
-        Icons.Default.Celebration,
+        Icons.Default.VpnKey,
+
+        // Special Effects
         Icons.Default.LocalFireDepartment,
         Icons.Default.Bolt,
-        Icons.Default.Psychology,
-        Icons.Default.AutoAwesome,
-        Icons.Default.Widgets,
-        Icons.Default.Extension,
-        Icons.Default.Memory,
-        Icons.Default.Storage,
+        Icons.Default.Flash,
+        Icons.Default.Celebration,
+        Icons.Default.EmojiEvents,
+
+        // Cloud & Storage
         Icons.Default.Cloud,
-        Icons.Default.TextFields,
-        Icons.Default.Transform,
-        Icons.Default.Tune,
-        Icons.Default.Palette,
-        Icons.Default.Brush,
-        Icons.Default.ColorLens,
-        Icons.Default.Lightbulb,
-        Icons.Default.Rocket,
-        Icons.Default.Architecture,
-        Icons.Default.Engineering,
-        Icons.Default.Construction
+        Icons.Default.CloudDownload,
+        Icons.Default.CloudUpload,
+        Icons.Default.Backup,
+
+        // Communication
+        Icons.Default.Chat,
+        Icons.Default.Message,
+        Icons.Default.Email,
+        Icons.Default.Phone,
+
+        // Transport
+        Icons.Default.DirectionsCar,
+        Icons.Default.Train,
+        Icons.Default.Motorcycle,
+        Icons.Default.RocketLaunch
     )
 
     AlertDialog(
@@ -98,17 +130,17 @@ fun IconPickerDialog(
                 contentPadding = PaddingValues(8.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier.height(300.dp)
+                modifier = Modifier.height(400.dp) // Größer für mehr Icons
             ) {
                 items(availableIcons) { icon ->
+                    val isSelected = selectedIcon == icon
+
                     IconButton(
-                        onClick = {
-                            onIconSelected(icon) // ✅ Direkte Icon-Übergabe
-                        },
+                        onClick = { onIconSelected(icon) },
                         modifier = Modifier
                             .size(48.dp)
                             .then(
-                                if (selectedIcon == icon) {
+                                if (isSelected) {
                                     Modifier.background(
                                         MaterialTheme.colorScheme.secondaryContainer,
                                         MaterialTheme.shapes.medium
@@ -122,7 +154,7 @@ fun IconPickerDialog(
                             imageVector = icon,
                             contentDescription = null,
                             modifier = Modifier.size(24.dp),
-                            tint = if (selectedIcon == icon) {
+                            tint = if (isSelected) {
                                 MaterialTheme.colorScheme.secondary
                             } else {
                                 MaterialTheme.colorScheme.onSurfaceVariant

@@ -6,11 +6,11 @@ import androidx.compose.ui.graphics.vector.ImageVector
 
 /**
  * Represents a custom leetspeak translation leet
- * FIXED: Verwendet Material Icons statt Drawable Resources
+ * Migrated from Java to Kotlin with improved type safety and Material Icons
  */
 data class CustomLeet(
     var name: String,
-    var iconImageVector: ImageVector = Icons.Default.Settings, // ✅ Material Icon statt ResId
+    var iconImageVector: ImageVector = Icons.Default.Settings,
     private val _translations: MutableMap<String, String> = mutableMapOf()
 ) {
 
@@ -72,10 +72,7 @@ data class CustomLeet(
         /**
          * Creates a CustomLeet with default Simple Leet translations
          */
-        fun createWithSimpleDefaults(
-            name: String,
-            icon: ImageVector = Icons.Default.Settings
-        ): CustomLeet {
+        fun createWithSimpleDefaults(name: String, icon: ImageVector = Icons.Default.Settings): CustomLeet {
             val leet = CustomLeet(name, icon)
 
             // Initialize with Simple Leet mappings
@@ -95,10 +92,7 @@ data class CustomLeet(
         /**
          * Creates a CustomLeet with Extended Leet translations
          */
-        fun createWithExtendedDefaults(
-            name: String,
-            icon: ImageVector = Icons.Default.Settings
-        ): CustomLeet {
+        fun createWithExtendedDefaults(name: String, icon: ImageVector = Icons.Default.Settings): CustomLeet {
             val leet = CustomLeet(name, icon)
 
             // Initialize with Extended Leet mappings
