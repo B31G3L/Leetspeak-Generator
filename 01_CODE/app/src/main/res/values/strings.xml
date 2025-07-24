@@ -154,4 +154,49 @@
 
     <!-- Menu -->
     <string name="menu_settings">Einstellungen</string>
+
+    <!-- 🎹 KEYBOARD STRINGS -->
+    <string name="leetspeak_keyboard_label">Leetspeak Keyboard</string>
+    <string name="leetspeak_keyboard_subtype_label">Leetspeak Generator</string>
+    <string name="leetspeak_simple_mode">Simple Leet</string>
+    <string name="leetspeak_extended_mode">Extended Leet</string>
+    <string name="leetspeak_custom_mode">Custom Leet</string>
+
+    <!-- Keyboard UI Strings -->
+    <string name="keyboard_mode_simple">Simple</string>
+    <string name="keyboard_mode_extended">Extended</string>
+    <string name="keyboard_mode_custom">Custom</string>
+    <string name="keyboard_leet_mode_on">🎯 Leet Mode ON</string>
+    <string name="keyboard_leet_mode_off">📝 Normal Mode</string>
+
+    <!-- Keyboard Actions -->
+    <string name="keyboard_action_toggle_mode">Toggle Leet Mode</string>
+    <string name="keyboard_action_cycle_mode">Cycle Mode</string>
+    <string name="keyboard_action_settings">Open Settings</string>
+    <string name="keyboard_action_signature">Insert Leet Signature</string>
+    <string name="keyboard_action_favorite">Quick Favorite</string>
+
+    <!-- Keyboard Status Messages -->
+    <string name="keyboard_status_simple">Simple Mode Active</string>
+    <string name="keyboard_status_extended">Extended Mode Active</string>
+    <string name="keyboard_status_custom">Custom Mode: %s</string>
+    <string name="keyboard_live_preview">%1$s → %2$s</string>
+
+    <!-- Keyboard Notifications -->
+    <string name="keyboard_enabled_notification">Leetspeak Keyboard aktiviert</string>
+    <string name="keyboard_disabled_notification">Leetspeak Keyboard deaktiviert</string>
+
+    <!-- Keyboard Setup Instructions -->
+    <string name="keyboard_setup_title">Keyboard Setup</string>
+    <string name="keyboard_setup_step1">1. Gehe zu Einstellungen > System > Sprachen &amp; Eingabe</string>
+    <string name="keyboard_setup_step2">2. Tippe auf "Virtuelle Tastatur"</string>
+    <string name="keyboard_setup_step3">3. Tippe auf "Tastaturen verwalten"</string>
+    <string name="keyboard_setup_step4">4. Aktiviere "Leetspeak Keyboard"</string>
+    <string name="keyboard_setup_step5">5. Wechsle zur Leetspeak Keyboard in anderen Apps</string>
+
+    <!-- Permissions -->
+    <string name="permission_leet_data_read">Read Leet Data</string>
+    <string name="permission_leet_data_write">Write Leet Data</string>
+    <string name="permission_leet_data_description">Allows access to leetspeak configurations and favorites</string>
+
 </resources>

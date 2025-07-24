@@ -19,3 +19,29 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+
+ Keep IME Service
+-keep class com.beigel.leetSpeak_Generator.keyboard.LeetKeyboardService { *; }
+
+# Keep ContentProvider
+-keep class com.beigel.leetSpeak_Generator.keyboard.data.LeetDataProvider { *; }
+
+# Keep Data Classes used by ContentProvider
+-keep class com.beigel.leetSpeak_Generator.keyboard.data.LeetInfo { *; }
+
+# Keep Hilt EntryPoint
+-keep class com.beigel.leetSpeak_Generator.keyboard.data.LeetDataProviderEntryPoint { *; }
+
+# Keep Translation Engine
+-keep class com.beigel.leetSpeak_Generator.keyboard.engine.LiveTranslationEngine { *; }
+
+# Keep Gson serialization for ContentProvider
+-keepattributes Signature
+-keepattributes *Annotation*
+-keep class * extends com.google.gson.TypeAdapter
+-keep class * implements com.google.gson.TypeAdapterFactory
+-keep class * implements com.google.gson.JsonSerializer
+-keep class * implements com.google.gson.JsonDeserializer
+
+# Keep translation maps
+-keep class com.beigel.leetSpeak_Generator.data.CustomLeet { *; }

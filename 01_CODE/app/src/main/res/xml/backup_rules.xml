@@ -6,8 +6,8 @@
    See https://developer.android.com/about/versions/12/backup-restore
 -->
 <full-backup-content>
-    <!--
-   <include domain="sharedpref" path="."/>
-   <exclude domain="sharedpref" path="device.xml"/>
--->
+    <!-- Include app preferences but exclude keyboard cache -->
+    <include domain="sharedpref" path="."/>
+    <exclude domain="sharedpref" path="keyboard_cache.xml"/>
+    <exclude domain="cache" path="keyboard_temp"/>
 </full-backup-content>
