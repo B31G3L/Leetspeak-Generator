@@ -1,5 +1,6 @@
 package com.beigel.leetSpeak_Generator.domain.usecase.leet
 
+import androidx.compose.ui.graphics.vector.ImageVector
 import com.beigel.leetSpeak_Generator.data.CustomLeet
 import com.beigel.leetSpeak_Generator.data.LeetOption
 import com.beigel.leetSpeak_Generator.repository.LeetRepository
@@ -42,7 +43,7 @@ class LeetManagerUseCase @Inject constructor(
      */
     suspend fun createLeet(
         name: String,
-        iconResId: Int,
+        iconResId: ImageVector,
         useExtendedDefaults: Boolean = false
     ): Result<CustomLeet> {
         return createLeetUseCase(name, iconResId, useExtendedDefaults)

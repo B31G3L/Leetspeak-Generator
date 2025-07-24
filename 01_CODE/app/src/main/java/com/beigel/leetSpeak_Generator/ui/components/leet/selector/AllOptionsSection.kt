@@ -1,7 +1,6 @@
-// AllOptionsSection.kt - PERFORMANCE-OPTIMIERT
+// AllOptionsSection.kt - PERFORMANCE-OPTIMIERT UND FIXED
 package com.beigel.leetSpeak_Generator.ui.components.leet.selector
 
-import LeetOption
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.*
 import androidx.compose.material.icons.Icons
@@ -14,6 +13,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+// FIXED: Added proper import for LeetOption
+import com.beigel.leetSpeak_Generator.data.LeetOption
 
 /**
  * PERFORMANCE-OPTIMIERTE Alle Leet-Modi Darstellung
@@ -21,7 +22,7 @@ import androidx.compose.ui.unit.dp
  * - Entfernte schwere AnimatedContent
  * - Vereinfachte Grid-Darstellung
  * - Reduzierte Recompositions
- * - Faster rendering
+ * - Fixed imports and references
  */
 @Composable
 fun AllOptionsSection(
@@ -151,7 +152,9 @@ private fun SimpleGridView(
         modifier = Modifier.heightIn(max = 300.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        leetOptions.chunked(2).forEach { rowOptions ->
+        // FIXED: Proper chunked processing with explicit types
+        val chunkedOptions = leetOptions.chunked(2)
+        chunkedOptions.forEach { rowOptions ->
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -237,9 +240,9 @@ private fun CompactModeCard(
                 modifier = Modifier.align(Alignment.Center),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // Icon
+                // Icon - FIXED: Use the iconImageVector from LeetOption
                 Icon(
-                    imageVector = option.iconImageVector, // ✅ Verwendet Material Icon
+                    imageVector = option.iconImageVector,
                     contentDescription = null,
                     modifier = Modifier.size(24.dp),
                     tint = MaterialTheme.colorScheme.secondary
@@ -314,9 +317,9 @@ private fun DetailedModeCard(
                 .padding(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Icon
+            // Icon - FIXED: Use the iconImageVector from LeetOption
             Icon(
-                imageVector = Icons.Default.Settings,
+                imageVector = option.iconImageVector,
                 contentDescription = null,
                 modifier = Modifier.size(24.dp),
                 tint = MaterialTheme.colorScheme.primary

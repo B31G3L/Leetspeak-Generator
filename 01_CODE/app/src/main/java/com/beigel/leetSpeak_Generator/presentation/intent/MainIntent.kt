@@ -6,7 +6,7 @@ import com.beigel.leetSpeak_Generator.data.LeetOption
 
 /**
  * UI Intents für MainViewModel
- * Ausgelagert für bessere Modularität und Material Icons Support
+ * FIXED: Updated to use ImageVector instead of Int for icons
  */
 sealed class MainIntent {
     data class UpdateInput(val text: String) : MainIntent()
@@ -14,7 +14,7 @@ sealed class MainIntent {
     data class ToggleFavorite(val leetOption: LeetOption) : MainIntent()
     data class CreateLeet(
         val name: String,
-        val icon: ImageVector,
+        val icon: ImageVector, // FIXED: Changed from iconResId: Int to icon: ImageVector
         val useExtendedDefaults: Boolean = false
     ) : MainIntent()
     data class UpdateLeet(val index: Int, val leet: CustomLeet) : MainIntent()

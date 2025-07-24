@@ -3,6 +3,9 @@ package com.beigel.leetSpeak_Generator.manager
 import android.content.Context
 import android.content.SharedPreferences
 import android.util.Log
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.ui.graphics.vector.ImageVector
 import com.beigel.leetSpeak_Generator.R
 import com.beigel.leetSpeak_Generator.data.CustomLeet
 import com.beigel.leetSpeak_Generator.utils.ErrorHandler
@@ -295,9 +298,9 @@ class LeetManager(context: Context) {
     /**
      * Creates a leet with simple defaults
      */
-    suspend fun createLeetWithSimpleDefaults(name: String, iconResId: Int = R.drawable.ic_custom_mode): ErrorHandler.Result<CustomLeet> =
+    suspend fun createLeetWithSimpleDefaults(name: String, iconImageVector: ImageVector = Icons.Default.Settings): ErrorHandler.Result<CustomLeet> = // FIXED: Parameter type
         ErrorHandler.safeExecute(errorMessage = "Failed to create leet") {
-            val leet = CustomLeet.createWithSimpleDefaults(name, iconResId)
+            val leet = CustomLeet.createWithSimpleDefaults(name, iconImageVector) // FIXED: Pass ImageVector
             addLeet(leet).getOrNull() // Add to manager
             leet
         }
@@ -305,9 +308,9 @@ class LeetManager(context: Context) {
     /**
      * Creates a leet with extended defaults
      */
-    suspend fun createLeetWithExtendedDefaults(name: String, iconResId: Int = R.drawable.ic_custom_mode): ErrorHandler.Result<CustomLeet> =
+    suspend fun createLeetWithExtendedDefaults(name: String, iconImageVector: ImageVector = Icons.Default.Settings): ErrorHandler.Result<CustomLeet> = // FIXED: Parameter type
         ErrorHandler.safeExecute(errorMessage = "Failed to create leet") {
-            val leet = CustomLeet.createWithExtendedDefaults(name, iconResId)
+            val leet = CustomLeet.createWithExtendedDefaults(name, iconImageVector) // FIXED: Pass ImageVector
             addLeet(leet).getOrNull() // Add to manager
             leet
         }

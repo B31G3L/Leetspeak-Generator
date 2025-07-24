@@ -1,5 +1,6 @@
 package com.beigel.leetSpeak_Generator.viewmodel
 
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.beigel.leetSpeak_Generator.data.CustomLeet
@@ -132,7 +133,7 @@ class MainViewModel @Inject constructor(
             is MainIntent.UpdateInput -> uiManager.updateInputText(intent.text)
             is MainIntent.ChangeMode -> changeMode(intent.leetOption)
             is MainIntent.ToggleFavorite -> toggleFavorite(intent.leetOption)
-            is MainIntent.CreateLeet -> createLeet(intent.name, intent.iconResId, intent.useExtendedDefaults)
+            is MainIntent.CreateLeet -> createLeet(intent.name, intent.icon, intent.useExtendedDefaults) // FIXED: Use intent.icon instead of intent.iconResId
             is MainIntent.UpdateLeet -> updateLeet(intent.index, intent.leet)
             is MainIntent.DeleteLeet -> deleteLeet(intent.index)
             is MainIntent.CopyToClipboard -> copyToClipboard()
@@ -176,11 +177,15 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    private fun createLeet(name: String, iconResId: Int, useExtendedDefaults: Boolean) {
+
+// MainViewModel.kt - Key fixes for icon handling
+
+    // Fix in the createLeet function
+    private fun createLeet(name: String, iconImageVector: ImageVector, useExtendedDefaults: Boolean) { // FIXED: Parameter type
         viewModelScope.launch {
             uiManager.setLoading(true)
 
-            leetManager.createLeet(name, iconResId, useExtendedDefaults)
+            leetManager.createLeet(name, iconImageVector, useExtendedDefaults) // FIXED: Pass ImageVector instead of Int
                 .onSuccess { leet ->
                     uiManager.setTranslationMode(LeetTranslator.TranslationMode.CUSTOM)
                     uiManager.setSuccess("Leet '${leet.name}' created successfully")

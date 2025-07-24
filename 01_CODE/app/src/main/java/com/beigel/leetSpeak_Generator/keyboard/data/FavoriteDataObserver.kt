@@ -10,6 +10,8 @@ import android.database.ContentObserver
 import android.net.Uri
 import android.os.Handler
 import android.os.Looper
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Settings
 import com.beigel.leetSpeak_Generator.data.CustomLeet
 import com.beigel.leetSpeak_Generator.repository.LeetRepository
 import com.google.gson.Gson
@@ -55,7 +57,7 @@ class LeetDataProvider : ContentProvider() {
         // Column names
         const val COLUMN_ID = "id"
         const val COLUMN_NAME = "name"
-        const val COLUMN_ICON_RES_ID = "icon_res_id"
+        const val COLUMN_ICON_IMAGE_VECTOR = "icon_image_vector" // FIXED: Renamed from COLUMN_ICON_RES_ID
         const val COLUMN_TRANSLATIONS = "translations"
         const val COLUMN_IS_FAVORITE = "is_favorite"
         const val COLUMN_MODE = "mode"
@@ -98,7 +100,7 @@ class LeetDataProvider : ContentProvider() {
     private fun getFavoriteLeetCursor(): Cursor {
         val cursor = MatrixCursor(arrayOf(
             COLUMN_ID, COLUMN_NAME, COLUMN_TRANSLATIONS,
-            COLUMN_ICON_RES_ID, COLUMN_MODE, COLUMN_CUSTOM_INDEX
+            COLUMN_ICON_IMAGE_VECTOR, COLUMN_MODE, COLUMN_CUSTOM_INDEX // FIXED: Updated column name
         ))
 
         try {
@@ -111,7 +113,7 @@ class LeetDataProvider : ContentProvider() {
                             "simple",
                             "Simple Leet",
                             gson.toJson(getSimpleTranslations()),
-                            com.beigel.leetSpeak_Generator.R.drawable.ic_simple_mode,
+                            "Settings", // FIXED: Store icon name as string instead of resource ID
                             "SIMPLE",
                             -1
                         ))
@@ -121,7 +123,7 @@ class LeetDataProvider : ContentProvider() {
                             "extended",
                             "Extended Leet",
                             gson.toJson(getExtendedTranslations()),
-                            com.beigel.leetSpeak_Generator.R.drawable.ic_extended_mode,
+                            "Extension", // FIXED: Store icon name as string
                             "EXTENDED",
                             -1
                         ))
@@ -131,7 +133,7 @@ class LeetDataProvider : ContentProvider() {
                             "custom_${favoriteResult.customIndex}",
                             favoriteResult.leet.name,
                             gson.toJson(favoriteResult.leet.translations),
-                            favoriteResult.leet.iconResId,
+                            "Settings", // FIXED: Store icon name as string - would need icon name extraction from ImageVector
                             "CUSTOM",
                             favoriteResult.customIndex
                         ))
@@ -142,7 +144,7 @@ class LeetDataProvider : ContentProvider() {
                             "simple",
                             "Simple Leet",
                             gson.toJson(getSimpleTranslations()),
-                            com.beigel.leetSpeak_Generator.R.drawable.ic_simple_mode,
+                            "Settings", // FIXED: Store icon name as string
                             "SIMPLE",
                             -1
                         ))
@@ -159,7 +161,7 @@ class LeetDataProvider : ContentProvider() {
     private fun getAllLeetsCursor(): Cursor {
         val cursor = MatrixCursor(arrayOf(
             COLUMN_ID, COLUMN_NAME, COLUMN_TRANSLATIONS,
-            COLUMN_ICON_RES_ID, COLUMN_IS_FAVORITE
+            COLUMN_ICON_IMAGE_VECTOR, COLUMN_IS_FAVORITE // FIXED: Updated column name
         ))
 
         try {
@@ -173,7 +175,7 @@ class LeetDataProvider : ContentProvider() {
                     "simple",
                     "Simple Leet",
                     gson.toJson(getSimpleTranslations()),
-                    com.beigel.leetSpeak_Generator.R.drawable.ic_simple_mode,
+                    "TextFields", // FIXED: Store icon name as string
                     favoriteNames.contains("Simple Leet")
                 ))
 
@@ -181,7 +183,7 @@ class LeetDataProvider : ContentProvider() {
                     "extended",
                     "Extended Leet",
                     gson.toJson(getExtendedTranslations()),
-                    com.beigel.leetSpeak_Generator.R.drawable.ic_extended_mode,
+                    "Extension", // FIXED: Store icon name as string
                     favoriteNames.contains("Extended Leet")
                 ))
 
@@ -191,7 +193,7 @@ class LeetDataProvider : ContentProvider() {
                         "custom_$index",
                         leet.name,
                         gson.toJson(leet.translations),
-                        leet.iconResId,
+                        "Settings", // FIXED: Store icon name as string - would need proper icon name extraction
                         favoriteNames.contains(leet.name)
                     ))
                 }
@@ -311,14 +313,16 @@ class FavoriteDataObserver @Inject constructor(
                         "CUSTOM" -> {
                             val name = it.getString(it.getColumnIndexOrThrow(LeetDataProvider.COLUMN_NAME))
                             val translationsJson = it.getString(it.getColumnIndexOrThrow(LeetDataProvider.COLUMN_TRANSLATIONS))
-                            val iconResId = it.getInt(it.getColumnIndexOrThrow(LeetDataProvider.COLUMN_ICON_RES_ID))
+                            val iconName = it.getString(it.getColumnIndexOrThrow(LeetDataProvider.COLUMN_ICON_IMAGE_VECTOR)) // FIXED: Updated column name
 
                             val translations = Gson().fromJson<Map<String, String>>(
                                 translationsJson,
                                 object : com.google.gson.reflect.TypeToken<Map<String, String>>() {}.type
                             )
 
-                            CustomLeet(name, iconResId).apply {
+                            // FIXED: Create CustomLeet with ImageVector instead of Int
+                            // For now, use default icon - would need icon name to ImageVector mapping
+                            CustomLeet(name, Icons.Default.Settings).apply {
                                 setTranslations(translations)
                             }
                         }

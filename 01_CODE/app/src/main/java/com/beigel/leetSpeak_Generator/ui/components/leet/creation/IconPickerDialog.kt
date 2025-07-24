@@ -17,7 +17,7 @@ import androidx.compose.ui.unit.dp
 
 /**
  * Dialog für Icon-Auswahl mit Material Icons
- * Komplett überarbeitet für bessere Performance und Material Design
+ * FIXED: Removed unresolved 'Flash' reference and added proper icons
  */
 @Composable
 fun IconPickerDialog(
@@ -89,10 +89,10 @@ fun IconPickerDialog(
         Icons.Default.Key,
         Icons.Default.VpnKey,
 
-        // Special Effects
+        // Special Effects - FIXED: Replaced 'Flash' with valid icons
         Icons.Default.LocalFireDepartment,
         Icons.Default.Bolt,
-        Icons.Default.Flash,
+        Icons.Default.FlashOn, // FIXED: Use FlashOn instead of Flash
         Icons.Default.Celebration,
         Icons.Default.EmojiEvents,
 

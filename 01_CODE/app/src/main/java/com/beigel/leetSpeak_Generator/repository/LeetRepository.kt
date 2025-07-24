@@ -13,8 +13,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * Modern repository implementing reactive data access with Kotlin Flows
- * Provides clean API for leet management with proper error handling
+ * FIXED: Updated to use ImageVector instead of Int for icons
  */
 @Singleton
 class LeetRepository @Inject constructor(
@@ -35,7 +34,7 @@ class LeetRepository @Inject constructor(
      */
     suspend fun createLeet(request: LeetCreationRequest): Result<LeetCreationResult> {
         return try {
-            val leet = CustomLeet(request.name, request.iconResId)
+            val leet = CustomLeet(request.name, request.iconImageVector) // FIXED: Use iconImageVector
             leet.setTranslations(request.translations)
 
             when (val indexResult = leetManager.addLeet(leet)) {
@@ -185,12 +184,13 @@ class LeetRepository @Inject constructor(
 
     /**
      * Creates a leet with simple defaults
+     * FIXED: Updated parameter to use ImageVector
      */
     suspend fun createLeetWithSimpleDefaults(name: String, icon: ImageVector = Icons.Default.Settings): Result<CustomLeet> {
         return try {
             val leet = CustomLeet.createWithSimpleDefaults(name, icon)
-            when (val result = leetManager.createLeetWithSimpleDefaults(name, leet)) {
-                is ErrorHandler.Result.Success -> Result.success(result.data)
+            when (val result = leetManager.addLeet(leet)) { // FIXED: Use addLeet directly
+                is ErrorHandler.Result.Success -> Result.success(leet) // FIXED: Return the leet, not result.data
                 is ErrorHandler.Result.Error -> Result.failure(result.exception)
             }
         } catch (e: Exception) {
@@ -200,11 +200,13 @@ class LeetRepository @Inject constructor(
 
     /**
      * Creates a leet with extended defaults
+     * FIXED: Updated parameter to use ImageVector
      */
-    suspend fun createLeetWithExtendedDefaults(name: String, iconResId: Int = com.beigel.leetSpeak_Generator.R.drawable.ic_custom_mode): Result<CustomLeet> {
+    suspend fun createLeetWithExtendedDefaults(name: String, icon: ImageVector = Icons.Default.Settings): Result<CustomLeet> {
         return try {
-            when (val result = leetManager.createLeetWithExtendedDefaults(name, iconResId)) {
-                is ErrorHandler.Result.Success -> Result.success(result.data)
+            val leet = CustomLeet.createWithExtendedDefaults(name, icon)
+            when (val result = leetManager.addLeet(leet)) { // FIXED: Use addLeet directly
+                is ErrorHandler.Result.Success -> Result.success(leet) // FIXED: Return the leet, not result.data
                 is ErrorHandler.Result.Error -> Result.failure(result.exception)
             }
         } catch (e: Exception) {
@@ -291,10 +293,11 @@ class LeetRepository @Inject constructor(
 
     /**
      * Data class for leet creation request
+     * FIXED: Updated to use ImageVector
      */
     data class LeetCreationRequest(
         val name: String,
-        val iconResId: Int,
+        val iconImageVector: ImageVector, // FIXED: Changed from iconResId
         val translations: Map<String, String>
     )
 
