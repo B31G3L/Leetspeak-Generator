@@ -1,6 +1,7 @@
 // AllOptionsSection.kt - PERFORMANCE-OPTIMIERT
 package com.beigel.leetSpeak_Generator.ui.components.leet.selector
 
+import LeetOption
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.*
 import androidx.compose.material.icons.Icons
@@ -13,7 +14,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.beigel.leetSpeak_Generator.data.LeetOption
 
 /**
  * PERFORMANCE-OPTIMIERTE Alle Leet-Modi Darstellung
@@ -239,14 +239,10 @@ private fun CompactModeCard(
             ) {
                 // Icon
                 Icon(
-                    imageVector = Icons.Default.Settings,
+                    imageVector = option.iconImageVector, // ✅ Verwendet Material Icon
                     contentDescription = null,
-                    modifier = Modifier.size(32.dp),
-                    tint = if (option.isSelected) {
-                        MaterialTheme.colorScheme.primary
-                    } else {
-                        MaterialTheme.colorScheme.onSurfaceVariant
-                    }
+                    modifier = Modifier.size(24.dp),
+                    tint = MaterialTheme.colorScheme.secondary
                 )
 
                 Spacer(modifier = Modifier.height(8.dp))

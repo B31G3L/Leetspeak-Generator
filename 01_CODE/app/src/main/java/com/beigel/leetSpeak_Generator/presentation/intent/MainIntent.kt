@@ -1,11 +1,12 @@
 package com.beigel.leetSpeak_Generator.presentation.intent
 
+import androidx.compose.ui.graphics.vector.ImageVector
 import com.beigel.leetSpeak_Generator.data.CustomLeet
 import com.beigel.leetSpeak_Generator.data.LeetOption
 
 /**
  * UI Intents für MainViewModel
- * Ausgelagert für bessere Modularität und Import-Handling
+ * FIXED: Verwendet Material Icons statt Drawable Resources
  */
 sealed class MainIntent {
     data class UpdateInput(val text: String) : MainIntent()
@@ -13,7 +14,7 @@ sealed class MainIntent {
     data class ToggleFavorite(val leetOption: LeetOption) : MainIntent()
     data class CreateLeet(
         val name: String,
-        val iconResId: Int,
+        val icon: ImageVector, // ✅ Material Icon statt iconResId
         val useExtendedDefaults: Boolean = false
     ) : MainIntent()
     data class UpdateLeet(val index: Int, val leet: CustomLeet) : MainIntent()
@@ -27,7 +28,7 @@ sealed class MainIntent {
 
 /**
  * UI State für MainViewModel
- * Ausgelagert für bessere Struktur
+ * Bleibt unverändert
  */
 data class MainUiState(
     val isLoading: Boolean = false,

@@ -10,17 +10,18 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.beigel.leetSpeak_Generator.R
 
 /**
- * Dialog für Icon-Auswahl mit Material Icons als Fallback
+ * Dialog für Icon-Auswahl mit Material Icons
+ * FIXED: Verwendet nur Material Icons - keine Drawable Resources
  */
 @Composable
 fun IconPickerDialog(
-    selectedIconResId: Int,
-    onIconSelected: (Int) -> Unit,
+    selectedIcon: ImageVector, // ✅ Material Icon als Parameter
+    onIconSelected: (ImageVector) -> Unit, // ✅ Gibt Material Icon zurück
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -68,7 +69,18 @@ fun IconPickerDialog(
         Icons.Default.Extension,
         Icons.Default.Memory,
         Icons.Default.Storage,
-        Icons.Default.Cloud
+        Icons.Default.Cloud,
+        Icons.Default.TextFields,
+        Icons.Default.Transform,
+        Icons.Default.Tune,
+        Icons.Default.Palette,
+        Icons.Default.Brush,
+        Icons.Default.ColorLens,
+        Icons.Default.Lightbulb,
+        Icons.Default.Rocket,
+        Icons.Default.Architecture,
+        Icons.Default.Engineering,
+        Icons.Default.Construction
     )
 
     AlertDialog(
@@ -91,14 +103,12 @@ fun IconPickerDialog(
                 items(availableIcons) { icon ->
                     IconButton(
                         onClick = {
-                            // Für Material Icons verwenden wir einen Standard-Wert
-                            // In der echten App würde hier eine Mapping-Logik stehen
-                            onIconSelected(R.drawable.ic_custom_mode)
+                            onIconSelected(icon) // ✅ Direkte Icon-Übergabe
                         },
                         modifier = Modifier
                             .size(48.dp)
                             .then(
-                                if (selectedIconResId == R.drawable.ic_custom_mode) {
+                                if (selectedIcon == icon) {
                                     Modifier.background(
                                         MaterialTheme.colorScheme.secondaryContainer,
                                         MaterialTheme.shapes.medium
@@ -112,7 +122,7 @@ fun IconPickerDialog(
                             imageVector = icon,
                             contentDescription = null,
                             modifier = Modifier.size(24.dp),
-                            tint = if (selectedIconResId == R.drawable.ic_custom_mode) {
+                            tint = if (selectedIcon == icon) {
                                 MaterialTheme.colorScheme.secondary
                             } else {
                                 MaterialTheme.colorScheme.onSurfaceVariant

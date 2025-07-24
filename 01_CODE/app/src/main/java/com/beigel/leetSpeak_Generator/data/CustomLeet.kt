@@ -1,14 +1,16 @@
 package com.beigel.leetSpeak_Generator.data
 
-import com.beigel.leetSpeak_Generator.R
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.ui.graphics.vector.ImageVector
 
 /**
  * Represents a custom leetspeak translation leet
- * Migrated from Java to Kotlin with improved type safety and conciseness
+ * FIXED: Verwendet Material Icons statt Drawable Resources
  */
 data class CustomLeet(
     var name: String,
-    var iconResId: Int = R.drawable.ic_custom_mode,
+    var iconImageVector: ImageVector = Icons.Default.Settings, // ✅ Material Icon statt ResId
     private val _translations: MutableMap<String, String> = mutableMapOf()
 ) {
 
@@ -64,14 +66,17 @@ data class CustomLeet(
      * Creates a copy of this leet with a new name
      */
     fun copy(newName: String = this.name): CustomLeet =
-        CustomLeet(newName, iconResId, _translations.toMutableMap())
+        CustomLeet(newName, iconImageVector, _translations.toMutableMap())
 
     companion object {
         /**
          * Creates a CustomLeet with default Simple Leet translations
          */
-        fun createWithSimpleDefaults(name: String, iconResId: Int = R.drawable.ic_custom_mode): CustomLeet {
-            val leet = CustomLeet(name, iconResId)
+        fun createWithSimpleDefaults(
+            name: String,
+            icon: ImageVector = Icons.Default.Settings
+        ): CustomLeet {
+            val leet = CustomLeet(name, icon)
 
             // Initialize with Simple Leet mappings
             val simpleMap = mapOf(
@@ -90,8 +95,11 @@ data class CustomLeet(
         /**
          * Creates a CustomLeet with Extended Leet translations
          */
-        fun createWithExtendedDefaults(name: String, iconResId: Int = R.drawable.ic_custom_mode): CustomLeet {
-            val leet = CustomLeet(name, iconResId)
+        fun createWithExtendedDefaults(
+            name: String,
+            icon: ImageVector = Icons.Default.Settings
+        ): CustomLeet {
+            val leet = CustomLeet(name, icon)
 
             // Initialize with Extended Leet mappings
             val extendedMap = mapOf(

@@ -3,16 +3,18 @@ package com.beigel.leetSpeak_Generator.ui.components
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import com.beigel.leetSpeak_Generator.R
 import com.beigel.leetSpeak_Generator.data.CustomLeet
 import com.beigel.leetSpeak_Generator.presentation.intent.MainIntent
 import com.beigel.leetSpeak_Generator.ui.components.leet.creation.IconPickerDialog
@@ -25,10 +27,8 @@ import com.beigel.leetSpeak_Generator.ui.components.leet.creation.TranslationTab
 import com.beigel.leetSpeak_Generator.viewmodel.MainViewModel
 
 /**
- * Refactored Leet Creation Dialog - Von 800+ auf ~150 Zeilen
- * Aufgeteilt in modulare, wiederverwendbare Komponenten
- * FIXED: Korrekte Imports für MainIntent
- * FIXED: Template wird jetzt automatisch beim ersten Laden angewendet
+ * Leet Creation Dialog - Mit Material Icons
+ * FIXED: Alle Drawable-Referenzen durch Material Icons ersetzt
  */
 @Composable
 fun LeetCreationDialog(
@@ -79,7 +79,7 @@ fun LeetCreationDialog(
                         baseName = dialogState.baseName,
                         onBaseNameChange = { dialogState.baseName = it },
                         displayName = dialogState.displayName,
-                        selectedIconResId = dialogState.selectedIconResId,
+                        selectedIcon = dialogState.selectedIcon, // ✅ Material Icon
                         onIconClick = { dialogState.showIconPicker = true }
                     )
 
@@ -168,9 +168,9 @@ private fun LeetCreationDialogManager(
     // Icon Picker Dialog
     if (dialogState.showIconPicker) {
         IconPickerDialog(
-            selectedIconResId = dialogState.selectedIconResId,
-            onIconSelected = { iconResId ->
-                dialogState.selectedIconResId = iconResId
+            selectedIcon = dialogState.selectedIcon, // ✅ Material Icon
+            onIconSelected = { icon ->
+                dialogState.selectedIcon = icon // ✅ Setzt Material Icon
                 onDismissIconPicker()
             },
             onDismiss = onDismissIconPicker
@@ -193,7 +193,7 @@ private fun LeetCreationDialogManager(
 
 /**
  * State Management für Leet Creation Dialog
- * FIXED: Template wird jetzt automatisch beim ersten Laden angewendet
+ * FIXED: Verwendet Material Icons statt Drawable Resources
  */
 @Composable
 private fun rememberLeetCreationDialogState(
@@ -201,7 +201,7 @@ private fun rememberLeetCreationDialogState(
 ): LeetCreationDialogState {
     return remember(existingLeet) {
         LeetCreationDialogState(existingLeet).apply {
-            // BUGFIX: Template automatisch beim ersten Laden anwenden
+            // Template automatisch beim ersten Laden anwenden
             if (existingLeet == null) {
                 applyTemplate()
             }
@@ -211,7 +211,7 @@ private fun rememberLeetCreationDialogState(
 
 /**
  * State-Klasse für Dialog-Verwaltung
- * FIXED: Template wird jetzt korrekt beim ersten Laden angewendet
+ * FIXED: Verwendet Material Icons statt Drawable Resources
  */
 class LeetCreationDialogState(existingLeet: CustomLeet?) {
     val alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
@@ -220,8 +220,8 @@ class LeetCreationDialogState(existingLeet: CustomLeet?) {
         existingLeet?.name?.removeSuffix("-Leet") ?: ""
     )
 
-    var selectedIconResId by mutableStateOf(
-        existingLeet?.iconResId ?: R.drawable.ic_custom_mode
+    var selectedIcon by mutableStateOf(
+        existingLeet?.iconImageVector ?: Icons.Default.Settings // ✅ Material Icon statt ResId
     )
 
     var selectedTemplate by mutableStateOf(TemplateType.SIMPLE)
@@ -239,8 +239,7 @@ class LeetCreationDialogState(existingLeet: CustomLeet?) {
         get() = if (baseName.isBlank()) "Neues Leet" else "$baseName-Leet"
 
     /**
-     * IMPROVED: Wendet das Template auf die Übersetzungstabelle an
-     * Diese Funktion wird jetzt automatisch beim ersten Laden aufgerufen
+     * Wendet das Template auf die Übersetzungstabelle an
      */
     fun applyTemplate() {
         TemplateHelpers.applyTemplate(selectedTemplate, translationStates, alphabet)
@@ -264,7 +263,7 @@ class LeetCreationDialogState(existingLeet: CustomLeet?) {
             viewModel.handleIntent(
                 MainIntent.CreateLeet(
                     name = finalName,
-                    iconResId = selectedIconResId,
+                    icon = selectedIcon, // ✅ Übergebe Material Icon
                     useExtendedDefaults = selectedTemplate == TemplateType.EXTENDED
                 )
             )
@@ -272,7 +271,7 @@ class LeetCreationDialogState(existingLeet: CustomLeet?) {
             // Bestehendes Leet aktualisieren
             val updatedLeet = CustomLeet(
                 name = finalName,
-                iconResId = selectedIconResId
+                iconImageVector = selectedIcon // ✅ Verwende Material Icon
             ).apply {
                 setTranslations(translations)
             }

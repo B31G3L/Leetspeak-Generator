@@ -7,19 +7,20 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.beigel.leetSpeak_Generator.R
 
 /**
  * Card für Leet-Informationen: Name und Icon
+ * Komplett überarbeitet für Material Icons Support
  */
 @Composable
 fun LeetInfoCard(
     baseName: String,
     onBaseNameChange: (String) -> Unit,
     displayName: String,
-    selectedIconResId: Int,
+    selectedIcon: ImageVector,
     onIconClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -47,14 +48,13 @@ fun LeetInfoCard(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                // Icon Button mit Safe Loading
+                // Icon Button mit Material Icons
                 IconButton(
                     onClick = onIconClick,
                     modifier = Modifier.size(48.dp)
                 ) {
-                    // Safe Icon Loading - fallback zu Material Icon
                     Icon(
-                        imageVector = Icons.Default.Settings,
+                        imageVector = selectedIcon,
                         contentDescription = "Icon ändern",
                         modifier = Modifier.size(32.dp),
                         tint = MaterialTheme.colorScheme.secondary

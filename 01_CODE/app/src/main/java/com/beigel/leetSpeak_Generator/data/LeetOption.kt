@@ -1,17 +1,21 @@
 package com.beigel.leetSpeak_Generator.data
 
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Extension
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.TextFields
+import androidx.compose.ui.graphics.vector.ImageVector
 import com.beigel.leetSpeak_Generator.manager.LeetManager
-import com.beigel.leetSpeak_Generator.R
 
 /**
  * Represents a leet translation option in the UI
- * Converted to Kotlin data class with improved immutability and type safety
+ * FIXED: Verwendet Material Icons statt Drawable Resources
  */
 data class LeetOption(
     val mode: Int,
     val name: String,
     val description: String,
-    val iconResId: Int,
+    val iconImageVector: ImageVector, // ✅ Material Icon statt iconResId
     val isCustom: Boolean = false,
     val customIndex: Int = -1,
     var isSelected: Boolean = false,
@@ -56,12 +60,15 @@ data class LeetOption(
         /**
          * Creates a Simple Leet option
          */
-        fun createSimple(isSelected: Boolean = false, isFavorite: Boolean = false): LeetOption =
+        fun createSimple(
+            isSelected: Boolean = false,
+            isFavorite: Boolean = false
+        ): LeetOption =
             LeetOption(
                 mode = LeetManager.MODE_SIMPLE,
                 name = "Simple Leet",
                 description = "Einfache Leetspeak-Übersetzung",
-                iconResId = R.drawable.ic_simple_mode,
+                iconImageVector = Icons.Default.TextFields, // ✅ Material Icon
                 isCustom = false,
                 customIndex = -1,
                 isSelected = isSelected,
@@ -71,12 +78,15 @@ data class LeetOption(
         /**
          * Creates an Extended Leet option
          */
-        fun createExtended(isSelected: Boolean = false, isFavorite: Boolean = false): LeetOption =
+        fun createExtended(
+            isSelected: Boolean = false,
+            isFavorite: Boolean = false
+        ): LeetOption =
             LeetOption(
                 mode = LeetManager.MODE_EXTENDED,
                 name = "Extended Leet",
                 description = "Erweiterte Leetspeak-Übersetzung",
-                iconResId = R.drawable.ic_extended_mode,
+                iconImageVector = Icons.Default.Extension, // ✅ Material Icon
                 isCustom = false,
                 customIndex = -1,
                 isSelected = isSelected,
@@ -96,7 +106,7 @@ data class LeetOption(
                 mode = LeetManager.MODE_CUSTOM,
                 name = leet.name,
                 description = "Benutzerdefiniertes Leet",
-                iconResId = leet.iconResId,
+                iconImageVector = leet.iconImageVector, // ✅ Verwendet das Material Icon vom Leet
                 isCustom = true,
                 customIndex = customIndex,
                 isSelected = isSelected,

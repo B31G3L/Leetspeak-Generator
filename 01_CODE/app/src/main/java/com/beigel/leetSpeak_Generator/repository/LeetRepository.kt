@@ -1,6 +1,9 @@
 package com.beigel.leetSpeak_Generator.repository
 
 import android.content.Context
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.ui.graphics.vector.ImageVector
 import com.beigel.leetSpeak_Generator.data.CustomLeet
 import com.beigel.leetSpeak_Generator.data.LeetOption
 import com.beigel.leetSpeak_Generator.manager.LeetManager
@@ -183,9 +186,10 @@ class LeetRepository @Inject constructor(
     /**
      * Creates a leet with simple defaults
      */
-    suspend fun createLeetWithSimpleDefaults(name: String, iconResId: Int = com.beigel.leetSpeak_Generator.R.drawable.ic_custom_mode): Result<CustomLeet> {
+    suspend fun createLeetWithSimpleDefaults(name: String, icon: ImageVector = Icons.Default.Settings): Result<CustomLeet> {
         return try {
-            when (val result = leetManager.createLeetWithSimpleDefaults(name, iconResId)) {
+            val leet = CustomLeet.createWithSimpleDefaults(name, icon)
+            when (val result = leetManager.createLeetWithSimpleDefaults(name, leet)) {
                 is ErrorHandler.Result.Success -> Result.success(result.data)
                 is ErrorHandler.Result.Error -> Result.failure(result.exception)
             }
