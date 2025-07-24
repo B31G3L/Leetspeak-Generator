@@ -100,8 +100,19 @@
 
         <!-- 🔔 KEYBOARD NOTIFICATION SERVICE (Optional für Statistiken) -->
         <service
-            android:name=".keyboard.LeetKeyboardNotificationService"
-            android:exported="false" />
+            android:name=".keyboard.LeetKeyboardService"
+            android:exported="true"
+            android:permission="android.permission.BIND_INPUT_METHOD"
+            android:label="@string/leetspeak_keyboard_label">
+
+            <intent-filter>
+                <action android:name="android.view.InputMethod" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.view.im"
+                android:resource="@xml/method" />
+        </service>
 
     </application>
 
