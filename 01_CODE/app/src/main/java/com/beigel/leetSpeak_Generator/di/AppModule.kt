@@ -2,6 +2,7 @@ package com.beigel.leetSpeak_Generator.di
 
 import android.content.Context
 import com.beigel.leetSpeak_Generator.data.ThemePreferences
+import com.beigel.leetSpeak_Generator.data.WhatsNewPreferences
 import com.beigel.leetSpeak_Generator.repository.LeetRepository
 import dagger.Module
 import dagger.Provides
@@ -13,6 +14,7 @@ import javax.inject.Singleton
 /**
  * Hilt Module für Dependency Injection
  * Stellt alle benötigten Dependencies zur Verfügung
+ * UPDATED: WhatsNewPreferences hinzugefügt
  */
 
 @Module(includes = [DomainModule::class])
@@ -33,5 +35,13 @@ object AppModule {
         @ApplicationContext context: Context
     ): ThemePreferences {
         return ThemePreferences(context)
+    }
+
+    @Provides
+    @Singleton
+    fun provideWhatsNewPreferences(
+        @ApplicationContext context: Context
+    ): WhatsNewPreferences {
+        return WhatsNewPreferences(context)
     }
 }

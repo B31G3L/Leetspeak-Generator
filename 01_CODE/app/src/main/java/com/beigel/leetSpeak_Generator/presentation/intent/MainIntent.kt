@@ -6,7 +6,7 @@ import com.beigel.leetSpeak_Generator.data.LeetOption
 
 /**
  * UI Intents für MainViewModel
- * FIXED: Updated to use ImageVector instead of Int for icons
+ * UPDATED: WhatsNew Intents hinzugefügt
  */
 sealed class MainIntent {
     data class UpdateInput(val text: String) : MainIntent()
@@ -14,7 +14,7 @@ sealed class MainIntent {
     data class ToggleFavorite(val leetOption: LeetOption) : MainIntent()
     data class CreateLeet(
         val name: String,
-        val icon: ImageVector, // FIXED: Changed from iconResId: Int to icon: ImageVector
+        val icon: ImageVector,
         val useExtendedDefaults: Boolean = false
     ) : MainIntent()
     data class UpdateLeet(val index: Int, val leet: CustomLeet) : MainIntent()
@@ -24,16 +24,23 @@ sealed class MainIntent {
     object ClearError : MainIntent()
     object ClearSuccess : MainIntent()
     object ToggleReverseMode : MainIntent()
+
+    // NEW: What's New Dialog Intents
+    object DismissWhatsNew : MainIntent()
+    object MarkWhatsNewAsShown : MainIntent()
+    object ResetWhatsNewForTesting : MainIntent() // Nur für Debug
+    object ForceShowWhatsNew : MainIntent() // Nur für Debug
 }
 
 /**
  * UI State für MainViewModel
- * Ausgelagert für bessere Struktur
+ * UPDATED: WhatsNew State hinzugefügt
  */
 data class MainUiState(
     val isLoading: Boolean = false,
     val errorMessage: String? = null,
     val successMessage: String? = null,
     val selectedLeetOption: LeetOption? = null,
-    val showBottomSheet: Boolean = false
+    val showBottomSheet: Boolean = false,
+    val showWhatsNew: Boolean = false // NEW
 )

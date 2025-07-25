@@ -6,6 +6,8 @@ import androidx.lifecycle.viewModelScope
 import com.beigel.leetSpeak_Generator.data.CustomLeet
 import com.beigel.leetSpeak_Generator.data.LeetOption
 import com.beigel.leetSpeak_Generator.data.ThemePreferences
+import com.beigel.leetSpeak_Generator.data.WhatsNewPreferences
+import com.beigel.leetSpeak_Generator.data.VersionInfo
 import com.beigel.leetSpeak_Generator.domain.usecase.leet.LeetManagerUseCase
 import com.beigel.leetSpeak_Generator.domain.usecase.translation.TranslationManagerUseCase
 import com.beigel.leetSpeak_Generator.domain.usecase.ui.UiManagerUseCase
@@ -19,11 +21,8 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 /**
- * Drastisch vereinfachtes MainViewModel durch Use Case Extraktion
- * Von 350+ Zeilen auf ~150 Zeilen reduziert (-57%)
- * Business Logic ist jetzt in Use Cases ausgelagert
- * UPDATED: Korrekte Imports für MainIntent und MainUiState
- * BUGFIX: Settings werden jetzt sofort beim Start geladen
+ * MainViewModel with What's New Integration
+ * UPDATED: WhatsNewPreferences und Dialog Logic hinzugefügt
  */
 @HiltViewModel
 class MainViewModel @Inject constructor(
@@ -31,7 +30,8 @@ class MainViewModel @Inject constructor(
     private val leetManager: LeetManagerUseCase,
     private val uiManager: UiManagerUseCase,
     private val repository: LeetRepository,
-    private val themePreferences: ThemePreferences
+    private val themePreferences: ThemePreferences,
+    private val whatsNewPreferences: WhatsNewPreferences // NEW
 ) : ViewModel() {
 
     // State Flows aus Use Cases
@@ -47,19 +47,36 @@ class MainViewModel @Inject constructor(
     val leetOptions = leetManager.getLeetOptions()
     val favoriteLeetOptions = leetManager.getFavoriteLeetOptions()
 
-    // Theme State - BUGFIX: Sofort laden mit Eagerly
+    // Theme State
     val defaultViewExpanded: StateFlow<Boolean> = themePreferences.defaultViewExpanded
         .stateIn(
             scope = viewModelScope,
-            started = SharingStarted.Eagerly, // BUGFIX: Eagerly statt WhileSubscribed
+            started = SharingStarted.Eagerly,
             initialValue = false
         )
 
     val themeMode: StateFlow<String> = themePreferences.themeMode
         .stateIn(
             scope = viewModelScope,
-            started = SharingStarted.Eagerly, // BUGFIX: Eagerly statt WhileSubscribed
+            started = SharingStarted.Eagerly,
             initialValue = ThemePreferences.THEME_SYSTEM
+        )
+
+    // NEW: What's New State
+    val shouldShowWhatsNew: StateFlow<Boolean> = whatsNewPreferences.shouldShowWhatsNew
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.Eagerly,
+            initialValue = false
+        )
+
+    val currentVersionInfo: VersionInfo = whatsNewPreferences.getCurrentVersionInfo()
+
+    val isFirstLaunch: StateFlow<Boolean> = whatsNewPreferences.isFirstLaunch
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.Eagerly,
+            initialValue = false
         )
 
     // Computed State Flows
@@ -126,14 +143,15 @@ class MainViewModel @Inject constructor(
     }
 
     /**
-     * Hauptfunktion für Intent-Handling - drastisch vereinfacht
+     * Hauptfunktion für Intent-Handling
+     * UPDATED: WhatsNew Intents hinzugefügt
      */
     fun handleIntent(intent: MainIntent) {
         when (intent) {
             is MainIntent.UpdateInput -> uiManager.updateInputText(intent.text)
             is MainIntent.ChangeMode -> changeMode(intent.leetOption)
             is MainIntent.ToggleFavorite -> toggleFavorite(intent.leetOption)
-            is MainIntent.CreateLeet -> createLeet(intent.name, intent.icon, intent.useExtendedDefaults) // FIXED: Use intent.icon instead of intent.iconResId
+            is MainIntent.CreateLeet -> createLeet(intent.name, intent.icon, intent.useExtendedDefaults)
             is MainIntent.UpdateLeet -> updateLeet(intent.index, intent.leet)
             is MainIntent.DeleteLeet -> deleteLeet(intent.index)
             is MainIntent.CopyToClipboard -> copyToClipboard()
@@ -141,22 +159,45 @@ class MainViewModel @Inject constructor(
             is MainIntent.ClearError -> uiManager.clearError()
             is MainIntent.ClearSuccess -> uiManager.clearSuccess()
             is MainIntent.ToggleReverseMode -> toggleReverseMode()
+
+            // NEW: What's New Intents
+            is MainIntent.DismissWhatsNew -> { /* Dialog wird automatisch geschlossen */ }
+            is MainIntent.MarkWhatsNewAsShown -> markWhatsNewAsShown()
+            is MainIntent.ResetWhatsNewForTesting -> resetWhatsNewForTesting()
+            is MainIntent.ForceShowWhatsNew -> forceShowWhatsNew()
         }
     }
 
-    /**
-     * Use Case delegierte Funktionen - viel sauberer und kürzer
-     */
+    // NEW: What's New Functions
+    private fun markWhatsNewAsShown() {
+        viewModelScope.launch {
+            whatsNewPreferences.markCurrentVersionAsShown()
+        }
+    }
+
+    private fun resetWhatsNewForTesting() {
+        viewModelScope.launch {
+            whatsNewPreferences.resetForTesting()
+            uiManager.setSuccess("What's New Dialog reset - wird beim nächsten Start angezeigt")
+        }
+    }
+
+    private fun forceShowWhatsNew() {
+        viewModelScope.launch {
+            whatsNewPreferences.forceShowNextTime()
+            uiManager.setSuccess("What's New Dialog wird beim nächsten Start angezeigt")
+        }
+    }
+
+    // Rest der Funktionen bleibt unverändert...
     private fun changeMode(leetOption: LeetOption) {
         viewModelScope.launch {
-            // Set translation mode
             when (leetOption.mode) {
                 LeetManager.MODE_SIMPLE -> uiManager.setTranslationMode(LeetTranslator.TranslationMode.SIMPLE)
                 LeetManager.MODE_EXTENDED -> uiManager.setTranslationMode(LeetTranslator.TranslationMode.EXTENDED)
                 LeetManager.MODE_CUSTOM -> uiManager.setTranslationMode(LeetTranslator.TranslationMode.CUSTOM)
             }
 
-            // Handle custom leet index
             leetManager.changeMode(leetOption)
                 .onFailure { exception ->
                     uiManager.setError("Failed to change mode: ${exception.message}")
@@ -177,15 +218,11 @@ class MainViewModel @Inject constructor(
         }
     }
 
-
-// MainViewModel.kt - Key fixes for icon handling
-
-    // Fix in the createLeet function
-    private fun createLeet(name: String, iconImageVector: ImageVector, useExtendedDefaults: Boolean) { // FIXED: Parameter type
+    private fun createLeet(name: String, iconImageVector: ImageVector, useExtendedDefaults: Boolean) {
         viewModelScope.launch {
             uiManager.setLoading(true)
 
-            leetManager.createLeet(name, iconImageVector, useExtendedDefaults) // FIXED: Pass ImageVector instead of Int
+            leetManager.createLeet(name, iconImageVector, useExtendedDefaults)
                 .onSuccess { leet ->
                     uiManager.setTranslationMode(LeetTranslator.TranslationMode.CUSTOM)
                     uiManager.setSuccess("Leet '${leet.name}' created successfully")
@@ -240,7 +277,6 @@ class MainViewModel @Inject constructor(
 
         uiManager.toggleReverseMode()
 
-        // Swap input/output when toggling reverse mode
         if (currentOutputBeforeToggle.isNotEmpty()) {
             uiManager.updateInputText(currentOutputBeforeToggle)
         }
@@ -255,9 +291,6 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    /**
-     * Utility function für Preview-Generierung
-     */
     fun generatePreview(leetOption: LeetOption, sampleText: String = "Hello"): String {
         val mode = when (leetOption.mode) {
             LeetManager.MODE_SIMPLE -> LeetTranslator.TranslationMode.SIMPLE
@@ -273,7 +306,7 @@ class MainViewModel @Inject constructor(
         return translationManager.generatePreview(mode, leet, sampleText)
     }
 
-    // Legacy function for backward compatibility
+    // Legacy functions for backward compatibility
     fun updateInputText(text: String) = uiManager.updateInputText(text)
     fun clearInput() = uiManager.clearInput()
 

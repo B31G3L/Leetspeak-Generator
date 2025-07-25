@@ -42,6 +42,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.ui.text.style.TextAlign
 import com.beigel.leetSpeak_Generator.presentation.intent.MainIntent
 import com.beigel.leetSpeak_Generator.presentation.intent.MainUiState
+import com.beigel.leetSpeak_Generator.ui.components.WhatsNewDialog
 import com.beigel.leetSpeak_Generator.ui.settings.SettingsActivity
 
 
@@ -99,19 +100,18 @@ class ComposeMainActivity : ComponentActivity() {
     }
 }
 
+// Nur der relevante Teil der ComposeMainActivity.kt mit What's New Integration
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(
     viewModel: MainViewModel,
     onCopyToClipboard: (String) -> Unit,
     onOpenSettings: () -> Unit
-
 ) {
-    // Lokaler State
+    // Bestehende State Variables...
     val inputText by viewModel.inputText.collectAsStateWithLifecycle()
     val outputText by viewModel.outputText.collectAsStateWithLifecycle()
-
-    // ViewModel State mit Reverse
     val currentModeDisplayName by viewModel.currentModeDisplayName.collectAsStateWithLifecycle()
     val currentMode by viewModel.currentMode.collectAsStateWithLifecycle()
     val currentLeet by viewModel.currentLeet.collectAsStateWithLifecycle()
@@ -119,18 +119,21 @@ fun MainScreen(
     val isReverseMode by viewModel.isReverseMode.collectAsStateWithLifecycle()
     val isInputLikelyLeetspeak by viewModel.isInputLikelyLeetspeak.collectAsStateWithLifecycle()
 
-    // Keyboard Detection
+    // NEW: What's New State
+    val shouldShowWhatsNew by viewModel.shouldShowWhatsNew.collectAsStateWithLifecycle()
+    val isFirstLaunch by viewModel.isFirstLaunch.collectAsStateWithLifecycle()
+
+    // Bestehende lokale State Variables...
     val density = LocalDensity.current
     val keyboardHeight = WindowInsets.ime.getBottom(density)
     val isKeyboardVisible = keyboardHeight > 100
-
-    // Content state
     val hasInput = inputText.isNotEmpty()
     val hasOutput = outputText.isNotEmpty()
 
     var showBottomSheet by remember { mutableStateOf(false) }
     var showAboutDialog by remember { mutableStateOf(false) }
     val context = LocalContext.current
+
     val inputTitle = if (isReverseMode) {
         "Input: $currentModeDisplayName"
     } else {
@@ -143,25 +146,19 @@ fun MainScreen(
         "Output: $currentModeDisplayName"
     }
 
-
-
+    // Bestehender Scaffold Content bleibt gleich...
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = {
             TopAppBar(
                 title = {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(
                             "Leetspeak Generator",
-
                             fontWeight = FontWeight.Bold,
                             style = MaterialTheme.typography.headlineSmall.copy(fontSize = 22.sp)
                         )
 
-
-                        // Reverse Mode Indicator
                         if (isReverseMode) {
                             Spacer(modifier = Modifier.width(8.dp))
                             Surface(
@@ -178,7 +175,6 @@ fun MainScreen(
                             }
                         }
 
-                        // Leetspeak Detection Indicator
                         if (!isReverseMode && isInputLikelyLeetspeak) {
                             Spacer(modifier = Modifier.width(8.dp))
                             Surface(
@@ -211,18 +207,19 @@ fun MainScreen(
                     IconButton(onClick = onOpenSettings) {
                         Icon(Icons.Default.Settings, "Einstellungen")
                     }
+
+
                 }
             )
         },
         bottomBar = {
-            // Bottom App Bar - Gleiche Farben wie Top App Bar
+            // Bestehende BottomAppBar bleibt gleich...
             BottomAppBar(
                 containerColor = MaterialTheme.colorScheme.surface,
                 contentColor = MaterialTheme.colorScheme.onSurface,
-                tonalElevation = 0.dp, // Gleiche Elevation wie Top App Bar
+                tonalElevation = 0.dp,
                 modifier = Modifier.then(
                     if (isKeyboardVisible) {
-                        // Bei Tastatur: Kleinerer Offset für mehr Platznutzung
                         Modifier.offset(y = 56.dp)
                     } else {
                         Modifier
@@ -236,7 +233,6 @@ fun MainScreen(
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // ✅ ENHANCED ANIMATED ARROWS
                     EnhancedAnimatedArrows(
                         isReverseMode = isReverseMode,
                         isInputLikelyLeetspeak = isInputLikelyLeetspeak,
@@ -246,7 +242,6 @@ fun MainScreen(
                         modifier = Modifier.weight(1f)
                     )
 
-                    // ✅ MODE SELECTOR BUTTON
                     ModeSelectorButton(
                         currentMode = currentModeDisplayName,
                         onLeetSelectorClick = { showBottomSheet = true },
@@ -257,18 +252,17 @@ fun MainScreen(
         }
     ) { paddingValues ->
 
-        // CONTENT BEREICH - Einfache aber effektive Tastatur-Anpassung
+        // Bestehender Content bleibt gleich...
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
                 .consumeWindowInsets(paddingValues)
-                .imePadding() // Das ist der Schlüssel für Tastatur-Anpassung
+                .imePadding()
                 .padding(8.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
 
-            // ✅ INPUT CARD - Nutzt verfügbaren Raum optimal
             InputCard(
                 inputText = inputText,
                 onInputChange = {
@@ -285,7 +279,6 @@ fun MainScreen(
                     .weight(1f)
             )
 
-            // ✅ OUTPUT CARD
             if (hasOutput) {
                 OutputCard(
                     outputText = outputText,
@@ -300,7 +293,7 @@ fun MainScreen(
             }
         }
 
-        // Dialoge
+        // Bestehende Dialoge...
         if (showBottomSheet) {
             LeetSelectorBottomSheet(
                 viewModel = viewModel,
@@ -314,9 +307,26 @@ fun MainScreen(
             )
         }
 
+        // NEW: What's New Dialog
+        if (shouldShowWhatsNew) {
+            WhatsNewDialog(
+                currentVersion = viewModel.currentVersionInfo,
+                isFirstLaunch = isFirstLaunch,
+                onDismiss = {
+                    viewModel.handleIntent(MainIntent.DismissWhatsNew)
+                },
+                onMarkAsShown = {
+                    viewModel.handleIntent(MainIntent.MarkWhatsNewAsShown)
+                }
+            )
+        }
+
         HandleUiState(uiState, viewModel, context)
     }
 }
+
+// Bestehende Helper Functions bleiben unverändert...
+// (EnhancedAnimatedArrows, ModeSelectorButton, InputCard, OutputCard, HandleUiState)
 
 
 @Composable
