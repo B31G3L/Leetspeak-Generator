@@ -51,7 +51,7 @@
                 android:value=".ui.ComposeMainActivity" />
         </activity>
 
-        <!-- 🎹 LEETSPEAK KEYBOARD SERVICE (MAIN IME) -->
+        <!-- 🎹 LEETSPEAK KEYBOARD SERVICE (KORRIGIERT - nur ein Service!) -->
         <service
             android:name=".keyboard.LeetKeyboardService"
             android:exported="true"
@@ -97,22 +97,6 @@
                 android:name="android.appwidget.provider"
                 android:resource="@xml/widget_info" />
         </receiver>
-
-        <!-- 🔔 KEYBOARD NOTIFICATION SERVICE (Optional für Statistiken) -->
-        <service
-            android:name=".keyboard.LeetKeyboardService"
-            android:exported="true"
-            android:permission="android.permission.BIND_INPUT_METHOD"
-            android:label="@string/leetspeak_keyboard_label">
-
-            <intent-filter>
-                <action android:name="android.view.InputMethod" />
-            </intent-filter>
-
-            <meta-data
-                android:name="android.view.im"
-                android:resource="@xml/method" />
-        </service>
 
     </application>
 

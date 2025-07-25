@@ -20,7 +20,7 @@
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
 
- Keep IME Service
+# Keep IME Service
 -keep class com.beigel.leetSpeak_Generator.keyboard.LeetKeyboardService { *; }
 
 # Keep ContentProvider

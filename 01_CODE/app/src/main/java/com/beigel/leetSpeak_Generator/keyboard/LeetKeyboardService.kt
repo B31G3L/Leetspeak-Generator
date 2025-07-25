@@ -1,6 +1,5 @@
 package com.beigel.leetSpeak_Generator.keyboard
 
-import android.content.Context
 import android.inputmethodservice.InputMethodService
 import android.view.KeyEvent
 import android.view.View
@@ -10,14 +9,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.ViewModelStore
-import androidx.lifecycle.ViewModelStoreOwner
-import androidx.lifecycle.setViewTreeViewModelStoreOwner
-import androidx.savedstate.SavedStateRegistry
-import androidx.savedstate.SavedStateRegistryController
-import androidx.savedstate.SavedStateRegistryOwner
-import androidx.savedstate.setViewTreeSavedStateRegistryOwner
+import androidx.lifecycle.*
 import com.beigel.leetSpeak_Generator.data.CustomLeet
 import com.beigel.leetSpeak_Generator.keyboard.engine.LiveTranslationEngine
 import com.beigel.leetSpeak_Generator.keyboard.data.FavoriteDataObserver
@@ -26,26 +18,23 @@ import com.beigel.leetSpeak_Generator.translation.LeetTranslator
 import kotlinx.coroutines.*
 
 /**
- * 🎹 LEETSPEAK KEYBOARD - Custom IME Service
+ * 🎹 LEETSPEAK KEYBOARD - Custom IME Service (CRASH-FIX)
  *
+ * CRITICAL FIX: Nullargument-Konstruktor für Android Service
  * Systemweite Leetspeak-Tastatur die in allen Android-Apps funktioniert
- * Features:
- * - Live Translation während dem Tippen
- * - Sync mit Favoriten-Leet aus Haupt-App
- * - Gestures & Smart Suggestions
- * - Custom Compose UI
  */
-class LeetKeyboardService(override val lifecycle: Lifecycle) : InputMethodService(),
-    ViewModelStoreOwner, SavedStateRegistryOwner {
+class LeetKeyboardService : InputMethodService(),
+    ViewModelStoreOwner, LifecycleOwner {
 
-    // Lifecycle Management für Compose
+    // CRITICAL FIX: Lifecycle ohne Konstruktor-Parameter
+    private val _lifecycle = LifecycleRegistry(this)
+    override val lifecycle: Lifecycle get() = _lifecycle
+
+    // ViewModelStore für Compose
     private val store = ViewModelStore()
-    private val savedStateRegistryController = SavedStateRegistryController.create(this)
-
     override val viewModelStore: ViewModelStore get() = store
-    override val savedStateRegistry: SavedStateRegistry get() = savedStateRegistryController.savedStateRegistry
 
-    // Core Components
+    // Core Components - werden in onCreate() initialisiert
     private lateinit var translationEngine: LiveTranslationEngine
     private lateinit var favoriteDataObserver: FavoriteDataObserver
     private lateinit var keyboardViewModel: LeetKeyboardViewModel
@@ -57,17 +46,21 @@ class LeetKeyboardService(override val lifecycle: Lifecycle) : InputMethodServic
     // Keyboard State
     private var currentLeetMode = LeetTranslator.TranslationMode.SIMPLE
     private var isLeetModeActive = true
-    private var inputBuffer = StringBuilder()
+    private val inputBuffer = StringBuilder()
 
     override fun onCreate() {
         super.onCreate()
-        savedStateRegistryController.performRestore(null)
+
+        // Lifecycle States verwalten
+        _lifecycle.currentState = Lifecycle.State.CREATED
 
         // Initialize Core Components
         initializeComponents()
 
         // Start observing favorite leet changes
         startFavoriteObserver()
+
+        _lifecycle.currentState = Lifecycle.State.STARTED
     }
 
     private fun initializeComponents() {
@@ -91,12 +84,14 @@ class LeetKeyboardService(override val lifecycle: Lifecycle) : InputMethodServic
     }
 
     override fun onCreateInputView(): View {
+        _lifecycle.currentState = Lifecycle.State.RESUMED
+
         return ComposeView(this).apply {
             composeView = this
 
-            // Set up Lifecycle owners for Compose
+            // Set up Lifecycle owners für Compose
+            setViewTreeLifecycleOwner(this@LeetKeyboardService)
             setViewTreeViewModelStoreOwner(this@LeetKeyboardService)
-            setViewTreeSavedStateRegistryOwner(this@LeetKeyboardService)
 
             setContent {
                 LeetKeyboardUI(
@@ -291,6 +286,7 @@ class LeetKeyboardService(override val lifecycle: Lifecycle) : InputMethodServic
     }
 
     override fun onDestroy() {
+        _lifecycle.currentState = Lifecycle.State.DESTROYED
         super.onDestroy()
         serviceScope.cancel()
         favoriteDataObserver.stopObserving()
@@ -366,7 +362,7 @@ class LeetKeyboardViewModel(
         _toastMessage.value = message
 
         // Auto-clear toast after 2 seconds
-        kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.Main).launch {
+        CoroutineScope(Dispatchers.Main).launch {
             kotlinx.coroutines.delay(2000)
             _toastMessage.value = null
         }
