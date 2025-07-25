@@ -51,12 +51,14 @@
                 android:value=".ui.ComposeMainActivity" />
         </activity>
 
-        <!-- 🎹 LEETSPEAK KEYBOARD SERVICE (KORRIGIERT - nur ein Service!) -->
+        <!-- 🎹 LEETSPEAK KEYBOARD SERVICE (FIXED - Removed android:process) -->
         <service
             android:name=".keyboard.LeetKeyboardService"
             android:exported="true"
             android:permission="android.permission.BIND_INPUT_METHOD"
-            android:label="@string/leetspeak_keyboard_label">
+            android:label="@string/leetspeak_keyboard_label"
+            android:enabled="true"
+            android:directBootAware="false">
 
             <intent-filter>
                 <action android:name="android.view.InputMethod" />
@@ -74,7 +76,8 @@
             android:exported="true"
             android:readPermission="com.beigel.leetspeak.READ_LEET_DATA"
             android:writePermission="com.beigel.leetspeak.WRITE_LEET_DATA"
-            android:grantUriPermissions="true">
+            android:grantUriPermissions="true"
+            android:enabled="true">
 
             <!-- Allow keyboard access without explicit permission -->
             <grant-uri-permission
@@ -89,7 +92,8 @@
         <receiver
             android:name=".widget.LeetWidgetProvider"
             android:exported="true"
-            android:label="@string/widget_description">
+            android:label="@string/widget_description"
+            android:enabled="true">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>

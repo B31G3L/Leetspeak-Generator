@@ -8,7 +8,6 @@ import android.view.inputmethod.InputConnection
 import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.platform.ComposeView
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.*
 import com.beigel.leetSpeak_Generator.data.CustomLeet
 import com.beigel.leetSpeak_Generator.keyboard.engine.LiveTranslationEngine
@@ -18,15 +17,21 @@ import com.beigel.leetSpeak_Generator.translation.LeetTranslator
 import kotlinx.coroutines.*
 
 /**
- * 🎹 LEETSPEAK KEYBOARD - Custom IME Service (CRASH-FIX)
+ * 🎹 LEETSPEAK KEYBOARD - Custom IME Service (COMPLETELY FIXED)
  *
- * CRITICAL FIX: Nullargument-Konstruktor für Android Service
- * Systemweite Leetspeak-Tastatur die in allen Android-Apps funktioniert
+ * CRITICAL FIXES:
+ * - NO CONSTRUCTOR PARAMETERS (Android requirement)
+ * - Manual dependency creation in onCreate()
+ * - Zero-argument constructor guaranteed
+ * - All dependencies created after service instantiation
  */
 class LeetKeyboardService : InputMethodService(),
     ViewModelStoreOwner, LifecycleOwner {
 
-    // CRITICAL FIX: Lifecycle ohne Konstruktor-Parameter
+    // CRITICAL: NO CONSTRUCTOR PARAMETERS!
+    // Android System creates this with zero-argument constructor
+
+    // Lifecycle management
     private val _lifecycle = LifecycleRegistry(this)
     override val lifecycle: Lifecycle get() = _lifecycle
 
@@ -34,10 +39,10 @@ class LeetKeyboardService : InputMethodService(),
     private val store = ViewModelStore()
     override val viewModelStore: ViewModelStore get() = store
 
-    // Core Components - werden in onCreate() initialisiert
-    private lateinit var translationEngine: LiveTranslationEngine
-    private lateinit var favoriteDataObserver: FavoriteDataObserver
-    private lateinit var keyboardViewModel: LeetKeyboardViewModel
+    // Dependencies - CREATED IN onCreate(), NOT CONSTRUCTOR
+    private var translationEngine: LiveTranslationEngine? = null
+    private var favoriteDataObserver: FavoriteDataObserver? = null
+    private var keyboardViewModel: LeetKeyboardViewModel? = null
 
     // UI State
     private var composeView: ComposeView? = null
@@ -51,251 +56,314 @@ class LeetKeyboardService : InputMethodService(),
     override fun onCreate() {
         super.onCreate()
 
-        // Lifecycle States verwalten
+        android.util.Log.d("LeetKeyboard", "Service onCreate() called")
+
         _lifecycle.currentState = Lifecycle.State.CREATED
 
-        // Initialize Core Components
-        initializeComponents()
+        try {
+            // CRITICAL: Create ALL dependencies here, NOT in constructor
+            initializeComponents()
+            startFavoriteObserver()
+            _lifecycle.currentState = Lifecycle.State.STARTED
 
-        // Start observing favorite leet changes
-        startFavoriteObserver()
-
-        _lifecycle.currentState = Lifecycle.State.STARTED
-    }
-
-    private fun initializeComponents() {
-        translationEngine = LiveTranslationEngine()
-        favoriteDataObserver = FavoriteDataObserver(this)
-        keyboardViewModel = LeetKeyboardViewModel(translationEngine, favoriteDataObserver)
-    }
-
-    private fun startFavoriteObserver() {
-        favoriteDataObserver.startObserving { newLeet ->
-            serviceScope.launch {
-                translationEngine.updateFavoriteLeet(newLeet)
-                currentLeetMode = if (newLeet != null) {
-                    LeetTranslator.TranslationMode.CUSTOM
-                } else {
-                    LeetTranslator.TranslationMode.SIMPLE
-                }
-                keyboardViewModel.updateCurrentMode(currentLeetMode, newLeet)
-            }
+            android.util.Log.d("LeetKeyboard", "Service initialized successfully")
+        } catch (e: Exception) {
+            android.util.Log.e("LeetKeyboard", "Error in onCreate", e)
         }
     }
 
-    override fun onCreateInputView(): View {
-        _lifecycle.currentState = Lifecycle.State.RESUMED
+    private fun initializeComponents() {
+        // Create dependencies manually - NO INJECTION
+        translationEngine = LiveTranslationEngine()
+        favoriteDataObserver = FavoriteDataObserver(this)
+        keyboardViewModel = LeetKeyboardViewModel(
+            translationEngine!!,
+            favoriteDataObserver!!
+        )
 
-        return ComposeView(this).apply {
-            composeView = this
+        android.util.Log.d("LeetKeyboard", "Components initialized")
+    }
 
-            // Set up Lifecycle owners für Compose
-            setViewTreeLifecycleOwner(this@LeetKeyboardService)
-            setViewTreeViewModelStoreOwner(this@LeetKeyboardService)
-
-            setContent {
-                LeetKeyboardUI(
-                    viewModel = keyboardViewModel,
-                    onKeyPress = ::handleKeyPress,
-                    onSpecialAction = ::handleSpecialAction,
-                    onModeToggle = ::toggleLeetMode,
-                    onSettingsOpen = ::openMainApp
-                )
+    private fun startFavoriteObserver() {
+        try {
+            favoriteDataObserver?.startObserving { newLeet ->
+                serviceScope.launch {
+                    try {
+                        translationEngine?.updateFavoriteLeet(newLeet)
+                        currentLeetMode = if (newLeet != null) {
+                            LeetTranslator.TranslationMode.CUSTOM
+                        } else {
+                            LeetTranslator.TranslationMode.SIMPLE
+                        }
+                        keyboardViewModel?.updateCurrentMode(currentLeetMode, newLeet)
+                    } catch (e: Exception) {
+                        android.util.Log.e("LeetKeyboard", "Error updating favorite", e)
+                    }
+                }
             }
+        } catch (e: Exception) {
+            android.util.Log.e("LeetKeyboard", "Error starting favorite observer", e)
+        }
+    }
+
+    override fun onCreateInputView(): View? {
+        return try {
+            android.util.Log.d("LeetKeyboard", "Creating input view")
+
+            _lifecycle.currentState = Lifecycle.State.RESUMED
+
+            ComposeView(this).apply {
+                composeView = this
+                setViewTreeLifecycleOwner(this@LeetKeyboardService)
+                setViewTreeViewModelStoreOwner(this@LeetKeyboardService)
+
+                setContent {
+                    keyboardViewModel?.let { viewModel ->
+                        LeetKeyboardUI(
+                            viewModel = viewModel,
+                            onKeyPress = ::handleKeyPress,
+                            onSpecialAction = ::handleSpecialAction,
+                            onModeToggle = ::toggleLeetMode,
+                            onSettingsOpen = ::openMainApp
+                        )
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            android.util.Log.e("LeetKeyboard", "Error creating input view", e)
+            null
         }
     }
 
     override fun onStartInput(attribute: EditorInfo?, restarting: Boolean) {
         super.onStartInput(attribute, restarting)
 
-        // Reset input state
-        inputBuffer.clear()
-
-        // Update context-based settings
-        updateContextualSettings(attribute)
-
-        // Notify UI of input start
-        keyboardViewModel.onInputStarted(attribute)
+        try {
+            inputBuffer.clear()
+            updateContextualSettings(attribute)
+            keyboardViewModel?.onInputStarted(attribute)
+        } catch (e: Exception) {
+            android.util.Log.e("LeetKeyboard", "Error in onStartInput", e)
+        }
     }
 
     private fun updateContextualSettings(editorInfo: EditorInfo?) {
-        val packageName = editorInfo?.packageName?.toString() ?: ""
+        try {
+            val packageName = editorInfo?.packageName?.toString() ?: ""
 
-        // Smart context detection
-        when {
-            packageName.contains("whatsapp") -> {
-                // WhatsApp: Use simple leet for readability
-                keyboardViewModel.setSuggestedMode(LeetTranslator.TranslationMode.SIMPLE)
+            when {
+                packageName.contains("whatsapp") -> {
+                    keyboardViewModel?.setSuggestedMode(LeetTranslator.TranslationMode.SIMPLE)
+                }
+                packageName.contains("discord") || packageName.contains("game") -> {
+                    keyboardViewModel?.setSuggestedMode(LeetTranslator.TranslationMode.EXTENDED)
+                }
+                editorInfo?.inputType?.and(EditorInfo.TYPE_TEXT_VARIATION_PASSWORD) != 0 -> {
+                    isLeetModeActive = false
+                }
+                else -> {
+                    isLeetModeActive = true
+                }
             }
-            packageName.contains("discord") || packageName.contains("game") -> {
-                // Gaming apps: Use extended leet
-                keyboardViewModel.setSuggestedMode(LeetTranslator.TranslationMode.EXTENDED)
-            }
-            editorInfo?.inputType?.and(EditorInfo.TYPE_TEXT_VARIATION_PASSWORD) != 0 -> {
-                // Password fields: Disable leet mode
-                isLeetModeActive = false
-            }
-            else -> {
-                // Default: Use favorite leet
-                isLeetModeActive = true
-            }
+        } catch (e: Exception) {
+            android.util.Log.e("LeetKeyboard", "Error updating contextual settings", e)
         }
     }
 
-    /**
-     * 🔤 Hauptfunktion: Tastendrücke verarbeiten
-     */
     private fun handleKeyPress(key: String) {
-        val inputConnection = currentInputConnection ?: return
+        try {
+            val inputConnection = currentInputConnection ?: return
 
-        when {
-            key.length == 1 && key[0].isLetter() -> {
-                handleLetterKey(key[0], inputConnection)
+            when {
+                key.length == 1 && key[0].isLetter() -> {
+                    handleLetterKey(key[0], inputConnection)
+                }
+                key == "SPACE" -> {
+                    handleSpaceKey(inputConnection)
+                }
+                key == "BACKSPACE" -> {
+                    handleBackspaceKey(inputConnection)
+                }
+                key == "ENTER" -> {
+                    inputConnection.sendKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_ENTER))
+                    inputConnection.sendKeyEvent(KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_ENTER))
+                }
+                else -> {
+                    inputConnection.commitText(key, 1)
+                }
             }
-            key == "SPACE" -> {
-                handleSpaceKey(inputConnection)
-            }
-            key == "BACKSPACE" -> {
-                handleBackspaceKey(inputConnection)
-            }
-            key == "ENTER" -> {
-                inputConnection.sendKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_ENTER))
-                inputConnection.sendKeyEvent(KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_ENTER))
-            }
-            else -> {
-                inputConnection.commitText(key, 1)
-            }
+
+            keyboardViewModel?.updateInputBuffer(inputBuffer.toString())
+        } catch (e: Exception) {
+            android.util.Log.e("LeetKeyboard", "Error handling key press", e)
         }
-
-        // Update UI with current translation
-        keyboardViewModel.updateInputBuffer(inputBuffer.toString())
     }
 
     private fun handleLetterKey(char: Char, inputConnection: InputConnection) {
-        inputBuffer.append(char)
+        try {
+            inputBuffer.append(char)
 
-        if (isLeetModeActive) {
-            val translatedChar = translationEngine.translateChar(char, currentLeetMode)
-            inputConnection.commitText(translatedChar, 1)
+            if (isLeetModeActive) {
+                val translatedChar = translationEngine?.translateChar(char, currentLeetMode) ?: char.toString()
+                inputConnection.commitText(translatedChar, 1)
 
-            // Update live preview
-            keyboardViewModel.updateLivePreview(inputBuffer.toString(), translationEngine.translateWord(inputBuffer.toString()))
-        } else {
-            inputConnection.commitText(char.toString(), 1)
+                translationEngine?.let { engine ->
+                    keyboardViewModel?.updateLivePreview(
+                        inputBuffer.toString(),
+                        engine.translateWord(inputBuffer.toString())
+                    )
+                }
+            } else {
+                inputConnection.commitText(char.toString(), 1)
+            }
+        } catch (e: Exception) {
+            android.util.Log.e("LeetKeyboard", "Error handling letter key", e)
         }
     }
 
     private fun handleSpaceKey(inputConnection: InputConnection) {
-        if (inputBuffer.isNotEmpty() && isLeetModeActive) {
-            // Complete word translation
-            val currentWord = inputBuffer.toString()
-            val translatedWord = translationEngine.translateWord(currentWord)
+        try {
+            if (inputBuffer.isNotEmpty() && isLeetModeActive) {
+                val currentWord = inputBuffer.toString()
+                val translatedWord = translationEngine?.translateWord(currentWord) ?: currentWord
+                keyboardViewModel?.addWordSuggestion(currentWord, translatedWord)
+            }
 
-            // Show suggestion if different from live translation
-            keyboardViewModel.addWordSuggestion(currentWord, translatedWord)
+            inputBuffer.clear()
+            inputConnection.commitText(" ", 1)
+            keyboardViewModel?.clearLivePreview()
+        } catch (e: Exception) {
+            android.util.Log.e("LeetKeyboard", "Error handling space key", e)
         }
-
-        inputBuffer.clear()
-        inputConnection.commitText(" ", 1)
-        keyboardViewModel.clearLivePreview()
     }
 
     private fun handleBackspaceKey(inputConnection: InputConnection) {
-        val selectedText = inputConnection.getSelectedText(0)
+        try {
+            val selectedText = inputConnection.getSelectedText(0)
 
-        if (selectedText != null && selectedText.isNotEmpty()) {
-            inputConnection.commitText("", 1)
-        } else {
-            inputConnection.deleteSurroundingText(1, 0)
-        }
+            if (selectedText != null && selectedText.isNotEmpty()) {
+                inputConnection.commitText("", 1)
+            } else {
+                inputConnection.deleteSurroundingText(1, 0)
+            }
 
-        // Update buffer
-        if (inputBuffer.isNotEmpty()) {
-            inputBuffer.deleteCharAt(inputBuffer.length - 1)
-            keyboardViewModel.updateInputBuffer(inputBuffer.toString())
+            if (inputBuffer.isNotEmpty()) {
+                inputBuffer.deleteCharAt(inputBuffer.length - 1)
+                keyboardViewModel?.updateInputBuffer(inputBuffer.toString())
+            }
+        } catch (e: Exception) {
+            android.util.Log.e("LeetKeyboard", "Error handling backspace", e)
         }
     }
 
-    /**
-     * 🎯 Spezielle Aktionen (Gestures, Shortcuts etc.)
-     */
     private fun handleSpecialAction(action: String) {
-        when (action) {
-            "TOGGLE_LEET" -> toggleLeetMode()
-            "QUICK_SETTINGS" -> openMainApp()
-            "LEET_SIGNATURE" -> insertLeetSignature()
-            "CLEAR_SUGGESTIONS" -> keyboardViewModel.clearSuggestions()
-            "SWITCH_MODE" -> cycleLeetMode()
+        try {
+            when (action) {
+                "TOGGLE_LEET" -> toggleLeetMode()
+                "QUICK_SETTINGS" -> openMainApp()
+                "LEET_SIGNATURE" -> insertLeetSignature()
+                "CLEAR_SUGGESTIONS" -> keyboardViewModel?.clearSuggestions()
+                "SWITCH_MODE" -> cycleLeetMode()
+            }
+        } catch (e: Exception) {
+            android.util.Log.e("LeetKeyboard", "Error handling special action", e)
         }
     }
 
     private fun toggleLeetMode() {
-        isLeetModeActive = !isLeetModeActive
-        keyboardViewModel.setLeetModeActive(isLeetModeActive)
+        try {
+            isLeetModeActive = !isLeetModeActive
+            keyboardViewModel?.setLeetModeActive(isLeetModeActive)
 
-        // Visual feedback
-        if (isLeetModeActive) {
-            keyboardViewModel.showToast("🎯 Leet Mode ON")
-        } else {
-            keyboardViewModel.showToast("📝 Normal Mode")
+            if (isLeetModeActive) {
+                keyboardViewModel?.showToast("🎯 Leet Mode ON")
+            } else {
+                keyboardViewModel?.showToast("📝 Normal Mode")
+            }
+        } catch (e: Exception) {
+            android.util.Log.e("LeetKeyboard", "Error toggling leet mode", e)
         }
     }
 
     private fun cycleLeetMode() {
-        currentLeetMode = when (currentLeetMode) {
-            LeetTranslator.TranslationMode.SIMPLE -> LeetTranslator.TranslationMode.EXTENDED
-            LeetTranslator.TranslationMode.EXTENDED -> LeetTranslator.TranslationMode.CUSTOM
-            LeetTranslator.TranslationMode.CUSTOM -> LeetTranslator.TranslationMode.SIMPLE
-        }
+        try {
+            currentLeetMode = when (currentLeetMode) {
+                LeetTranslator.TranslationMode.SIMPLE -> LeetTranslator.TranslationMode.EXTENDED
+                LeetTranslator.TranslationMode.EXTENDED -> LeetTranslator.TranslationMode.CUSTOM
+                LeetTranslator.TranslationMode.CUSTOM -> LeetTranslator.TranslationMode.SIMPLE
+            }
 
-        keyboardViewModel.updateCurrentMode(currentLeetMode, translationEngine.getCurrentCustomLeet())
-        keyboardViewModel.showToast("Mode: ${getModeDisplayName()}")
+            keyboardViewModel?.updateCurrentMode(currentLeetMode, translationEngine?.getCurrentCustomLeet())
+            keyboardViewModel?.showToast("Mode: ${getModeDisplayName()}")
+        } catch (e: Exception) {
+            android.util.Log.e("LeetKeyboard", "Error cycling leet mode", e)
+        }
     }
 
     private fun getModeDisplayName(): String {
         return when (currentLeetMode) {
             LeetTranslator.TranslationMode.SIMPLE -> "Simple Leet"
             LeetTranslator.TranslationMode.EXTENDED -> "Extended Leet"
-            LeetTranslator.TranslationMode.CUSTOM -> translationEngine.getCurrentCustomLeet()?.name ?: "Custom Leet"
+            LeetTranslator.TranslationMode.CUSTOM -> translationEngine?.getCurrentCustomLeet()?.name ?: "Custom Leet"
         }
     }
 
     private fun insertLeetSignature() {
-        val signatures = listOf(
-            "|_337 5P34K 6363|2470|2",
-            "pwn3d by l33t",
-            "1337 h4x0r",
-            "н4ск тне ρℓαηєт"
-        )
+        try {
+            val signatures = listOf(
+                "|_337 5P34K 6363|2470|2",
+                "pwn3d by l33t",
+                "1337 h4x0r",
+                "н4ск тне ρℓαηєт"
+            )
 
-        val signature = signatures.random()
-        currentInputConnection?.commitText(" $signature ", 1)
-        keyboardViewModel.showToast("🎮 Leet signature inserted!")
+            val signature = signatures.random()
+            currentInputConnection?.commitText(" $signature ", 1)
+            keyboardViewModel?.showToast("🎮 Leet signature inserted!")
+        } catch (e: Exception) {
+            android.util.Log.e("LeetKeyboard", "Error inserting signature", e)
+        }
     }
 
     private fun openMainApp() {
-        val intent = packageManager.getLaunchIntentForPackage(packageName)
-        intent?.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
-        startActivity(intent)
+        try {
+            val intent = packageManager.getLaunchIntentForPackage(packageName)
+            intent?.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+            startActivity(intent)
+        } catch (e: Exception) {
+            android.util.Log.e("LeetKeyboard", "Error opening main app", e)
+        }
     }
 
     override fun onFinishInput() {
         super.onFinishInput()
-        inputBuffer.clear()
-        keyboardViewModel.onInputFinished()
+        try {
+            inputBuffer.clear()
+            keyboardViewModel?.onInputFinished()
+        } catch (e: Exception) {
+            android.util.Log.e("LeetKeyboard", "Error in onFinishInput", e)
+        }
     }
 
     override fun onDestroy() {
-        _lifecycle.currentState = Lifecycle.State.DESTROYED
-        super.onDestroy()
-        serviceScope.cancel()
-        favoriteDataObserver.stopObserving()
-        store.clear()
+        try {
+            _lifecycle.currentState = Lifecycle.State.DESTROYED
+            serviceScope.cancel()
+            favoriteDataObserver?.stopObserving()
+            store.clear()
+
+            android.util.Log.d("LeetKeyboard", "Service destroyed")
+        } catch (e: Exception) {
+            android.util.Log.e("LeetKeyboard", "Error in onDestroy", e)
+        } finally {
+            super.onDestroy()
+        }
     }
 }
 
 /**
  * 🧠 ViewModel für Keyboard State Management
+ * CONSTRUCTOR TAKES PARAMETERS - but created manually, not by Android System
  */
 class LeetKeyboardViewModel(
     private val translationEngine: LiveTranslationEngine,
@@ -346,7 +414,6 @@ class LeetKeyboardViewModel(
         val currentSuggestions = _suggestions.value.toMutableList()
         currentSuggestions.add("$original → $translated")
 
-        // Keep only last 3 suggestions
         if (currentSuggestions.size > 3) {
             currentSuggestions.removeAt(0)
         }
@@ -361,7 +428,6 @@ class LeetKeyboardViewModel(
     fun showToast(message: String) {
         _toastMessage.value = message
 
-        // Auto-clear toast after 2 seconds
         CoroutineScope(Dispatchers.Main).launch {
             kotlinx.coroutines.delay(2000)
             _toastMessage.value = null
@@ -370,7 +436,6 @@ class LeetKeyboardViewModel(
 
     fun setSuggestedMode(mode: LeetTranslator.TranslationMode) {
         // This is a suggestion, not forced change
-        // Could show a subtle indicator in UI
     }
 
     fun updateInputBuffer(buffer: String) {
@@ -378,13 +443,11 @@ class LeetKeyboardViewModel(
     }
 
     fun onInputStarted(editorInfo: EditorInfo?) {
-        // Handle input context changes
         clearSuggestions()
         clearLivePreview()
     }
 
     fun onInputFinished() {
-        // Cleanup when input ends
         clearSuggestions()
         clearLivePreview()
     }

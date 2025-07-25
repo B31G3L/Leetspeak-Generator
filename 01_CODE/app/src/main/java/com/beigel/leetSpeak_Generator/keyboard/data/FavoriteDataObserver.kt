@@ -14,22 +14,19 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
 import com.beigel.leetSpeak_Generator.data.CustomLeet
 import com.beigel.leetSpeak_Generator.repository.LeetRepository
+import com.beigel.leetSpeak_Generator.manager.LeetManager
 import com.google.gson.Gson
-import dagger.hilt.android.EntryPointAccessors
-import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.first
-import javax.inject.Inject
-import javax.inject.Singleton
 
 /**
- * 📊 LEET DATA PROVIDER
+ * 📊 LEET DATA PROVIDER (FIXED VERSION)
  *
- * ContentProvider für systemweiten Datenaustausch zwischen Haupt-App und Tastatur
- * Ermöglicht der Tastatur Zugriff auf:
- * - Aktuelles Favoriten-Leet
- * - Alle Custom Leets
- * - Live Updates bei Änderungen
+ * CRITICAL FIXES:
+ * - Removed Hilt dependency
+ * - Manual LeetRepository creation
+ * - Better error handling
+ * - Simplified initialization
  */
 class LeetDataProvider : ContentProvider() {
 
@@ -54,30 +51,30 @@ class LeetDataProvider : ContentProvider() {
             addURI(AUTHORITY, PATH_LEET_SETTINGS, CODE_LEET_SETTINGS)
         }
 
-        // Column names - FIXED: Only ImageVector column
+        // Column names
         const val COLUMN_ID = "id"
         const val COLUMN_NAME = "name"
-        const val COLUMN_ICON_NAME = "icon_name" // FIXED: Store icon name as string
+        const val COLUMN_ICON_NAME = "icon_name"
         const val COLUMN_TRANSLATIONS = "translations"
         const val COLUMN_IS_FAVORITE = "is_favorite"
         const val COLUMN_MODE = "mode"
         const val COLUMN_CUSTOM_INDEX = "custom_index"
     }
 
-    private lateinit var leetRepository: LeetRepository
+    // FIXED: Manual creation instead of Hilt injection
+    private var leetRepository: LeetRepository? = null
     private val gson = Gson()
     private val providerScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
     override fun onCreate(): Boolean {
         return try {
-            // Get Hilt EntryPoint for dependency injection
-            val entryPoint = EntryPointAccessors.fromApplication(
-                context!!.applicationContext,
-                LeetDataProviderEntryPoint::class.java
-            )
-            leetRepository = entryPoint.leetRepository()
-            true
+            // FIXED: Manual repository creation
+            context?.let { ctx ->
+                leetRepository = LeetRepository(ctx)
+                true
+            } ?: false
         } catch (e: Exception) {
+            android.util.Log.e("LeetDataProvider", "Error in onCreate", e)
             false
         }
     }
@@ -89,23 +86,30 @@ class LeetDataProvider : ContentProvider() {
         selectionArgs: Array<String>?,
         sortOrder: String?
     ): Cursor? {
-        return when (uriMatcher.match(uri)) {
-            CODE_FAVORITE_LEET -> getFavoriteLeetCursor()
-            CODE_ALL_LEETS -> getAllLeetsCursor()
-            CODE_LEET_SETTINGS -> getLeetSettingsCursor()
-            else -> null
+        return try {
+            when (uriMatcher.match(uri)) {
+                CODE_FAVORITE_LEET -> getFavoriteLeetCursor()
+                CODE_ALL_LEETS -> getAllLeetsCursor()
+                CODE_LEET_SETTINGS -> getLeetSettingsCursor()
+                else -> null
+            }
+        } catch (e: Exception) {
+            android.util.Log.e("LeetDataProvider", "Error in query", e)
+            null
         }
     }
 
     private fun getFavoriteLeetCursor(): Cursor {
         val cursor = MatrixCursor(arrayOf(
             COLUMN_ID, COLUMN_NAME, COLUMN_TRANSLATIONS,
-            COLUMN_ICON_NAME, COLUMN_MODE, COLUMN_CUSTOM_INDEX // FIXED: Use COLUMN_ICON_NAME
+            COLUMN_ICON_NAME, COLUMN_MODE, COLUMN_CUSTOM_INDEX
         ))
 
         try {
+            val repository = leetRepository ?: return cursor
+
             runBlocking {
-                val favoriteResult = leetRepository.loadFavoriteLeet().getOrNull()
+                val favoriteResult = repository.loadFavoriteLeet().getOrNull()
 
                 when (favoriteResult) {
                     is LeetRepository.FavoriteLeetResult.Simple -> {
@@ -113,7 +117,7 @@ class LeetDataProvider : ContentProvider() {
                             "simple",
                             "Simple Leet",
                             gson.toJson(getSimpleTranslations()),
-                            "Settings", // FIXED: Store icon name as string
+                            "Settings",
                             "SIMPLE",
                             -1
                         ))
@@ -123,7 +127,7 @@ class LeetDataProvider : ContentProvider() {
                             "extended",
                             "Extended Leet",
                             gson.toJson(getExtendedTranslations()),
-                            "Extension", // FIXED: Store icon name as string
+                            "Extension",
                             "EXTENDED",
                             -1
                         ))
@@ -133,7 +137,7 @@ class LeetDataProvider : ContentProvider() {
                             "custom_${favoriteResult.customIndex}",
                             favoriteResult.leet.name,
                             gson.toJson(favoriteResult.leet.translations),
-                            "Settings", // FIXED: Store icon name as string
+                            "Settings",
                             "CUSTOM",
                             favoriteResult.customIndex
                         ))
@@ -144,7 +148,7 @@ class LeetDataProvider : ContentProvider() {
                             "simple",
                             "Simple Leet",
                             gson.toJson(getSimpleTranslations()),
-                            "Settings", // FIXED: Store icon name as string
+                            "Settings",
                             "SIMPLE",
                             -1
                         ))
@@ -152,7 +156,7 @@ class LeetDataProvider : ContentProvider() {
                 }
             }
         } catch (e: Exception) {
-            // Return empty cursor on error
+            android.util.Log.e("LeetDataProvider", "Error getting favorite leet cursor", e)
         }
 
         return cursor
@@ -161,13 +165,15 @@ class LeetDataProvider : ContentProvider() {
     private fun getAllLeetsCursor(): Cursor {
         val cursor = MatrixCursor(arrayOf(
             COLUMN_ID, COLUMN_NAME, COLUMN_TRANSLATIONS,
-            COLUMN_ICON_NAME, COLUMN_IS_FAVORITE // FIXED: Use COLUMN_ICON_NAME
+            COLUMN_ICON_NAME, COLUMN_IS_FAVORITE
         ))
 
         try {
+            val repository = leetRepository ?: return cursor
+
             runBlocking {
-                val allLeets = leetRepository.leets.first()
-                val favoriteOptions = leetRepository.getFavoriteLeetOptions().first()
+                val allLeets = repository.leets.first()
+                val favoriteOptions = repository.getFavoriteLeetOptions().first()
                 val favoriteNames = favoriteOptions.map { it.name }.toSet()
 
                 // Add built-in leets
@@ -175,7 +181,7 @@ class LeetDataProvider : ContentProvider() {
                     "simple",
                     "Simple Leet",
                     gson.toJson(getSimpleTranslations()),
-                    "TextFields", // FIXED: Store icon name as string
+                    "TextFields",
                     favoriteNames.contains("Simple Leet")
                 ))
 
@@ -183,7 +189,7 @@ class LeetDataProvider : ContentProvider() {
                     "extended",
                     "Extended Leet",
                     gson.toJson(getExtendedTranslations()),
-                    "Extension", // FIXED: Store icon name as string
+                    "Extension",
                     favoriteNames.contains("Extended Leet")
                 ))
 
@@ -193,13 +199,13 @@ class LeetDataProvider : ContentProvider() {
                         "custom_$index",
                         leet.name,
                         gson.toJson(leet.translations),
-                        "Settings", // FIXED: Store icon name as string
+                        "Settings",
                         favoriteNames.contains(leet.name)
                     ))
                 }
             }
         } catch (e: Exception) {
-            // Return empty cursor on error
+            android.util.Log.e("LeetDataProvider", "Error getting all leets cursor", e)
         }
 
         return cursor
@@ -211,13 +217,12 @@ class LeetDataProvider : ContentProvider() {
         ))
 
         try {
-            // Add keyboard-specific settings
             cursor.addRow(arrayOf("keyboard_enabled", "true"))
             cursor.addRow(arrayOf("live_preview_enabled", "true"))
             cursor.addRow(arrayOf("gesture_support_enabled", "true"))
             cursor.addRow(arrayOf("auto_suggest_enabled", "true"))
         } catch (e: Exception) {
-            // Return empty cursor on error
+            android.util.Log.e("LeetDataProvider", "Error getting leet settings cursor", e)
         }
 
         return cursor
@@ -248,58 +253,73 @@ class LeetDataProvider : ContentProvider() {
 }
 
 /**
- * 🔍 FAVORITE DATA OBSERVER
+ * 🔍 FAVORITE DATA OBSERVER (FIXED VERSION)
  *
- * Überwacht Änderungen am Favoriten-Leet und benachrichtigt die Tastatur
- * Ermöglicht Live-Updates ohne App-Neustart
+ * CRITICAL FIXES:
+ * - Removed @Inject annotation
+ * - Simplified constructor
+ * - Better error handling
  */
-@Singleton
-class FavoriteDataObserver @Inject constructor(
-    @ApplicationContext private val context: Context
-) {
+class FavoriteDataObserver(private val context: Context) {
 
     private var contentObserver: ContentObserver? = null
     private var callback: ((CustomLeet?) -> Unit)? = null
     private val observerScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
 
     fun startObserving(onFavoriteLeetChanged: (CustomLeet?) -> Unit) {
-        this.callback = onFavoriteLeetChanged
+        try {
+            this.callback = onFavoriteLeetChanged
 
-        contentObserver = object : ContentObserver(Handler(Looper.getMainLooper())) {
-            override fun onChange(selfChange: Boolean) {
-                super.onChange(selfChange)
-                observerScope.launch {
-                    val newFavoriteLeet = queryCurrentFavoriteLeet()
-                    callback?.invoke(newFavoriteLeet)
+            contentObserver = object : ContentObserver(Handler(Looper.getMainLooper())) {
+                override fun onChange(selfChange: Boolean) {
+                    super.onChange(selfChange)
+                    observerScope.launch {
+                        try {
+                            val newFavoriteLeet = queryCurrentFavoriteLeet()
+                            callback?.invoke(newFavoriteLeet)
+                        } catch (e: Exception) {
+                            android.util.Log.e("FavoriteDataObserver", "Error in onChange", e)
+                        }
+                    }
                 }
             }
-        }
 
-        // Register observer
-        context.contentResolver.registerContentObserver(
-            LeetDataProvider.FAVORITE_LEET_URI,
-            true,
-            contentObserver!!
-        )
+            // Register observer
+            context.contentResolver.registerContentObserver(
+                LeetDataProvider.FAVORITE_LEET_URI,
+                true,
+                contentObserver!!
+            )
 
-        // Initial load
-        observerScope.launch {
-            val initialLeet = queryCurrentFavoriteLeet()
-            callback?.invoke(initialLeet)
+            // Initial load
+            observerScope.launch {
+                try {
+                    val initialLeet = queryCurrentFavoriteLeet()
+                    callback?.invoke(initialLeet)
+                } catch (e: Exception) {
+                    android.util.Log.e("FavoriteDataObserver", "Error in initial load", e)
+                }
+            }
+        } catch (e: Exception) {
+            android.util.Log.e("FavoriteDataObserver", "Error starting observer", e)
         }
     }
 
     fun stopObserving() {
-        contentObserver?.let { observer ->
-            context.contentResolver.unregisterContentObserver(observer)
-            contentObserver = null
+        try {
+            contentObserver?.let { observer ->
+                context.contentResolver.unregisterContentObserver(observer)
+                contentObserver = null
+            }
+            callback = null
+            observerScope.cancel()
+        } catch (e: Exception) {
+            android.util.Log.e("FavoriteDataObserver", "Error stopping observer", e)
         }
-        callback = null
-        observerScope.cancel()
     }
 
     private suspend fun queryCurrentFavoriteLeet(): CustomLeet? = withContext(Dispatchers.IO) {
-        try {
+        return@withContext try {
             val cursor = context.contentResolver.query(
                 LeetDataProvider.FAVORITE_LEET_URI,
                 null, null, null, null
@@ -309,37 +329,40 @@ class FavoriteDataObserver @Inject constructor(
                 if (it.moveToFirst()) {
                     val mode = it.getString(it.getColumnIndexOrThrow(LeetDataProvider.COLUMN_MODE))
 
-                    return@withContext when (mode) {
+                    when (mode) {
                         "CUSTOM" -> {
                             val name = it.getString(it.getColumnIndexOrThrow(LeetDataProvider.COLUMN_NAME))
                             val translationsJson = it.getString(it.getColumnIndexOrThrow(LeetDataProvider.COLUMN_TRANSLATIONS))
-                            val iconName = it.getString(it.getColumnIndexOrThrow(LeetDataProvider.COLUMN_ICON_NAME)) // FIXED: Use COLUMN_ICON_NAME
 
                             val translations = Gson().fromJson<Map<String, String>>(
                                 translationsJson,
                                 object : com.google.gson.reflect.TypeToken<Map<String, String>>() {}.type
                             )
 
-                            // FIXED: Create CustomLeet with ImageVector - use default icon for now
                             CustomLeet(name, Icons.Default.Settings).apply {
                                 setTranslations(translations)
                             }
                         }
                         else -> null // Simple/Extended modes don't need CustomLeet object
                     }
-                }
+                } else null
             }
         } catch (e: Exception) {
+            android.util.Log.e("FavoriteDataObserver", "Error querying favorite leet", e)
             null
         }
-        return@withContext null
     }
 
     /**
      * 🔄 Synchrone Abfrage des aktuellen Favoriten (für Init)
      */
     fun getCurrentFavoriteLeet(): CustomLeet? {
-        return runBlocking { queryCurrentFavoriteLeet() }
+        return try {
+            runBlocking { queryCurrentFavoriteLeet() }
+        } catch (e: Exception) {
+            android.util.Log.e("FavoriteDataObserver", "Error getting current favorite leet", e)
+            null
+        }
     }
 
     /**
@@ -359,7 +382,7 @@ class FavoriteDataObserver @Inject constructor(
                     val id = it.getString(it.getColumnIndexOrThrow(LeetDataProvider.COLUMN_ID))
                     val name = it.getString(it.getColumnIndexOrThrow(LeetDataProvider.COLUMN_NAME))
                     val translationsJson = it.getString(it.getColumnIndexOrThrow(LeetDataProvider.COLUMN_TRANSLATIONS))
-                    val iconName = it.getString(it.getColumnIndexOrThrow(LeetDataProvider.COLUMN_ICON_NAME)) // FIXED: Use COLUMN_ICON_NAME
+                    val iconName = it.getString(it.getColumnIndexOrThrow(LeetDataProvider.COLUMN_ICON_NAME))
                     val isFavorite = it.getInt(it.getColumnIndexOrThrow(LeetDataProvider.COLUMN_IS_FAVORITE)) == 1
 
                     val translations = Gson().fromJson<Map<String, String>>(
@@ -371,13 +394,13 @@ class FavoriteDataObserver @Inject constructor(
                         id = id,
                         name = name,
                         translations = translations,
-                        iconName = iconName, // FIXED: Use iconName instead of iconResId
+                        iconName = iconName,
                         isFavorite = isFavorite
                     ))
                 }
             }
         } catch (e: Exception) {
-            // Return empty list on error
+            android.util.Log.e("FavoriteDataObserver", "Error getting all available leets", e)
         }
 
         return@withContext leetList
@@ -385,23 +408,13 @@ class FavoriteDataObserver @Inject constructor(
 }
 
 /**
- * 🎯 Hilt Entry Point für ContentProvider
- * Da ContentProvider nicht direkt Hilt-injiziert werden kann
- */
-@dagger.hilt.EntryPoint
-@dagger.hilt.InstallIn(dagger.hilt.components.SingletonComponent::class)
-interface LeetDataProviderEntryPoint {
-    fun leetRepository(): LeetRepository
-}
-
-/**
- * 📋 Data Classes - FIXED: Use iconName instead of iconResId
+ * 📋 Data Classes
  */
 data class LeetInfo(
     val id: String,
     val name: String,
     val translations: Map<String, String>,
-    val iconName: String, // FIXED: Changed from iconResId: Int to iconName: String
+    val iconName: String,
     val isFavorite: Boolean
 )
 
@@ -426,7 +439,7 @@ class KeyboardDataHelper(private val context: Context) {
             val cursor = context.contentResolver.query(
                 LeetDataProvider.FAVORITE_LEET_URI,
                 arrayOf(LeetDataProvider.COLUMN_MODE, LeetDataProvider.COLUMN_NAME,
-                    LeetDataProvider.COLUMN_TRANSLATIONS, LeetDataProvider.COLUMN_ICON_NAME), // FIXED: Use COLUMN_ICON_NAME
+                    LeetDataProvider.COLUMN_TRANSLATIONS, LeetDataProvider.COLUMN_ICON_NAME),
                 null, null, null
             )
 
@@ -436,14 +449,12 @@ class KeyboardDataHelper(private val context: Context) {
                     if (mode == "CUSTOM") {
                         val name = it.getString(1)
                         val translationsJson = it.getString(2)
-                        val iconName = it.getString(3) // FIXED: Use iconName instead of iconResId
 
                         val translations = Gson().fromJson<Map<String, String>>(
                             translationsJson,
                             object : com.google.gson.reflect.TypeToken<Map<String, String>>() {}.type
                         )
 
-                        // FIXED: Create CustomLeet with ImageVector instead of Int
                         return@use CustomLeet(name, Icons.Default.Settings).apply {
                             setTranslations(translations)
                         }
@@ -452,6 +463,7 @@ class KeyboardDataHelper(private val context: Context) {
             }
             null
         } catch (e: Exception) {
+            android.util.Log.e("KeyboardDataHelper", "Error getting favorite leet", e)
             null
         }
     }
