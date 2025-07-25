@@ -13,7 +13,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * FIXED: Updated to use ImageVector instead of Int for icons
+ * FIXED: Entfernte fehlerhafte Selection Logic - wird jetzt im MainViewModel korrekt gehandhabt
  */
 @Singleton
 class LeetRepository @Inject constructor(
@@ -34,7 +34,7 @@ class LeetRepository @Inject constructor(
      */
     suspend fun createLeet(request: LeetCreationRequest): Result<LeetCreationResult> {
         return try {
-            val leet = CustomLeet(request.name, request.iconImageVector) // FIXED: Use iconImageVector
+            val leet = CustomLeet(request.name, request.iconImageVector)
             leet.setTranslations(request.translations)
 
             when (val indexResult = leetManager.addLeet(leet)) {
@@ -184,13 +184,12 @@ class LeetRepository @Inject constructor(
 
     /**
      * Creates a leet with simple defaults
-     * FIXED: Updated parameter to use ImageVector
      */
     suspend fun createLeetWithSimpleDefaults(name: String, icon: ImageVector = Icons.Default.Settings): Result<CustomLeet> {
         return try {
             val leet = CustomLeet.createWithSimpleDefaults(name, icon)
-            when (val result = leetManager.addLeet(leet)) { // FIXED: Use addLeet directly
-                is ErrorHandler.Result.Success -> Result.success(leet) // FIXED: Return the leet, not result.data
+            when (val result = leetManager.addLeet(leet)) {
+                is ErrorHandler.Result.Success -> Result.success(leet)
                 is ErrorHandler.Result.Error -> Result.failure(result.exception)
             }
         } catch (e: Exception) {
@@ -200,13 +199,12 @@ class LeetRepository @Inject constructor(
 
     /**
      * Creates a leet with extended defaults
-     * FIXED: Updated parameter to use ImageVector
      */
     suspend fun createLeetWithExtendedDefaults(name: String, icon: ImageVector = Icons.Default.Settings): Result<CustomLeet> {
         return try {
             val leet = CustomLeet.createWithExtendedDefaults(name, icon)
-            when (val result = leetManager.addLeet(leet)) { // FIXED: Use addLeet directly
-                is ErrorHandler.Result.Success -> Result.success(leet) // FIXED: Return the leet, not result.data
+            when (val result = leetManager.addLeet(leet)) {
+                is ErrorHandler.Result.Success -> Result.success(leet)
                 is ErrorHandler.Result.Error -> Result.failure(result.exception)
             }
         } catch (e: Exception) {
@@ -215,32 +213,32 @@ class LeetRepository @Inject constructor(
     }
 
     /**
-     * Gets all leet options for UI display
+     * FIXED: Gets leet options WITHOUT selection logic - handled in MainViewModel
+     * Entfernte die fehlerhafte isSelected Logic, die das Problem verursacht hat
      */
     fun getLeetOptions(): Flow<List<LeetOption>> = combine(
         leets,
-        currentLeetIndex,
         favoriteIndex
-    ) { leets, currentIndex, favoriteIndex ->
+    ) { leets, favoriteIndex ->
         buildList {
-            // Add Simple Leet
+            // Add Simple Leet - OHNE isSelected Logic
             add(LeetOption.createSimple(
-                isSelected = currentIndex == -1, // No custom leet selected
+                isSelected = false, // FIXED: Wird im MainViewModel korrekt gesetzt
                 isFavorite = favoriteIndex == LeetManager.FAV_SIMPLE
             ))
 
-            // Add Extended Leet
+            // Add Extended Leet - OHNE isSelected Logic
             add(LeetOption.createExtended(
-                isSelected = currentIndex == -2, // Extended mode indicator
+                isSelected = false, // FIXED: Wird im MainViewModel korrekt gesetzt
                 isFavorite = favoriteIndex == LeetManager.FAV_EXTENDED
             ))
 
-            // Add Custom Leets
+            // Add Custom Leets - OHNE isSelected Logic
             leets.forEachIndexed { index, leet ->
                 add(LeetOption.createCustom(
                     leet = leet,
                     customIndex = index,
-                    isSelected = currentIndex == index,
+                    isSelected = false, // FIXED: Wird im MainViewModel korrekt gesetzt
                     isFavorite = favoriteIndex == index
                 ))
             }
@@ -248,7 +246,7 @@ class LeetRepository @Inject constructor(
     }
 
     /**
-     * Gets only favorite leet options
+     * FIXED: Gets only favorite leet options WITHOUT selection logic
      */
     fun getFavoriteLeetOptions(): Flow<List<LeetOption>> =
         getLeetOptions().map { options ->
@@ -293,11 +291,10 @@ class LeetRepository @Inject constructor(
 
     /**
      * Data class for leet creation request
-     * FIXED: Updated to use ImageVector
      */
     data class LeetCreationRequest(
         val name: String,
-        val iconImageVector: ImageVector, // FIXED: Changed from iconResId
+        val iconImageVector: ImageVector,
         val translations: Map<String, String>
     )
 

@@ -1,4 +1,4 @@
-// LeetSelectorBottomSheet.kt
+// LeetSelectorBottomSheet.kt - FIXED
 package com.beigel.leetSpeak_Generator.ui.components
 
 import androidx.compose.foundation.layout.*
@@ -14,12 +14,8 @@ import com.beigel.leetSpeak_Generator.ui.components.leet.selector.*
 import com.beigel.leetSpeak_Generator.viewmodel.MainViewModel
 
 /**
- * PERFORMANCE-OPTIMIERTES Bottom Sheet für Leet-Auswahl
- * FIXES:
- * - Lazy Loading der StateFlows
- * - Vereinfachte Animationen
- * - Optimierte Recomposition
- * - Reduced State Collections
+ * FIXED: Bottom Sheet für Leet-Auswahl mit korrekter Selection Logic
+ * Verwendet jetzt die korrigierten StateFlows aus dem MainViewModel
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -28,18 +24,12 @@ fun LeetSelectorBottomSheet(
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    // PERFORMANCE FIX: Lazy state loading mit Remember aber korrekte initialValues
-    val leetOptions by remember { viewModel.leetOptions }
-        .collectAsStateWithLifecycle(initialValue = emptyList())
+    // FIXED: Verwende die korrigierten StateFlows aus dem MainViewModel
+    val leetOptions by viewModel.leetOptions.collectAsStateWithLifecycle()
+    val favoriteLeetOptions by viewModel.favoriteLeetOptions.collectAsStateWithLifecycle()
+    val defaultViewExpanded by viewModel.defaultViewExpanded.collectAsStateWithLifecycle()
 
-    val favoriteLeetOptions by remember { viewModel.favoriteLeetOptions }
-        .collectAsStateWithLifecycle(initialValue = emptyList())
-
-    // BUGFIX: Verwende den aktuellen Wert als initialValue, nicht hart-codiert false
-    val defaultViewExpanded by remember { viewModel.defaultViewExpanded }
-        .collectAsStateWithLifecycle()
-
-    // PERFORMANCE FIX: Local state for dialogs to avoid ViewModel calls
+    // Local state for dialogs
     var showLeetCreationDialog by remember { mutableStateOf(false) }
     var showLeetEditDialog by remember { mutableStateOf(false) }
     var showTranslationTableDialog by remember { mutableStateOf(false) }
@@ -61,7 +51,7 @@ fun LeetSelectorBottomSheet(
         },
         windowInsets = WindowInsets(0)
     ) {
-        // PERFORMANCE FIX: Simplified content loading
+        // Content
         LazyBottomSheetContent(
             leetOptions = leetOptions,
             favoriteLeetOptions = favoriteLeetOptions,
@@ -85,16 +75,15 @@ fun LeetSelectorBottomSheet(
         )
     }
 
-    // PERFORMANCE FIX: Lazy dialog loading - only when needed
+    // Clear states when dialogs close
     LaunchedEffect(showLeetCreationDialog) {
         if (!showLeetCreationDialog) {
-            // Clear states when dialog closes
             currentEditOption = null
             currentTableOption = null
         }
     }
 
-    // Dialog Handling - Only render when actually needed
+    // Dialog Handling
     if (showLeetCreationDialog) {
         LeetCreationDialog(
             viewModel = viewModel,
@@ -141,8 +130,7 @@ fun LeetSelectorBottomSheet(
 }
 
 /**
- * PERFORMANCE-OPTIMIERTE Content-Komponente
- * Vermeidet heavy recomposition durch simplified structure
+ * Content-Komponente
  */
 @Composable
 private fun LazyBottomSheetContent(
@@ -162,10 +150,10 @@ private fun LazyBottomSheetContent(
             .padding(horizontal = 16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        // Header - Always visible, no state dependency
+        // Header
         LeetSelectorHeader(onCreateNew = onCreateNew)
 
-        // PERFORMANCE FIX: Conditional rendering instead of AnimatedVisibility
+        // Favoriten Section (nur wenn vorhanden)
         if (favoriteLeetOptions.isNotEmpty()) {
             FavoritesSection(
                 favoriteOptions = favoriteLeetOptions,
@@ -174,7 +162,7 @@ private fun LazyBottomSheetContent(
             )
         }
 
-        // PERFORMANCE FIX: Simplified All Options without heavy animations
+        // Alle Optionen Section
         AllOptionsSection(
             leetOptions = leetOptions,
             onOptionSelected = onOptionSelected,

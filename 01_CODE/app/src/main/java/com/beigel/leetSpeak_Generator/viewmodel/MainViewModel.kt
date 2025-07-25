@@ -22,7 +22,7 @@ import javax.inject.Inject
 
 /**
  * MainViewModel with What's New Integration
- * UPDATED: WhatsNewPreferences und Dialog Logic hinzugefügt
+ * FIXED: Korrekte Leet-Auswahl Logic
  */
 @HiltViewModel
 class MainViewModel @Inject constructor(
@@ -31,7 +31,7 @@ class MainViewModel @Inject constructor(
     private val uiManager: UiManagerUseCase,
     private val repository: LeetRepository,
     private val themePreferences: ThemePreferences,
-    private val whatsNewPreferences: WhatsNewPreferences // NEW
+    private val whatsNewPreferences: WhatsNewPreferences
 ) : ViewModel() {
 
     // State Flows aus Use Cases
@@ -44,8 +44,48 @@ class MainViewModel @Inject constructor(
     val leets = repository.leets
     val currentLeet = repository.currentLeet
     val hasLeets = repository.hasLeets
-    val leetOptions = leetManager.getLeetOptions()
-    val favoriteLeetOptions = leetManager.getFavoriteLeetOptions()
+
+    // FIXED: Korrekte Leet-Optionen mit Selection Logic
+    val leetOptions: StateFlow<List<LeetOption>> = combine(
+        leetManager.getLeetOptions(),
+        currentMode,
+        repository.currentLeetIndex
+    ) { options, currentTranslationMode, currentLeetIndex ->
+        options.map { option ->
+            val isSelected = when (option.mode) {
+                LeetManager.MODE_SIMPLE -> currentTranslationMode == LeetTranslator.TranslationMode.SIMPLE
+                LeetManager.MODE_EXTENDED -> currentTranslationMode == LeetTranslator.TranslationMode.EXTENDED
+                LeetManager.MODE_CUSTOM -> currentTranslationMode == LeetTranslator.TranslationMode.CUSTOM && option.customIndex == currentLeetIndex
+                else -> false
+            }
+            option.copy(isSelected = isSelected)
+        }
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = emptyList()
+    )
+
+    // FIXED: Favoriten mit korrekter Selection Logic
+    val favoriteLeetOptions: StateFlow<List<LeetOption>> = combine(
+        leetManager.getFavoriteLeetOptions(),
+        currentMode,
+        repository.currentLeetIndex
+    ) { options, currentTranslationMode, currentLeetIndex ->
+        options.map { option ->
+            val isSelected = when (option.mode) {
+                LeetManager.MODE_SIMPLE -> currentTranslationMode == LeetTranslator.TranslationMode.SIMPLE
+                LeetManager.MODE_EXTENDED -> currentTranslationMode == LeetTranslator.TranslationMode.EXTENDED
+                LeetManager.MODE_CUSTOM -> currentTranslationMode == LeetTranslator.TranslationMode.CUSTOM && option.customIndex == currentLeetIndex
+                else -> false
+            }
+            option.copy(isSelected = isSelected)
+        }
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = emptyList()
+    )
 
     // Theme State
     val defaultViewExpanded: StateFlow<Boolean> = themePreferences.defaultViewExpanded
@@ -62,7 +102,7 @@ class MainViewModel @Inject constructor(
             initialValue = ThemePreferences.THEME_SYSTEM
         )
 
-    // NEW: What's New State
+    // What's New State
     val shouldShowWhatsNew: StateFlow<Boolean> = whatsNewPreferences.shouldShowWhatsNew
         .stateIn(
             scope = viewModelScope,
@@ -144,7 +184,6 @@ class MainViewModel @Inject constructor(
 
     /**
      * Hauptfunktion für Intent-Handling
-     * UPDATED: WhatsNew Intents hinzugefügt
      */
     fun handleIntent(intent: MainIntent) {
         when (intent) {
@@ -160,7 +199,7 @@ class MainViewModel @Inject constructor(
             is MainIntent.ClearSuccess -> uiManager.clearSuccess()
             is MainIntent.ToggleReverseMode -> toggleReverseMode()
 
-            // NEW: What's New Intents
+            // What's New Intents
             is MainIntent.DismissWhatsNew -> { /* Dialog wird automatisch geschlossen */ }
             is MainIntent.MarkWhatsNewAsShown -> markWhatsNewAsShown()
             is MainIntent.ResetWhatsNewForTesting -> resetWhatsNewForTesting()
@@ -168,7 +207,7 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    // NEW: What's New Functions
+    // What's New Functions
     private fun markWhatsNewAsShown() {
         viewModelScope.launch {
             whatsNewPreferences.markCurrentVersionAsShown()
@@ -189,15 +228,27 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    // Rest der Funktionen bleibt unverändert...
+    // FIXED: Verbesserte changeMode Funktion
     private fun changeMode(leetOption: LeetOption) {
         viewModelScope.launch {
+            // Setze zuerst den UI-Modus
             when (leetOption.mode) {
-                LeetManager.MODE_SIMPLE -> uiManager.setTranslationMode(LeetTranslator.TranslationMode.SIMPLE)
-                LeetManager.MODE_EXTENDED -> uiManager.setTranslationMode(LeetTranslator.TranslationMode.EXTENDED)
-                LeetManager.MODE_CUSTOM -> uiManager.setTranslationMode(LeetTranslator.TranslationMode.CUSTOM)
+                LeetManager.MODE_SIMPLE -> {
+                    uiManager.setTranslationMode(LeetTranslator.TranslationMode.SIMPLE)
+                }
+                LeetManager.MODE_EXTENDED -> {
+                    uiManager.setTranslationMode(LeetTranslator.TranslationMode.EXTENDED)
+                }
+                LeetManager.MODE_CUSTOM -> {
+                    uiManager.setTranslationMode(LeetTranslator.TranslationMode.CUSTOM)
+                    // Setze den aktuellen Leet-Index für Custom Modus
+                    if (leetOption.customIndex >= 0) {
+                        repository.setCurrentLeetIndex(leetOption.customIndex)
+                    }
+                }
             }
 
+            // Dann versuche den Manager-Modus zu ändern
             leetManager.changeMode(leetOption)
                 .onFailure { exception ->
                     uiManager.setError("Failed to change mode: ${exception.message}")
