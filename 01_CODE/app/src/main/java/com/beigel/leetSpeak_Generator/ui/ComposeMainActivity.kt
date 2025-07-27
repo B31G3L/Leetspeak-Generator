@@ -31,17 +31,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.view.WindowCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.beigel.leetSpeak_Generator.translation.LeetTranslator
 import com.beigel.leetSpeak_Generator.ui.components.AboutDialog
 import com.beigel.leetSpeak_Generator.ui.components.LeetSelectorBottomSheet
 import com.beigel.leetSpeak_Generator.ui.theme.LeetspeakGeneratorTheme
 import com.beigel.leetSpeak_Generator.viewmodel.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.ui.text.style.TextAlign
 import com.beigel.leetSpeak_Generator.presentation.intent.MainIntent
-import com.beigel.leetSpeak_Generator.presentation.intent.MainUiState
 import com.beigel.leetSpeak_Generator.ui.components.WhatsNewDialog
 import com.beigel.leetSpeak_Generator.ui.settings.SettingsActivity
 

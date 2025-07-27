@@ -286,9 +286,6 @@ class LeetRepository @Inject constructor(
         leetManager.cleanup()
     }
 
-    // Legacy compatibility for gradual migration
-    fun getLeetManager(): LeetManager = leetManager
-
     /**
      * Data class for leet creation request
      */
