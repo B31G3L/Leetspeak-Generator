@@ -1,8 +1,6 @@
-// AllOptionsSection.kt - PERFORMANCE-OPTIMIERT UND FIXED
 package com.beigel.leetSpeak_Generator.ui.components.leet.selector
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.grid.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -13,17 +11,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-// FIXED: Added proper import for LeetOption
 import com.beigel.leetSpeak_Generator.data.LeetOption
 
-/**
- * PERFORMANCE-OPTIMIERTE Alle Leet-Modi Darstellung
- * FIXES:
- * - Entfernte schwere AnimatedContent
- * - Vereinfachte Grid-Darstellung
- * - Reduzierte Recompositions
- * - Fixed imports and references
- */
 @Composable
 fun AllOptionsSection(
     leetOptions: List<LeetOption>,
@@ -34,11 +23,9 @@ fun AllOptionsSection(
     defaultViewExpanded: Boolean = false,
     modifier: Modifier = Modifier
 ) {
-    // PERFORMANCE FIX: Local state to avoid ViewModel calls
     var showExpandedView by remember { mutableStateOf(defaultViewExpanded) }
 
     Column(modifier = modifier) {
-        // Header mit Toggle
         AllOptionsHeader(
             totalCount = leetOptions.size,
             showExpandedView = showExpandedView,
@@ -47,26 +34,16 @@ fun AllOptionsSection(
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        // PERFORMANCE FIX: Simple conditional rendering instead of AnimatedContent
         if (showExpandedView) {
-            // Detaillierte List View - Optimiert
-            Column(
-                verticalArrangement = Arrangement.spacedBy(6.dp),
-                modifier = Modifier.heightIn(max = 400.dp)
-            ) {
-                leetOptions.forEach { option ->
-                    DetailedModeCard(
-                        option = option,
-                        onOptionSelected = onOptionSelected,
-                        onToggleFavorite = onToggleFavorite,
-                        onEditOption = onEditOption,
-                        onShowTable = onShowTable
-                    )
-                }
-            }
+            DetailedListView(
+                leetOptions = leetOptions,
+                onOptionSelected = onOptionSelected,
+                onToggleFavorite = onToggleFavorite,
+                onEditOption = onEditOption,
+                onShowTable = onShowTable
+            )
         } else {
-            // Kompakte Grid View - Vereinfacht ohne LazyVerticalGrid
-            SimpleGridView(
+            CompactGridView(
                 leetOptions = leetOptions,
                 onOptionSelected = onOptionSelected,
                 onToggleFavorite = onToggleFavorite
@@ -75,9 +52,6 @@ fun AllOptionsSection(
     }
 }
 
-/**
- * Header für die Alle-Modi Sektion
- */
 @Composable
 private fun AllOptionsHeader(
     totalCount: Int,
@@ -123,7 +97,6 @@ private fun AllOptionsHeader(
                 }
             }
 
-            // View Toggle Button
             IconButton(
                 onClick = onToggleView,
                 modifier = Modifier.size(32.dp)
@@ -139,35 +112,29 @@ private fun AllOptionsHeader(
     }
 }
 
-/**
- * PERFORMANCE-OPTIMIERTE Grid-Darstellung ohne LazyVerticalGrid
- */
 @Composable
-private fun SimpleGridView(
+private fun CompactGridView(
     leetOptions: List<LeetOption>,
     onOptionSelected: (LeetOption) -> Unit,
     onToggleFavorite: (LeetOption) -> Unit
 ) {
     Column(
         modifier = Modifier.heightIn(max = 300.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        // FIXED: Proper chunked processing with explicit types
-        val chunkedOptions = leetOptions.chunked(2)
-        chunkedOptions.forEach { rowOptions ->
+        leetOptions.chunked(2).forEach { rowOptions ->
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 rowOptions.forEach { option ->
-                    CompactModeCard(
+                    CompactCard(
                         option = option,
                         onOptionSelected = onOptionSelected,
                         onToggleFavorite = onToggleFavorite,
                         modifier = Modifier.weight(1f)
                     )
                 }
-                // Fill remaining space if odd number
                 if (rowOptions.size == 1) {
                     Spacer(modifier = Modifier.weight(1f))
                 }
@@ -176,12 +143,33 @@ private fun SimpleGridView(
     }
 }
 
-/**
- * PERFORMANCE-OPTIMIERTE Kompakte Mode Card für Grid
- */
+@Composable
+private fun DetailedListView(
+    leetOptions: List<LeetOption>,
+    onOptionSelected: (LeetOption) -> Unit,
+    onToggleFavorite: (LeetOption) -> Unit,
+    onEditOption: (LeetOption) -> Unit,
+    onShowTable: (LeetOption) -> Unit
+) {
+    Column(
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+        modifier = Modifier.heightIn(max = 400.dp)
+    ) {
+        leetOptions.forEach { option ->
+            DetailedCard(
+                option = option,
+                onOptionSelected = onOptionSelected,
+                onToggleFavorite = onToggleFavorite,
+                onEditOption = onEditOption,
+                onShowTable = onShowTable
+            )
+        }
+    }
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun CompactModeCard(
+private fun CompactCard(
     option: LeetOption,
     onOptionSelected: (LeetOption) -> Unit,
     onToggleFavorite: (LeetOption) -> Unit,
@@ -214,10 +202,7 @@ private fun CompactModeCard(
                 .fillMaxSize()
                 .padding(12.dp)
         ) {
-            // Favorite Button
-            Box(
-                modifier = Modifier.align(Alignment.TopEnd)
-            ) {
+            Box(modifier = Modifier.align(Alignment.TopEnd)) {
                 IconButton(
                     onClick = { onToggleFavorite(option) },
                     modifier = Modifier.size(24.dp)
@@ -235,12 +220,10 @@ private fun CompactModeCard(
                 }
             }
 
-            // Main Content
             Column(
                 modifier = Modifier.align(Alignment.Center),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // Icon - FIXED: Use the iconImageVector from LeetOption
                 Icon(
                     imageVector = option.iconImageVector,
                     contentDescription = null,
@@ -250,7 +233,6 @@ private fun CompactModeCard(
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                // Name
                 Text(
                     text = option.name,
                     style = MaterialTheme.typography.labelLarge,
@@ -266,7 +248,6 @@ private fun CompactModeCard(
                 )
             }
 
-            // Selected Indicator
             if (option.isSelected) {
                 Icon(
                     imageVector = Icons.Default.CheckCircle,
@@ -281,12 +262,9 @@ private fun CompactModeCard(
     }
 }
 
-/**
- * PERFORMANCE-OPTIMIERTE Detaillierte Mode Card für Liste
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun DetailedModeCard(
+private fun DetailedCard(
     option: LeetOption,
     onOptionSelected: (LeetOption) -> Unit,
     onToggleFavorite: (LeetOption) -> Unit,
@@ -317,7 +295,6 @@ private fun DetailedModeCard(
                 .padding(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Icon - FIXED: Use the iconImageVector from LeetOption
             Icon(
                 imageVector = option.iconImageVector,
                 contentDescription = null,
@@ -327,11 +304,8 @@ private fun DetailedModeCard(
 
             Spacer(modifier = Modifier.width(12.dp))
 
-            // Content
             Column(modifier = Modifier.weight(1f)) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
                         text = option.name,
                         style = MaterialTheme.typography.bodyLarge,
@@ -360,45 +334,59 @@ private fun DetailedModeCard(
                 }
             }
 
-            // Action Buttons
-            Row {
-                IconButton(
-                    onClick = { onToggleFavorite(option) },
-                    modifier = Modifier.size(32.dp)
-                ) {
-                    Icon(
-                        imageVector = if (option.isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-                        contentDescription = "Favorit umschalten",
-                        modifier = Modifier.size(16.dp),
-                        tint = MaterialTheme.colorScheme.secondary
-                    )
-                }
+            ActionButtons(
+                option = option,
+                onToggleFavorite = onToggleFavorite,
+                onEditOption = onEditOption,
+                onShowTable = onShowTable
+            )
+        }
+    }
+}
 
-                IconButton(
-                    onClick = { onShowTable(option) },
-                    modifier = Modifier.size(32.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.TableChart,
-                        contentDescription = "Tabelle anzeigen",
-                        modifier = Modifier.size(16.dp),
-                        tint = MaterialTheme.colorScheme.primary
-                    )
-                }
+@Composable
+private fun ActionButtons(
+    option: LeetOption,
+    onToggleFavorite: (LeetOption) -> Unit,
+    onEditOption: (LeetOption) -> Unit,
+    onShowTable: (LeetOption) -> Unit
+) {
+    Row {
+        IconButton(
+            onClick = { onToggleFavorite(option) },
+            modifier = Modifier.size(32.dp)
+        ) {
+            Icon(
+                imageVector = if (option.isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                contentDescription = "Favorit umschalten",
+                modifier = Modifier.size(16.dp),
+                tint = MaterialTheme.colorScheme.secondary
+            )
+        }
 
-                if (option.isCustom) {
-                    IconButton(
-                        onClick = { onEditOption(option) },
-                        modifier = Modifier.size(32.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Edit,
-                            contentDescription = "Bearbeiten",
-                            modifier = Modifier.size(16.dp),
-                            tint = MaterialTheme.colorScheme.primary
-                        )
-                    }
-                }
+        IconButton(
+            onClick = { onShowTable(option) },
+            modifier = Modifier.size(32.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Default.TableChart,
+                contentDescription = "Tabelle anzeigen",
+                modifier = Modifier.size(16.dp),
+                tint = MaterialTheme.colorScheme.primary
+            )
+        }
+
+        if (option.isCustom) {
+            IconButton(
+                onClick = { onEditOption(option) },
+                modifier = Modifier.size(32.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Edit,
+                    contentDescription = "Bearbeiten",
+                    modifier = Modifier.size(16.dp),
+                    tint = MaterialTheme.colorScheme.primary
+                )
             }
         }
     }

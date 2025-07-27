@@ -4,20 +4,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.beigel.leetSpeak_Generator.translation.LeetTranslator
 import com.beigel.leetSpeak_Generator.ui.components.input.InputCard
-import com.beigel.leetSpeak_Generator.ui.components.input.SimpleInputCard
 import com.beigel.leetSpeak_Generator.ui.components.output.OutputCard
 import com.beigel.leetSpeak_Generator.ui.components.output.OutputPlaceholder
-import com.beigel.leetSpeak_Generator.ui.components.output.SimpleOutputCard
 
-/**
- * Refactored InputOutputComponents - Von 400+ auf ~60 Zeilen reduziert (-85%)
- * Alle Komponenten wurden in spezialisierte Module aufgeteilt:
- *
- * - ui.components.text.*     (AdaptiveTextField, AnimatedPlaceholder, StatisticsChips)
- * - ui.components.input.*    (InputCard, SimpleInputCard)
- * - ui.components.output.*   (OutputCard, OutputPlaceholder, SimpleOutputCard)
- * - ui.components.common.*   (LoadingStates, ErrorStates)
- */
 
 /**
  * Main Input Section - Wrapper für die neue InputCard
