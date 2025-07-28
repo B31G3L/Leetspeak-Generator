@@ -121,12 +121,41 @@ class MainViewModel @Inject constructor(
         initializeFavoriteLeet()
     }
 
+    private fun createLeet(
+        name: String,
+        iconImageVector: ImageVector,
+        useExtendedDefaults: Boolean,
+        customTranslations: Map<String, String>? = null // NEU: Parameter hinzugefügt
+    ) {
+        viewModelScope.launch {
+            uiManager.setLoading(true)
+
+            // FIXED: Übergabe der individuellen Übersetzungen
+            leetManager.createLeet(name, iconImageVector, useExtendedDefaults, customTranslations)
+                .onSuccess { leet ->
+                    uiManager.setTranslationMode(LeetTranslator.TranslationMode.CUSTOM)
+                    uiManager.setSuccess("Leet '${leet.name}' created successfully")
+                }
+                .onFailure { exception ->
+                    uiManager.setError("Failed to create leet: ${exception.message}")
+                }
+        }
+    }
+
     fun handleIntent(intent: MainIntent) {
         when (intent) {
             is MainIntent.UpdateInput -> uiManager.updateInputText(intent.text)
             is MainIntent.ChangeMode -> changeMode(intent.leetOption)
             is MainIntent.ToggleFavorite -> toggleFavorite(intent.leetOption)
-            is MainIntent.CreateLeet -> createLeet(intent.name, intent.icon, intent.useExtendedDefaults)
+
+            // FIXED: Erweiterte CreateLeet Intent Behandlung
+            is MainIntent.CreateLeet -> createLeet(
+                intent.name,
+                intent.icon,
+                intent.useExtendedDefaults,
+                intent.customTranslations // NEU: Übertragung der Übersetzungen
+            )
+
             is MainIntent.UpdateLeet -> updateLeet(intent.index, intent.leet)
             is MainIntent.DeleteLeet -> deleteLeet(intent.index)
             is MainIntent.CopyToClipboard -> copyToClipboard()
@@ -197,20 +226,7 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    private fun createLeet(name: String, iconImageVector: ImageVector, useExtendedDefaults: Boolean) {
-        viewModelScope.launch {
-            uiManager.setLoading(true)
 
-            leetManager.createLeet(name, iconImageVector, useExtendedDefaults)
-                .onSuccess { leet ->
-                    uiManager.setTranslationMode(LeetTranslator.TranslationMode.CUSTOM)
-                    uiManager.setSuccess("Leet '${leet.name}' created successfully")
-                }
-                .onFailure { exception ->
-                    uiManager.setError("Failed to create leet: ${exception.message}")
-                }
-        }
-    }
 
     private fun updateLeet(index: Int, leet: CustomLeet) {
         viewModelScope.launch {

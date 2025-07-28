@@ -27,7 +27,7 @@ import com.beigel.leetSpeak_Generator.viewmodel.MainViewModel
 
 /**
  * Leet Creation Dialog komplett überarbeitet für Material Icons
- * Verbesserte Performance und bessere UX
+ * FIXED: Übersetzungen werden jetzt korrekt gespeichert
  */
 @Composable
 fun LeetCreationDialog(
@@ -189,7 +189,7 @@ private fun LeetCreationDialogManager(
 
 /**
  * State Management für Leet Creation Dialog
- * Komplett überarbeitet für Material Icons
+ * FIXED: Bessere Template-Anwendung und Übersetzungs-Speicherung
  */
 @Composable
 private fun rememberLeetCreationDialogState(
@@ -197,7 +197,7 @@ private fun rememberLeetCreationDialogState(
 ): LeetCreationDialogState {
     return remember(existingLeet) {
         LeetCreationDialogState(existingLeet).apply {
-            // Template automatisch beim ersten Laden anwenden
+            // Template automatisch beim ersten Laden anwenden (nur bei neuen Leets)
             if (existingLeet == null) {
                 applyTemplate()
             }
@@ -207,7 +207,7 @@ private fun rememberLeetCreationDialogState(
 
 /**
  * State-Klasse für Dialog-Verwaltung
- * Überarbeitet für Material Icons Support
+ * FIXED: Verbesserte Übersetzungs-Speicherung
  */
 class LeetCreationDialogState(existingLeet: CustomLeet?) {
     val alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
@@ -235,18 +235,33 @@ class LeetCreationDialogState(existingLeet: CustomLeet?) {
         get() = if (baseName.isBlank()) "Neues Leet" else "$baseName-Leet"
 
     /**
-     * Wendet das Template auf die Übersetzungstabelle an
+     * FIXED: Template-Anwendung überschreibt nicht Benutzeränderungen
      */
     fun applyTemplate() {
-        TemplateHelpers.applyTemplate(selectedTemplate, translationStates, alphabet)
+        // Prüfe ob der Nutzer bereits manuelle Änderungen gemacht hat
+        val hasUserChanges = translationStates.any { state ->
+            val originalChar = alphabet[translationStates.indexOf(state)]
+            state.value != originalChar.toString()
+        }
+
+        // Nur Template anwenden wenn:
+        // 1. Noch keine Benutzeränderungen vorhanden ODER
+        // 2. Das Template explizit gewechselt wurde (nicht CUSTOM)
+        if (!hasUserChanges || selectedTemplate != TemplateType.CUSTOM) {
+            TemplateHelpers.applyTemplate(selectedTemplate, translationStates, alphabet)
+        }
     }
 
+    /**
+     * HAUPTFIX: Übersetzungen korrekt sammeln und speichern
+     */
     fun saveLeet(
         viewModel: MainViewModel,
         existingLeet: CustomLeet?,
         leetIndex: Int,
         onDismiss: () -> Unit
     ) {
+        // FIXED: Übersetzungen korrekt sammeln von den Eingabefeldern
         val translations = mutableMapOf<String, String>()
         alphabet.forEachIndexed { index, char ->
             translations[char.toString()] = translationStates[index].value
@@ -255,16 +270,17 @@ class LeetCreationDialogState(existingLeet: CustomLeet?) {
         val finalName = displayName.ifEmpty { "Custom-Leet" }
 
         if (existingLeet == null) {
-            // Neues Leet erstellen
+            // HAUPTFIX: Neues Leet erstellen MIT individuellen Übersetzungen
             viewModel.handleIntent(
                 MainIntent.CreateLeet(
                     name = finalName,
                     icon = selectedIcon,
-                    useExtendedDefaults = selectedTemplate == TemplateType.EXTENDED
+                    useExtendedDefaults = selectedTemplate == TemplateType.EXTENDED,
+                    customTranslations = translations // KRITISCH: Übersetzungen übertragen!
                 )
             )
         } else {
-            // Bestehendes Leet aktualisieren
+            // Bestehendes Leet aktualisieren (bleibt gleich)
             val updatedLeet = CustomLeet(
                 name = finalName,
                 iconImageVector = selectedIcon

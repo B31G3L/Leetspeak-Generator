@@ -10,7 +10,7 @@ import javax.inject.Singleton
 
 /**
  * Kombinierter Use Case für alle Leet-Management Operationen
- * Vereinfacht das ViewModel und bietet eine saubere API
+ * FIXED: Erweitert um customTranslations Support
  */
 @Singleton
 class LeetManagerUseCase @Inject constructor(
@@ -39,14 +39,15 @@ class LeetManagerUseCase @Inject constructor(
     }
 
     /**
-     * Erstellt ein neues Leet
+     * FIXED: Erstellt ein neues Leet mit optionalen individuellen Übersetzungen
      */
     suspend fun createLeet(
         name: String,
         iconResId: ImageVector,
-        useExtendedDefaults: Boolean = false
+        useExtendedDefaults: Boolean = false,
+        customTranslations: Map<String, String>? = null // NEU: Individuelle Übersetzungen
     ): Result<CustomLeet> {
-        return createLeetUseCase(name, iconResId, useExtendedDefaults)
+        return createLeetUseCase(name, iconResId, useExtendedDefaults, customTranslations)
     }
 
     /**

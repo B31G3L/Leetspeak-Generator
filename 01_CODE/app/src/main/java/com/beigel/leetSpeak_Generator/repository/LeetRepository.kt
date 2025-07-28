@@ -212,6 +212,16 @@ class LeetRepository @Inject constructor(
         }
     }
 
+    suspend fun addCustomLeet(customLeet: CustomLeet): Result<CustomLeet> {
+        return try {
+            when (val result = leetManager.addLeet(customLeet)) {
+                is ErrorHandler.Result.Success -> Result.success(customLeet)
+                is ErrorHandler.Result.Error -> Result.failure(result.exception)
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
     /**
      * FIXED: Gets leet options WITHOUT selection logic - handled in MainViewModel
      * Entfernte die fehlerhafte isSelected Logic, die das Problem verursacht hat

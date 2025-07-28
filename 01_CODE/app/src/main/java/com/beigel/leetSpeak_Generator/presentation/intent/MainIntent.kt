@@ -6,17 +6,21 @@ import com.beigel.leetSpeak_Generator.data.LeetOption
 
 /**
  * UI Intents für MainViewModel
- * UPDATED: WhatsNew Intents hinzugefügt
+ * UPDATED: CreateLeet mit customTranslations erweitert
  */
 sealed class MainIntent {
     data class UpdateInput(val text: String) : MainIntent()
     data class ChangeMode(val leetOption: LeetOption) : MainIntent()
     data class ToggleFavorite(val leetOption: LeetOption) : MainIntent()
+
+    // FIXED: Erweiterte CreateLeet Intent mit individuellen Übersetzungen
     data class CreateLeet(
         val name: String,
         val icon: ImageVector,
-        val useExtendedDefaults: Boolean = false
+        val useExtendedDefaults: Boolean = false,
+        val customTranslations: Map<String, String>? = null // NEU: Individuelle Übersetzungen
     ) : MainIntent()
+
     data class UpdateLeet(val index: Int, val leet: CustomLeet) : MainIntent()
     data class DeleteLeet(val index: Int) : MainIntent()
     object CopyToClipboard : MainIntent()
@@ -25,11 +29,11 @@ sealed class MainIntent {
     object ClearSuccess : MainIntent()
     object ToggleReverseMode : MainIntent()
 
-    // NEW: What's New Dialog Intents
+    // What's New Dialog Intents
     object DismissWhatsNew : MainIntent()
     object MarkWhatsNewAsShown : MainIntent()
-    object ResetWhatsNewForTesting : MainIntent() // Nur für Debug
-    object ForceShowWhatsNew : MainIntent() // Nur für Debug
+    object ResetWhatsNewForTesting : MainIntent()
+    object ForceShowWhatsNew : MainIntent()
 }
 
 /**
@@ -42,5 +46,5 @@ data class MainUiState(
     val successMessage: String? = null,
     val selectedLeetOption: LeetOption? = null,
     val showBottomSheet: Boolean = false,
-    val showWhatsNew: Boolean = false // NEW
+    val showWhatsNew: Boolean = false
 )
