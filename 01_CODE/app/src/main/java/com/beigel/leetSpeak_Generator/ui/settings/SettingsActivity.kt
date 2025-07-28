@@ -71,7 +71,12 @@ fun SettingsScreen(
                     IconButton(onClick = onBackPressed) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, "Zurück")
                     }
-                }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.background,
+                    titleContentColor = MaterialTheme.colorScheme.onBackground
+                ),
+
             )
         }
     ) { paddingValues ->

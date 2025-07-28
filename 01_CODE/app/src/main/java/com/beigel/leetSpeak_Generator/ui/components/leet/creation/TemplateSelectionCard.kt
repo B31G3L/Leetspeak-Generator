@@ -75,7 +75,7 @@ fun TemplateSelectionCard(
                     Spacer(modifier = Modifier.height(8.dp))
 
                     // Template Grid - 2 Zeilen mit gleich großen Buttons
-                    val templates = TemplateType.values().toList()
+                    val templates = TemplateType.entries
 
                     // Erste Zeile: 3 Buttons
                     Row(

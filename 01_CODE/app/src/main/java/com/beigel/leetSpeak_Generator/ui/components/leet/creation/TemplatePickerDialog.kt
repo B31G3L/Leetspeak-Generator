@@ -16,8 +16,7 @@ import androidx.compose.ui.unit.dp
 fun TemplatePickerDialog(
     selectedTemplate: TemplateType,
     onTemplateSelected: (TemplateType) -> Unit,
-    onDismiss: () -> Unit,
-    modifier: Modifier = Modifier
+    onDismiss: () -> Unit
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -30,7 +29,7 @@ fun TemplatePickerDialog(
         },
         text = {
             Column {
-                TemplateType.values().forEach { template ->
+                TemplateType.entries.forEach { template ->
                     TemplateOption(
                         template = template,
                         isSelected = selectedTemplate == template,

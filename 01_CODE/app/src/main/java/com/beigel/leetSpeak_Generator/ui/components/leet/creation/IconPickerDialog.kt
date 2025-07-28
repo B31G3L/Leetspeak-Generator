@@ -6,6 +6,10 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Assignment
+import androidx.compose.material.icons.automirrored.filled.Chat
+import androidx.compose.material.icons.automirrored.filled.Message
+import androidx.compose.material.icons.automirrored.filled.VolumeUp
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -65,7 +69,7 @@ fun IconPickerDialog(
         Icons.Default.Business,
         Icons.Default.School,
         Icons.Default.Book,
-        Icons.Default.Assignment,
+        Icons.AutoMirrored.Filled.Assignment,
 
         // Lifestyle
         Icons.Default.Home,
@@ -80,7 +84,7 @@ fun IconPickerDialog(
         Icons.Default.Headphones,
         Icons.Default.Mic,
         Icons.Default.MusicNote,
-        Icons.Default.VolumeUp,
+        Icons.AutoMirrored.Filled.VolumeUp,
 
         // Security & Tools
         Icons.Default.Security,
@@ -103,8 +107,8 @@ fun IconPickerDialog(
         Icons.Default.Backup,
 
         // Communication
-        Icons.Default.Chat,
-        Icons.Default.Message,
+        Icons.AutoMirrored.Filled.Chat,
+        Icons.AutoMirrored.Filled.Message,
         Icons.Default.Email,
         Icons.Default.Phone,
 

@@ -1,7 +1,9 @@
 package com.beigel.leetSpeak_Generator.ui.components.leet.selector
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -21,7 +23,7 @@ fun AllOptionsSection(
     onEditOption: (LeetOption) -> Unit,
     onShowTable: (LeetOption) -> Unit,
     defaultViewExpanded: Boolean = false,
-    modifier: Modifier = Modifier
+    @SuppressLint("ModifierParameter") modifier: Modifier = Modifier
 ) {
     var showExpandedView by remember { mutableStateOf(defaultViewExpanded) }
 
@@ -102,7 +104,7 @@ private fun AllOptionsHeader(
                 modifier = Modifier.size(32.dp)
             ) {
                 Icon(
-                    imageVector = if (showExpandedView) Icons.Default.GridView else Icons.Default.List,
+                    imageVector = if (showExpandedView) Icons.Default.GridView else Icons.AutoMirrored.Filled.List,
                     contentDescription = if (showExpandedView) "Grid-Ansicht" else "Listen-Ansicht",
                     modifier = Modifier.size(18.dp),
                     tint = MaterialTheme.colorScheme.primary

@@ -122,8 +122,7 @@ private fun LeetCreationHeader(
     modifier: Modifier = Modifier
 ) {
     Surface(
-        color = MaterialTheme.colorScheme.surface,
-        shadowElevation = 4.dp,
+        color = MaterialTheme.colorScheme.background,
         modifier = modifier
     ) {
         Row(

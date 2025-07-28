@@ -37,7 +37,6 @@ fun InputCard(
     isReverseMode: Boolean = false,
     title: String = "Input: Plaintext"
 ) {
-    val focusRequester = remember { FocusRequester() }
     val keyboardController = LocalSoftwareKeyboardController.current
     val focusManager = LocalFocusManager.current
 
