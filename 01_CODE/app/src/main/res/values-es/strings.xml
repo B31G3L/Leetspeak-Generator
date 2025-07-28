@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Generador Leetspeak</string>
+    <string name="app_subtitle"></string>
+
+    <string name="simple">Leet Simple</string>
+    <string name="extended">Leet Extendido</string>
+    <string name="custom">Leet Personalizado</string>
+
+    <string name="plaintext_placeholder">Tu texto normal …</string>
+    <string name="copy_text">Copiar texto</string>
+
+    <string name="simple_table_title">Tabla de traducción simple</string>
+    <string name="extended_table_title">Tabla de traducción extendida</string>
+    <string name="custom_table_title">Tabla de traducción personalizada</string>
+    <string name="table_expand">Mostrar tabla</string>
+    <string name="table_hide">Ocultar tabla</string>
+
+    <string name="plain">Normal</string>
+    <string name="leet">Leet</string>
+    <string name="selected_icon">Icono seleccionado</string>
+    <string name="select_icon">Cambiar icono</string>
+    <string name="icon_selection">Elegir un icono</string>
+    <string name="confirm">Confirmar</string>
+    <string name="edit">Editar</string>
+    <string name="save">Guardar</string>
+    <string name="tap_icon_to_change">Toca el icono para cambiarlo</string>
+
+    <string name="copy_success">Copiado al portapapeles</string>
+    <string name="save_success">Guardado en almacenamiento</string>
+
+    <!-- Navigation strings -->
+    <string name="menu_mode">Modo</string>
+    <string name="modes">Modos</string>
+    <string name="custom_leets">Leets personalizados</string>
+    <string name="user_custom_leets">Leets personalizados del usuario</string>
+    <string name="leet_actions">Acciones Leet</string>
+    <string name="open_drawer">Abrir navegación</string>
+    <string name="close_drawer">Cerrar navegación</string>
+    <string name="favorite">Marcar como favorito</string>
+    <string name="favorite_added">%1$s marcado como favorito</string>
+    <string name="favorite_removed">%1$s eliminado de favoritos</string>
+    <string name="favorite_deleted">El favorito fue eliminado, mostrando Leet Simple</string>
+
+    <!-- Leet management -->
+    <string name="new_custom_leet">Crear nuevo leet</string>
+    <string name="save_current_leet">Guardar leet actual</string>
+    <string name="delete_current_leet">Eliminar leet actual</string>
+    <string name="delete_current_custom">Eliminar leet actual</string>
+    <string name="custom_leet_name">Nombre del leet personalizado</string>
+    <string name="ok">OK</string>
+    <string name="cancel">Cancelar</string>
+    <string name="leet_saved">Leet guardado</string>
+    <string name="leet_deleted">Leet eliminado</string>
+    <string name="default_custom_name">Personalizado</string>
+    <string name="create_new_leet">Crear nuevo leet</string>
+    <string name="enter_leet_name">Introducir nombre del leet</string>
+    <string name="delete_confirm">¿Eliminar este leet?</string>
+    <string name="delete_confirm_message">Esta acción no se puede deshacer.</string>
+    <string name="default_leet_no_delete">No se puede eliminar el leet por defecto</string>
+    <string name="new_leet_description">Se creará un nuevo leet con la configuración actual. Podrás personalizarlo más tarde.</string>
+    <string name="create">Crear</string>
+    <string name="leet_created">Leet \"%1$s\" creado</string>
+    <string name="leet_creation_error">Error de creación: %1$s</string>
+
+    <!-- About section -->
+    <string name="about">Acerca de la aplicación</string>
+    <string name="about_description">El Generador Leetspeak convierte texto normal a texto leetspeak. Disponible en diferentes modos: Simple, Extendido y leets personalizados.</string>
+    <string name="made_with">Creado con Material Design para Android</string>
+    <string name="version">Versión: 1337.00_8374_1</string>
+    <string name="copyright">© B31G3L 2025</string>
+    <string name="default_leet_reset">Leet por defecto reiniciado</string>
+
+    <!-- Additional strings -->
+    <string name="no_custom_leets">No hay leets personalizados disponibles</string>
+    <string name="create_first_custom_leet">Crea tu primer leet personalizado</string>
+    <string name="no_custom_leets_available">No hay leets personalizados disponibles.\nToca + para crear uno nuevo.</string>
+    <string name="delete_confirm_message_named">¿Realmente quieres eliminar \"%1$s\"? Esta acción no se puede deshacer.</string>
+    <string name="last_leet_deleted">Último leet personalizado eliminado</string>
+    <string name="edit_leet">Editar leet</string>
+    <string name="leet_name">Nombre del leet</string>
+    <string name="leet_updated">Leet actualizado</string>
+    <string name="leet_update_error">Error de actualización: %1$s</string>
+    <string name="leet_info">Información del Leet</string>
+    <string name="translation_table">Tabla de traducción</string>
+    <string name="all_changes_saved">Todos los cambios guardados</string>
+
+    <!-- Input/Output -->
+    <string name="input_hint">Introduce tu texto aquí...</string>
+    <string name="leetspeak_translation">Traducción Leetspeak</string>
+
+    <!-- Enhanced Input/Output -->
+    <string name="character_count">%d caracteres</string>
+    <string name="word_count">%d palabras</string>
+    <string name="undo">Deshacer</string>
+    <string name="redo">Rehacer</string>
+    <string name="reverse_translation">Traducción inversa</string>
+    <string name="quick_test">Prueba rápida</string>
+
+    <!-- Bottom Sheet Enhancements -->
+    <string name="search_leets">Buscar leets...</string>
+    <string name="preview_label">Vista previa:</string>
+    <string name="favorites_section">★ Favoritos</string>
+    <string name="all_leet_modes">Todos los modos Leet</string>
+    <string name="no_favorites">No hay favoritos disponibles</string>
+
+    <!-- Feedback Messages -->
+    <string name="copy_success_enhanced">¡Texto copiado! 📋</string>
+    <string name="reverse_coming_soon">Traducción inversa - ¡Próximamente! 🔄</string>
+    <string name="quick_test_result">%1$s: %2$s</string>
+
+    <!-- Animation Labels -->
+    <string name="typing_animation">Escribiendo...</string>
+    <string name="loading_preview">Cargando vista previa...</string>
+
+    <!-- Accessibility -->
+    <string name="undo_button_description">Deshacer texto</string>
+    <string name="redo_button_description">Rehacer texto</string>
+    <string name="reverse_button_description">Traducción inversa</string>
+    <string name="quick_test_description">Realizar prueba rápida</string>
+    <string name="character_counter_description">Contador de caracteres</string>
+    <string name="word_counter_description">Contador de palabras</string>
+
+    <!-- Enhanced Features -->
+    <string name="haptic_feedback_enabled">Retroalimentación háptica activada</string>
+    <string name="typing_delay_ms">150</string>
+    <string name="animation_duration_fast">200</string>
+    <string name="animation_duration_normal">300</string>
+    <string name="animation_duration_slow">500</string>
+
+    <!-- Bottom Sheet strings -->
+    <string name="select_leet_mode">Seleccionar modo Leet</string>
+    <string name="simple_leet_description">Traducción leetspeak simple</string>
+    <string name="extended_leet_description">Traducción leetspeak extendida</string>
+    <string name="custom_leet_description">Leet personalizado</string>
+    <string name="new_leet">Nuevo</string>
+
+    <!-- Layout strings -->
+    <string name="plain_arrow">Normal → %1$s</string>
+
+    <!-- Settings -->
+    <string name="settings">Configuración</string>
+    <string name="theme_system">Sistema</string>
+    <string name="theme_light">Claro</string>
+    <string name="theme_dark">Oscuro</string>
+    <string name="theme_system_desc">Sigue la configuración del sistema</string>
+    <string name="theme_light_desc">Diseño claro</string>
+    <string name="theme_dark_desc">Diseño oscuro</string>
+
+    <!-- Widget -->
+    <string name="widget_description">Traductor leetspeak con modo favorito</string>
+    <string name="widget_tap_to_open">Tocar para abrir</string>
+    <string name="widget_no_favorite">Sin favorito</string>
+
+    <!-- Menu -->
+    <string name="menu_settings">Configuración</string>
+
+    <!-- Keyboard strings -->
+    <string name="leetspeak_keyboard_label">Teclado Leetspeak</string>
+    <string name="leetspeak_keyboard_subtype_label">Generador Leetspeak</string>
+    <string name="leetspeak_simple_mode">Leet Simple</string>
+    <string name="leetspeak_extended_mode">Leet Extendido</string>
+    <string name="leetspeak_custom_mode">Leet Personalizado</string>
+
+    <!-- Keyboard UI Strings -->
+    <string name="keyboard_mode_simple">Simple</string>
+    <string name="keyboard_mode_extended">Extendido</string>
+    <string name="keyboard_mode_custom">Personalizado</string>
+    <string name="keyboard_leet_mode_on">🎯 Modo Leet ACTIVADO</string>
+    <string name="keyboard_leet_mode_off">📝 Modo Normal</string>
+
+    <!-- Keyboard Actions -->
+    <string name="keyboard_action_toggle_mode">Alternar modo Leet</string>
+    <string name="keyboard_action_cycle_mode">Cambiar modo</string>
+    <string name="keyboard_action_settings">Abrir configuración</string>
+    <string name="keyboard_action_signature">Insertar firma Leet</string>
+    <string name="keyboard_action_favorite">Favorito rápido</string>
+
+    <!-- Keyboard Status Messages -->
+    <string name="keyboard_status_simple">Modo Simple activo</string>
+    <string name="keyboard_status_extended">Modo Extendido activo</string>
+    <string name="keyboard_status_custom">Modo Personalizado: %s</string>
+    <string name="keyboard_live_preview">%1$s → %2$s</string>
+
+    <!-- Keyboard Notifications -->
+    <string name="keyboard_enabled_notification">Teclado Leetspeak activado</string>
+    <string name="keyboard_disabled_notification">Teclado Leetspeak desactivado</string>
+
+    <!-- Keyboard Setup Instructions -->
+    <string name="keyboard_setup_title">Configuración del teclado</string>
+    <string name="keyboard_setup_step1">1. Ve a Configuración > Sistema > Idiomas e introducción de texto</string>
+    <string name="keyboard_setup_step2">2. Toca \"Teclado virtual\"</string>
+    <string name="keyboard_setup_step3">3. Toca \"Administrar teclados\"</string>
+    <string name="keyboard_setup_step4">4. Activa \"Teclado Leetspeak\"</string>
+    <string name="keyboard_setup_step5">5. Cambia al teclado Leetspeak en otras aplicaciones</string>
+
+    <!-- Permissions -->
+    <string name="permission_leet_data_read">Leer datos Leet</string>
+    <string name="permission_leet_data_write">Escribir datos Leet</string>
+    <string name="permission_leet_data_description">Permite el acceso a configuraciones leetspeak y favoritos</string>
+
+</resources>
