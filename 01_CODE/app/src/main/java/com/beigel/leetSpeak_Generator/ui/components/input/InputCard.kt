@@ -5,7 +5,6 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -25,7 +24,7 @@ import androidx.compose.ui.unit.sp
 import com.beigel.leetSpeak_Generator.ui.components.text.*
 
 /**
- * Input Card Component für Text-Eingabe
+ * Input Card Component für Text-Eingabe - OHNE RAHMEN
  * Unterstützt Reverse Mode und adaptive UI
  */
 @Composable
@@ -42,9 +41,6 @@ fun InputCard(
     val keyboardController = LocalSoftwareKeyboardController.current
     val focusManager = LocalFocusManager.current
 
-    // Character and word count
-    val charCount = inputText.length
-    val wordCount = if (inputText.isBlank()) 0 else inputText.trim().split("\\s+".toRegex()).size
 
     // Adaptive text size
     val adaptiveTextSize = remember(inputText.length) {
@@ -56,7 +52,7 @@ fun InputCard(
     }
 
     val cardColors = CardDefaults.cardColors(
-        containerColor = MaterialTheme.colorScheme.surface
+        containerColor = MaterialTheme.colorScheme.background
     )
 
     val headerTextColor = if (isReverseMode) {
@@ -74,10 +70,7 @@ fun InputCard(
     Card(
         modifier = modifier,
         colors = cardColors,
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        border = if (isReverseMode) {
-            BorderStroke(1.dp, borderColor.copy(alpha = 0.5f))
-        } else null
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(
             modifier = Modifier
@@ -89,9 +82,6 @@ fun InputCard(
                 InputCardHeader(
                     title = title,
                     headerTextColor = headerTextColor,
-                    charCount = charCount,
-                    wordCount = wordCount,
-                    currentTextSize = adaptiveTextSize,
                     hasText = inputText.isNotEmpty(),
                     onClearText = onClearText
                 )
@@ -109,13 +99,7 @@ fun InputCard(
                         isReverseMode = isReverseMode
                     )
                 },
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = borderColor,
-                    unfocusedBorderColor = borderColor.copy(alpha = 0.5f),
-                    cursorColor = borderColor
-                ),
                 shape = MaterialTheme.shapes.medium,
-                focusRequester = focusRequester,
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Default),
                 keyboardActions = KeyboardActions(
                     onDone = {
@@ -135,9 +119,6 @@ fun InputCard(
 private fun InputCardHeader(
     title: String,
     headerTextColor: androidx.compose.ui.graphics.Color,
-    charCount: Int,
-    wordCount: Int,
-    currentTextSize: androidx.compose.ui.unit.TextUnit,
     hasText: Boolean,
     onClearText: () -> Unit,
     modifier: Modifier = Modifier
@@ -154,14 +135,6 @@ private fun InputCardHeader(
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Medium,
                 color = headerTextColor
-            )
-
-            // Statistics
-            StatisticsChipRow(
-                charCount = charCount,
-                wordCount = wordCount,
-                currentTextSize = currentTextSize,
-                hasText = hasText
             )
         }
 
@@ -183,56 +156,5 @@ private fun InputCardHeader(
                 )
             }
         }
-    }
-}
-
-/**
- * Vereinfachte Input Card ohne Header
- */
-@Composable
-fun SimpleInputCard(
-    inputText: String,
-    onInputChange: (String) -> Unit,
-    modifier: Modifier = Modifier,
-    placeholder: String = "Text eingeben...",
-    isReverseMode: Boolean = false
-) {
-    val adaptiveTextSize = remember(inputText.length) {
-        when {
-            inputText.length <= 40 -> 30.sp
-            inputText.length <= 180 -> 22.sp
-            else -> 18.sp
-        }
-    }
-
-    Card(
-        modifier = modifier,
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-    ) {
-        AdaptiveTextField(
-            value = inputText,
-            onValueChange = onInputChange,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            placeholder = {
-                StaticPlaceholder(
-                    text = placeholder,
-                    adaptiveTextSize = adaptiveTextSize
-                )
-            },
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = if (isReverseMode) {
-                    MaterialTheme.colorScheme.secondary
-                } else {
-                    MaterialTheme.colorScheme.primary
-                },
-                unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
-            ),
-            shape = MaterialTheme.shapes.medium
-        )
     }
 }

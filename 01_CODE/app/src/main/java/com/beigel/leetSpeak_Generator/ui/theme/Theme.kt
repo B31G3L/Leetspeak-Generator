@@ -16,62 +16,91 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
-// Farben aus Ihren XML-Ressourcen
+// 🌞 LIGHT THEME - Warme helle Grautöne mit eleganten Akzenten
 private val LightColors = lightColorScheme(
-    primary = Color(0xFF2563EB),           // primary
-    onPrimary = Color(0xFFFFFFFF),         // on_primary
-    primaryContainer = Color(0xFF1E40AF),   // primary_variant
-    onPrimaryContainer = Color(0xFFFFFFFF),
+    // 🔵 PRIMARY (Plaintext-Modus) - Warmes Teal/Blaugrün
+    primary = Color(0xFF0D9488),           // Teal-600 - für Plaintext
+    onPrimary = Color(0xFFFFFFFF),
+    primaryContainer = Color(0xFFCCFBF1),  // Teal-100 - heller Container
+    onPrimaryContainer = Color(0xFF134E4A), // Teal-900
 
-    secondary = Color(0xFFF59E0B),         // secondary
-    onSecondary = Color(0xFFFFFFFF),       // on_secondary
-    secondaryContainer = Color(0xFFD97706), // secondary_variant
-    onSecondaryContainer = Color(0xFFFFFFFF),
+    // 🟠 SECONDARY (Leet-Modus) - Warmes Amber/Orange
+    secondary = Color(0xFFD97706),         // Amber-600 - für Leet-Text
+    onSecondary = Color(0xFFFFFFFF),
+    secondaryContainer = Color(0xFFFEF3C7), // Amber-100 - heller Container
+    onSecondaryContainer = Color(0xFF92400E), // Amber-800
 
-    background = Color(0xFFF8FAFC),        // background
-    onBackground = Color(0xFF1E293B),      // on_background
-    surface = Color(0xFFFFFFFF),           // surface
-    onSurface = Color(0xFF334155),         // on_surface
-    surfaceVariant = Color(0xFFE2E8F0),    // gray
-    onSurfaceVariant = Color(0xFF64748B),  // text_secondary
+    // 🔴 TERTIARY - Akzent für Reverse-Modus
+    tertiary = Color(0xFFDC2626),          // Red-600 - für Reverse-Modus
+    onTertiary = Color(0xFFFFFFFF),
+    tertiaryContainer = Color(0xFFFEE2E2), // Red-100
+    onTertiaryContainer = Color(0xFF7F1D1D), // Red-900
 
-    error = Color(0xFFEF4444),             // error
+    // 🎨 HINTERGRÜNDE - Warme Grautöne
+    background = Color(0xFFFAFAFA),        // Sehr helles Warmgrau
+    onBackground = Color(0xFF1F2937),      // Gray-800 - Haupttext
+
+    surface = Color(0xFFFFFFFF),           // Weiß für Cards
+    onSurface = Color(0xFF374151),         // Gray-700 - Card-Text
+    surfaceVariant = Color(0xFFF3F4F6),    // Gray-100 - subtile Backgrounds
+    onSurfaceVariant = Color(0xFF6B7280),  // Gray-500 - Secondary Text
+
+    // 🖼️ OUTLINES & BORDERS
+    outline = Color(0xFFD1D5DB),           // Gray-300 - Borders
+    outlineVariant = Color(0xFFE5E7EB),    // Gray-200 - subtile Borders
+
+    // ❌ ERROR
+    error = Color(0xFFEF4444),             // Red-500
     onError = Color(0xFFFFFFFF),
-
-    outline = Color(0xFF94A3B8),           // text_hint
-    outlineVariant = Color(0xFFE2E8F0)
+    errorContainer = Color(0xFFFEE2E2),    // Red-100
+    onErrorContainer = Color(0xFF7F1D1D)   // Red-900
 )
 
+// 🌙 DARK THEME - Warme dunkle Grautöne mit leuchtenden Akzenten
 private val DarkColors = darkColorScheme(
-    primary = Color(0xFF60A5FA),           // primary (Dark)
-    onPrimary = Color(0xFF1E293B),         // on_primary (Dark)
-    primaryContainer = Color(0xFF3B82F6),   // primary_variant (Dark)
-    onPrimaryContainer = Color(0xFF1E293B),
+    // 🔵 PRIMARY (Plaintext-Modus) - Helles Teal
+    primary = Color(0xFF5EEAD4),           // Teal-300 - für Plaintext
+    onPrimary = Color(0xFF134E4A),         // Teal-900
+    primaryContainer = Color(0xFF0F766E),  // Teal-700 - dunkler Container
+    onPrimaryContainer = Color(0xFFCCFBF1), // Teal-100
 
-    secondary = Color(0xFFFBBF24),         // secondary (Dark)
-    onSecondary = Color(0xFF1E293B),       // on_secondary (Dark)
-    secondaryContainer = Color(0xFFF59E0B), // secondary_variant (Dark)
-    onSecondaryContainer = Color(0xFF1E293B),
+    // 🟠 SECONDARY (Leet-Modus) - Helles Amber
+    secondary = Color(0xFFFBBF24),         // Amber-400 - für Leet-Text
+    onSecondary = Color(0xFF92400E),       // Amber-800
+    secondaryContainer = Color(0xFFB45309), // Amber-700 - dunkler Container
+    onSecondaryContainer = Color(0xFFFEF3C7), // Amber-100
 
-    background = Color(0xFF0F172A),        // background (Dark)
-    onBackground = Color(0xFFF1F5F9),      // on_background (Dark)
-    surface = Color(0xFF1E293B),           // surface (Dark)
-    onSurface = Color(0xFFE2E8F0),         // on_surface (Dark)
-    surfaceVariant = Color(0xFF334155),    // gray_light (Dark)
-    onSurfaceVariant = Color(0xFF94A3B8),  // text_secondary (Dark)
+    // 🔴 TERTIARY - Helles Rot für Reverse-Modus
+    tertiary = Color(0xFFF87171),          // Red-400
+    onTertiary = Color(0xFF7F1D1D),        // Red-900
+    tertiaryContainer = Color(0xFFB91C1C), // Red-600
+    onTertiaryContainer = Color(0xFFFEE2E2), // Red-100
 
-    error = Color(0xFFF87171),             // error (Dark)
-    onError = Color(0xFF000000),
+    // 🌙 DUNKLE HINTERGRÜNDE - Warme dunkle Grautöne
+    background = Color(0xFF111827),        // Gray-900 - Haupthintergrund
+    onBackground = Color(0xFFF9FAFB),      // Gray-50 - Haupttext
 
-    outline = Color(0xFF64748B),           // text_hint (Dark)
-    outlineVariant = Color(0xFF475569)
+    surface = Color(0xFF1F2937),           // Gray-800 - Cards
+    onSurface = Color(0xFFE5E7EB),         // Gray-200 - Card-Text
+    surfaceVariant = Color(0xFF374151),    // Gray-700 - subtile Surfaces
+    onSurfaceVariant = Color(0xFF9CA3AF),  // Gray-400 - Secondary Text
+
+    // 🖼️ DUNKLE OUTLINES
+    outline = Color(0xFF4B5563),           // Gray-600 - Borders
+    outlineVariant = Color(0xFF6B7280),    // Gray-500 - subtile Borders
+
+    // ❌ DUNKLER ERROR
+    error = Color(0xFFF87171),             // Red-400
+    onError = Color(0xFF7F1D1D),           // Red-900
+    errorContainer = Color(0xFFB91C1C),    // Red-600
+    onErrorContainer = Color(0xFFFEE2E2)   // Red-100
 )
 
 @Composable
 fun LeetspeakGeneratorTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    // Dynamic color is available on Android 12+
-    dynamicColor: Boolean = false, // Deaktiviert für konsistente Farben
+    // Dynamic color ist deaktiviert für konsistente Farben
+    dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
     val colorScheme = when {

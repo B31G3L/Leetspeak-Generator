@@ -170,16 +170,8 @@ private fun OutputCardHeader(
                         enter = fadeIn() + slideInVertically(),
                         exit = fadeOut() + slideOutVertically()
                     ) {
-                        TranslationStatisticsChips(
-                            translatedChars = stats.translatedChars,
-                            totalChars = stats.totalChars,
-                            translationPercentage = stats.translationPercentage
-                        )
-                    }
-                }
 
-                if (translationStats?.totalChars ?: 0 > 0) {
-                    TextSizeIndicatorChip(currentTextSize = currentTextSize)
+                    }
                 }
             }
         }
