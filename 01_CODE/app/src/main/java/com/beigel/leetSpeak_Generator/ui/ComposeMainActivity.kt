@@ -190,8 +190,8 @@ fun MainScreen(
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface,
-                    titleContentColor = MaterialTheme.colorScheme.onSurface
+                    containerColor = MaterialTheme.colorScheme.background,
+                    titleContentColor = MaterialTheme.colorScheme.onBackground
                 ),
                 actions = {
                     IconButton(onClick = { showAboutDialog = true }) {
@@ -210,10 +210,9 @@ fun MainScreen(
             )
         },
         bottomBar = {
-            // Bestehende BottomAppBar bleibt gleich...
             BottomAppBar(
-                containerColor = MaterialTheme.colorScheme.surface,
-                contentColor = MaterialTheme.colorScheme.onSurface,
+                containerColor = MaterialTheme.colorScheme.background,
+                contentColor = MaterialTheme.colorScheme.onBackground,
                 tonalElevation = 0.dp,
                 modifier = Modifier.then(
                     if (isKeyboardVisible) {
@@ -249,7 +248,6 @@ fun MainScreen(
         }
     ) { paddingValues ->
 
-        // Bestehender Content bleibt gleich...
         Column(
             modifier = Modifier
                 .fillMaxSize()

@@ -51,7 +51,7 @@ fun OutputCard(
     }
 
     val cardColors = CardDefaults.cardColors(
-        containerColor = MaterialTheme.colorScheme.surface
+        containerColor = MaterialTheme.colorScheme.background
     )
 
     val headerTextColor = if (isReverseMode) {
@@ -80,10 +80,6 @@ fun OutputCard(
     ) {
         Card(
             colors = cardColors,
-            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-            border = if (!isReverseMode) {
-                BorderStroke(1.dp, borderColor.copy(alpha = 0.5f))
-            } else null
         ) {
             Column(
                 modifier = Modifier
@@ -117,12 +113,12 @@ fun OutputCard(
                             focusedBorderColor = borderColor,
                             unfocusedBorderColor = borderColor.copy(alpha = 0.5f),
                             disabledBorderColor = borderColor.copy(alpha = 0.5f),
-                            focusedContainerColor = MaterialTheme.colorScheme.surface,
-                            unfocusedContainerColor = MaterialTheme.colorScheme.surface,
-                            disabledContainerColor = MaterialTheme.colorScheme.surface,
-                            focusedTextColor = MaterialTheme.colorScheme.onSurface,
-                            unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
-                            disabledTextColor = MaterialTheme.colorScheme.onSurface
+                            focusedContainerColor = MaterialTheme.colorScheme.background,
+                            unfocusedContainerColor = MaterialTheme.colorScheme.background,
+                            disabledContainerColor = MaterialTheme.colorScheme.background,
+                            focusedTextColor = MaterialTheme.colorScheme.onBackground,
+                            unfocusedTextColor = MaterialTheme.colorScheme.onBackground,
+                            disabledTextColor = MaterialTheme.colorScheme.onBackground
                         ),
                         shape = MaterialTheme.shapes.medium
                     )
