@@ -12,7 +12,6 @@ import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -36,10 +35,12 @@ import com.beigel.leetSpeak_Generator.ui.components.LeetSelectorBottomSheet
 import com.beigel.leetSpeak_Generator.ui.theme.LeetspeakGeneratorTheme
 import com.beigel.leetSpeak_Generator.viewmodel.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.delay
 import com.beigel.leetSpeak_Generator.presentation.intent.MainIntent
 import com.beigel.leetSpeak_Generator.ui.components.WhatsNewDialog
+import com.beigel.leetSpeak_Generator.ui.components.input.InputCard
 import com.beigel.leetSpeak_Generator.ui.settings.SettingsActivity
+import com.beigel.leetSpeak_Generator.ui.components.output.OutputCard
+
 
 
 @AndroidEntryPoint
@@ -321,236 +322,6 @@ fun MainScreen(
     }
 }
 
-// Bestehende Helper Functions bleiben unverändert...
-// (EnhancedAnimatedArrows, ModeSelectorButton, InputCard, OutputCard, HandleUiState)
-
-
-@Composable
-fun InputCard(
-    inputText: String,
-    onInputChange: (String) -> Unit,
-    onClearText: () -> Unit,
-    showHeader: Boolean = true,
-    isReverseMode: Boolean = false, // ✅ NEU: Reverse-Modus Parameter
-    title: String = "Input: Plaintext", // ✅ NEU: Title Parameter
-    modifier: Modifier = Modifier
-) {
-    // Adaptive Textgröße
-    val adaptiveTextSize = remember(inputText.length) {
-        when {
-            inputText.length <= 50 -> 18.sp
-            inputText.length <= 200 -> 16.sp
-            inputText.length <= 500 -> 14.sp
-            else -> 12.sp
-        }
-    }
-
-    val adaptiveLineHeight = adaptiveTextSize * 1.4f
-
-    val cardColors =  CardDefaults.cardColors(
-        containerColor = MaterialTheme.colorScheme.surface
-    )
-
-    val headerTextColor = if (isReverseMode) {
-        MaterialTheme.colorScheme.secondary
-    } else {
-        MaterialTheme.colorScheme.primary
-    }
-
-    val borderColor = if (isReverseMode) {
-        MaterialTheme.colorScheme.secondary
-    } else {
-        MaterialTheme.colorScheme.primary
-    }
-
-    Card(
-        modifier = modifier,
-        colors = cardColors,
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        border = BorderStroke(1.dp, borderColor.copy(alpha = 0.3f)) // ✅ Immer Border
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(8.dp)
-        ) {
-            if (showHeader) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = title,
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Medium,
-                        color = headerTextColor
-                    )
-
-                    if (inputText.isNotEmpty()) {
-                        IconButton(
-                            onClick = onClearText,
-                            modifier = Modifier.size(28.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Clear,
-                                contentDescription = "Clear",
-                                modifier = Modifier.size(16.dp),
-                                tint = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(8.dp))
-            }
-
-            OutlinedTextField(
-                value = inputText,
-                onValueChange = onInputChange,
-                modifier = Modifier.fillMaxSize(),
-                placeholder = {
-                    Text(
-                        text = if (isReverseMode) {
-                            "Leetspeak Text eingeben..."
-                        } else {
-                            "Hier deinen Text eingeben..."
-                        },
-                        style = MaterialTheme.typography.bodyLarge.copy(
-                            fontSize = adaptiveTextSize
-                        )
-                    )
-                },
-                textStyle = MaterialTheme.typography.bodyLarge.copy(
-                    fontSize = adaptiveTextSize,
-                    lineHeight = adaptiveLineHeight
-                ),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = borderColor,
-                    unfocusedBorderColor = borderColor.copy(alpha = 0.5f)
-                ),
-                shape = MaterialTheme.shapes.medium,
-                singleLine = false
-            )
-        }
-    }
-}
-
-@Composable
-fun OutputCard(
-    outputText: String,
-    currentMode: String,
-    onCopyClick: () -> Unit,
-    showHeader: Boolean = true,
-    isReverseMode: Boolean = false, // ✅ NEU: Reverse-Modus Parameter
-    modifier: Modifier = Modifier
-) {
-    var showCopyFeedback by remember { mutableStateOf(false) }
-
-    val adaptiveTextSize = remember(outputText.length) {
-        when {
-            outputText.length <= 50 -> 18.sp
-            outputText.length <= 200 -> 16.sp
-            outputText.length <= 500 -> 14.sp
-            else -> 12.sp
-        }
-    }
-
-    val adaptiveLineHeight = adaptiveTextSize * 1.4f
-
-    LaunchedEffect(showCopyFeedback) {
-        if (showCopyFeedback) {
-            delay(1500)
-            showCopyFeedback = false
-        }
-    }
-
-    val cardColors =  CardDefaults.cardColors(
-        containerColor = MaterialTheme.colorScheme.surface
-    )
-
-    val headerTextColor = if (isReverseMode) {
-        MaterialTheme.colorScheme.primary
-    } else {
-        MaterialTheme.colorScheme.secondary
-    }
-
-    val borderColor = if (isReverseMode) {
-        MaterialTheme.colorScheme.primary
-    } else {
-        MaterialTheme.colorScheme.secondary
-    }
-
-    Card(
-        modifier = modifier,
-        colors = cardColors,
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        border = BorderStroke(1.dp, borderColor.copy(alpha = 0.3f)) // ✅ Immer Border
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(8.dp)
-        ) {
-            if (showHeader) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = currentMode,
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Medium,
-                        color = headerTextColor
-                    )
-
-                    IconButton(
-                        onClick = {
-                            onCopyClick()
-                            showCopyFeedback = true
-                        },
-                        modifier = Modifier.size(36.dp)
-                    ) {
-                        AnimatedContent(
-                            targetState = showCopyFeedback,
-                            transitionSpec = {
-                                scaleIn() + fadeIn() togetherWith scaleOut() + fadeOut()
-                            },
-                            label = "copy_feedback"
-                        ) { feedback ->
-                            Icon(
-                                imageVector = if (feedback) Icons.Default.Check else Icons.Default.ContentCopy,
-                                contentDescription = if (feedback) "Kopiert!" else "Kopieren",
-                                tint = headerTextColor,
-                                modifier = Modifier.size(18.dp)
-                            )
-                        }
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(8.dp))
-            }
-
-            OutlinedTextField(
-                value = outputText,
-                onValueChange = { },
-                modifier = Modifier.fillMaxSize(),
-                readOnly = true,
-                textStyle = MaterialTheme.typography.bodyLarge.copy(
-                    fontSize = adaptiveTextSize,
-                    lineHeight = adaptiveLineHeight
-                ),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = borderColor,
-                    unfocusedBorderColor = borderColor.copy(alpha = 0.5f),
-                ),
-                shape = MaterialTheme.shapes.medium,
-                singleLine = false
-            )
-        }
-    }
-}
 
 // ✅ MODE SELECTOR BUTTON - Standalone Komponente
 @Composable
