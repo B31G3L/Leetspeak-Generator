@@ -251,7 +251,6 @@ class MainViewModel @Inject constructor(
     }
 
     private fun toggleReverseMode() {
-        val currentInput = inputText.value
         val currentOutputBeforeToggle = outputText.value
 
         uiManager.toggleReverseMode()

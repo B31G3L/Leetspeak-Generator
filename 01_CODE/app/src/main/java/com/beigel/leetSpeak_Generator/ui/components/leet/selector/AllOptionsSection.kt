@@ -169,7 +169,6 @@ private fun DetailedListView(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun CompactCard(
     option: LeetOption,
@@ -264,7 +263,6 @@ private fun CompactCard(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun DetailedCard(
     option: LeetOption,

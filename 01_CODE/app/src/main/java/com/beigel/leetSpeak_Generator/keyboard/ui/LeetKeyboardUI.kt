@@ -1,5 +1,6 @@
 package com.beigel.leetSpeak_Generator.keyboard.ui
 
+import android.annotation.SuppressLint
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.*
@@ -10,6 +11,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Backspace
+import androidx.compose.material.icons.automirrored.filled.KeyboardReturn
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -29,6 +32,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.beigel.leetSpeak_Generator.keyboard.LeetKeyboardViewModel
 import com.beigel.leetSpeak_Generator.translation.LeetTranslator
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.launch
 
 /**
@@ -42,6 +46,7 @@ import kotlinx.coroutines.launch
  * - Mode Indicators
  * - Smart Suggestions
  */
+@OptIn(DelicateCoroutinesApi::class)
 @Composable
 fun LeetKeyboardUI(
     viewModel: LeetKeyboardViewModel,
@@ -355,7 +360,7 @@ private fun KeyboardLayout(
             isLeetModeActive = isLeetModeActive,
             specialKey = KeyboardKey.Special(
                 "⌫",
-                Icons.Default.Backspace,
+                Icons.AutoMirrored.Filled.Backspace,
                 action = "BACKSPACE"
             ),
             onSpecialAction = { onKeyPress("BACKSPACE") }
@@ -379,7 +384,7 @@ private fun KeyboardRow(
     isLeetModeActive: Boolean,
     specialKey: KeyboardKey.Special? = null,
     onSpecialAction: (String) -> Unit,
-    modifier: Modifier = Modifier
+    @SuppressLint("ModifierParameter") modifier: Modifier = Modifier
 ) {
     Row(
         modifier = modifier.fillMaxWidth(),
@@ -441,7 +446,7 @@ private fun BottomRow(
 
         // Enter
         KeyboardButton(
-            key = KeyboardKey.Special("↵", Icons.Default.KeyboardReturn, "ENTER"),
+            key = KeyboardKey.Special("↵", Icons.AutoMirrored.Filled.KeyboardReturn, "ENTER"),
             onPress = { onKeyPress("ENTER") },
             isPressed = pressedKey == "ENTER",
             isLeetModeActive = isLeetModeActive,

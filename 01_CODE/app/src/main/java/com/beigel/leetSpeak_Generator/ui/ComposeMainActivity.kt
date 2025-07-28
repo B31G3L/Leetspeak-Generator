@@ -10,7 +10,6 @@ import android.os.Vibrator
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
-import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
@@ -110,8 +109,6 @@ fun MainScreen(
     val inputText by viewModel.inputText.collectAsStateWithLifecycle()
     val outputText by viewModel.outputText.collectAsStateWithLifecycle()
     val currentModeDisplayName by viewModel.currentModeDisplayName.collectAsStateWithLifecycle()
-    val currentMode by viewModel.currentMode.collectAsStateWithLifecycle()
-    val currentLeet by viewModel.currentLeet.collectAsStateWithLifecycle()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val isReverseMode by viewModel.isReverseMode.collectAsStateWithLifecycle()
     val isInputLikelyLeetspeak by viewModel.isInputLikelyLeetspeak.collectAsStateWithLifecycle()
@@ -124,7 +121,6 @@ fun MainScreen(
     val density = LocalDensity.current
     val keyboardHeight = WindowInsets.ime.getBottom(density)
     val isKeyboardVisible = keyboardHeight > 100
-    val hasInput = inputText.isNotEmpty()
     val hasOutput = outputText.isNotEmpty()
 
     var showBottomSheet by remember { mutableStateOf(false) }

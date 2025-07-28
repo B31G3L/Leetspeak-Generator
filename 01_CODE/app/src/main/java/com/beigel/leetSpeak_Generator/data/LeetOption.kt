@@ -20,39 +20,6 @@ data class LeetOption(
     var isFavorite: Boolean = false
 ) {
 
-    /**
-     * Creates a copy with updated selection state
-     */
-    fun withSelection(selected: Boolean): LeetOption =
-        copy(isSelected = selected)
-
-    /**
-     * Creates a copy with updated favorite state
-     */
-    fun withFavorite(favorite: Boolean): LeetOption =
-        copy(isFavorite = favorite)
-
-    /**
-     * Toggles the favorite state and returns a new instance
-     */
-    fun toggleFavorite(): LeetOption =
-        copy(isFavorite = !isFavorite)
-
-    /**
-     * Checks if this option represents a built-in leet mode
-     */
-    val isBuiltIn: Boolean
-        get() = !isCustom
-
-    /**
-     * Gets a display-friendly description including state indicators
-     */
-    val displayDescription: String
-        get() = buildString {
-            append(description)
-            if (isFavorite) append(" ⭐")
-            if (isSelected) append(" ✓")
-        }
 
     companion object {
         /**

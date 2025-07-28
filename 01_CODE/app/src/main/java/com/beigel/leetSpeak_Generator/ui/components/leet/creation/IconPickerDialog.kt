@@ -28,7 +28,6 @@ fun IconPickerDialog(
     selectedIcon: ImageVector,
     onIconSelected: (ImageVector) -> Unit,
     onDismiss: () -> Unit,
-    modifier: Modifier = Modifier
 ) {
     // Kuratierte Liste von Material Icons für verschiedene Leet-Kategorien
     val availableIcons = listOf(

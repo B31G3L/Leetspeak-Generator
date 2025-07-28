@@ -15,7 +15,7 @@ import javax.inject.Inject
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
     private val themePreferences: ThemePreferences,
-    private val leetRepository: LeetRepository
+    leetRepository: LeetRepository
 ) : ViewModel() {
 
     val themeMode: StateFlow<String> = themePreferences.themeMode

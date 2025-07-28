@@ -2,7 +2,6 @@ package com.beigel.leetSpeak_Generator.ui.components.output
 
 import androidx.compose.animation.*
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
@@ -12,9 +11,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.beigel.leetSpeak_Generator.translation.LeetTranslator
 import com.beigel.leetSpeak_Generator.ui.components.text.*
 import kotlinx.coroutines.delay
@@ -35,13 +32,6 @@ fun OutputCard(
 ) {
     var showCopyFeedback by remember { mutableStateOf(false) }
 
-    val adaptiveTextSize = remember(outputText.length) {
-        when {
-            outputText.length <= 40 -> 30.sp
-            outputText.length <= 180 -> 22.sp
-            else -> 18.sp
-        }
-    }
 
     LaunchedEffect(showCopyFeedback) {
         if (showCopyFeedback) {
@@ -92,7 +82,6 @@ fun OutputCard(
                         currentMode = currentMode,
                         headerTextColor = headerTextColor,
                         translationStats = translationStats,
-                        currentTextSize = adaptiveTextSize,
                         showCopyFeedback = showCopyFeedback,
                         onCopyClick = {
                             onCopyClick()
@@ -136,7 +125,6 @@ private fun OutputCardHeader(
     currentMode: String,
     headerTextColor: androidx.compose.ui.graphics.Color,
     translationStats: LeetTranslator.TranslationStats?,
-    currentTextSize: androidx.compose.ui.unit.TextUnit,
     showCopyFeedback: Boolean,
     onCopyClick: () -> Unit,
     modifier: Modifier = Modifier
@@ -234,107 +222,6 @@ private fun CopyButton(
                 color = tint,
                 shape = androidx.compose.foundation.shape.CircleShape
             ) {}
-        }
-    }
-}
-
-/**
- * Placeholder für leere Output
- */
-@Composable
-fun OutputPlaceholder(
-    modifier: Modifier = Modifier,
-    message: String = "Text eingeben für Leetspeak-Übersetzung"
-) {
-    Box(
-        modifier = modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
-            Icon(
-                imageVector = Icons.Default.Transform,
-                contentDescription = null,
-                modifier = Modifier.size(48.dp),
-                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-            Text(
-                text = message,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
-                textAlign = TextAlign.Center
-            )
-        }
-    }
-}
-
-/**
- * Kompakte Output Card ohne Header
- */
-@Composable
-fun SimpleOutputCard(
-    outputText: String,
-    onCopyClick: () -> Unit,
-    modifier: Modifier = Modifier,
-    isReverseMode: Boolean = false
-) {
-    var showCopyFeedback by remember { mutableStateOf(false) }
-
-    LaunchedEffect(showCopyFeedback) {
-        if (showCopyFeedback) {
-            delay(1500)
-            showCopyFeedback = false
-        }
-    }
-
-    Card(
-        modifier = modifier,
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-    ) {
-        Column(
-            modifier = Modifier.padding(16.dp)
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "Ergebnis",
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.Medium,
-                    modifier = Modifier.weight(1f)
-                )
-
-                CopyButton(
-                    showCopyFeedback = showCopyFeedback,
-                    onCopyClick = {
-                        onCopyClick()
-                        showCopyFeedback = true
-                    },
-                    tint = if (isReverseMode) {
-                        MaterialTheme.colorScheme.primary
-                    } else {
-                        MaterialTheme.colorScheme.secondary
-                    }
-                )
-            }
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            SelectionContainer {
-                Text(
-                    text = outputText,
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-            }
         }
     }
 }

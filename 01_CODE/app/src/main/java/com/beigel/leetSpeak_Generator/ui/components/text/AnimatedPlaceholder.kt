@@ -36,7 +36,7 @@ fun AnimatedPlaceholder(
         )
     }
 
-    var currentIndex by remember { mutableStateOf(0) }
+    var currentIndex by remember { mutableIntStateOf(0) }
 
     LaunchedEffect(Unit) {
         while (true) {
@@ -64,61 +64,3 @@ fun AnimatedPlaceholder(
     }
 }
 
-/**
- * Einfacher statischer Platzhalter
- */
-@Composable
-fun StaticPlaceholder(
-    text: String,
-    adaptiveTextSize: TextUnit,
-    modifier: Modifier = Modifier
-) {
-    Text(
-        text = text,
-        style = MaterialTheme.typography.bodyLarge.copy(
-            fontSize = adaptiveTextSize
-        ),
-        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
-        modifier = modifier
-    )
-}
-
-/**
- * Typing-Animation Platzhalter (simuliert Tippen)
- */
-@Composable
-fun TypingPlaceholder(
-    fullText: String,
-    adaptiveTextSize: TextUnit,
-    modifier: Modifier = Modifier,
-    typingSpeed: Long = 100L
-) {
-    var visibleText by remember { mutableStateOf("") }
-    var isTyping by remember { mutableStateOf(true) }
-
-    LaunchedEffect(fullText) {
-        visibleText = ""
-        isTyping = true
-
-        fullText.forEachIndexed { index, _ ->
-            delay(typingSpeed)
-            visibleText = fullText.substring(0, index + 1)
-        }
-
-        isTyping = false
-        delay(2000) // Pause before restarting
-
-        // Restart animation
-        visibleText = ""
-        isTyping = true
-    }
-
-    Text(
-        text = visibleText + if (isTyping) "|" else "",
-        style = MaterialTheme.typography.bodyLarge.copy(
-            fontSize = adaptiveTextSize
-        ),
-        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
-        modifier = modifier
-    )
-}

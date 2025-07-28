@@ -10,13 +10,13 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -57,7 +57,6 @@ fun SettingsScreen(
     viewModel: SettingsViewModel,
     onBackPressed: () -> Unit
 ) {
-    val context = LocalContext.current
     val scope = rememberCoroutineScope()
 
     val themeMode by viewModel.themeMode.collectAsStateWithLifecycle()
@@ -266,7 +265,7 @@ fun ViewSelector(
             key = true,
             name = "Listen-Ansicht",
             description = "Detaillierte Darstellung mit allen Buttons",
-            icon = Icons.Default.List
+            icon = Icons.AutoMirrored.Filled.List
         )
     )
 

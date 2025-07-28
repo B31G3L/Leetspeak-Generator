@@ -10,7 +10,6 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.sp
@@ -29,7 +28,6 @@ fun AdaptiveTextField(
     singleLine: Boolean = false,
     maxLines: Int = Int.MAX_VALUE,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
-    keyboardActions: KeyboardActions = KeyboardActions.Default,
     colors: TextFieldColors = OutlinedTextFieldDefaults.colors(),
     shape: androidx.compose.ui.graphics.Shape = MaterialTheme.shapes.medium,
     focusRequester: FocusRequester? = null,
@@ -89,49 +87,4 @@ fun AdaptiveTextField(
         colors = colors,
         shape = shape
     )
-}
-
-/**
- * Utility-Funktionen für adaptive Textgrößen
- */
-object AdaptiveTextUtils {
-
-    /**
-     * Berechnet optimale Schriftgröße basierend auf Textlänge
-     */
-    fun calculateOptimalFontSize(
-        textLength: Int,
-        minSize: TextUnit = 12.sp,
-        maxSize: TextUnit = 30.sp
-    ): TextUnit {
-        return when {
-            textLength <= 40 -> maxSize
-            textLength <= 180 -> 22.sp
-            textLength <= 500 -> 16.sp
-            else -> minSize
-        }
-    }
-
-    /**
-     * Berechnet optimale Zeilenhöhe basierend auf Schriftgröße
-     */
-    fun calculateLineHeight(fontSize: TextUnit): TextUnit {
-        return when {
-            fontSize.value >= 30f -> fontSize * 1.25f
-            fontSize.value >= 22f -> fontSize * 1.3f
-            else -> fontSize * 1.35f
-        }
-    }
-
-    /**
-     * Bestimmt Text-Size Label für UI-Anzeige
-     */
-    fun getTextSizeLabel(fontSize: TextUnit): String {
-        return when {
-            fontSize.value >= 30f -> "XXL"
-            fontSize.value >= 22f -> "XL"
-            fontSize.value >= 16f -> "L"
-            else -> "M"
-        }
-    }
 }

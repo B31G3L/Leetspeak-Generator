@@ -54,7 +54,6 @@ fun FavoritesSection(
  * - Vereinfachte Surface-Operationen
  * - Reduzierte State Dependencies
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun FullWidthFavoriteCard(
     option: LeetOption,
