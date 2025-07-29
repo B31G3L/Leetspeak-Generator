@@ -2,10 +2,12 @@ package com.beigel.leetSpeak_Generator.ui.components.leet.selector
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.*
+import androidx.compose.ui.res.stringResource
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
+import com.beigel.leetSpeak_Generator.R
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -80,7 +82,7 @@ private fun AllOptionsHeader(
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = "Alle Modi",
+                    text =  stringResource(R.string.leet_selector_all_modes),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Medium,
                     color = MaterialTheme.colorScheme.primary
@@ -105,7 +107,7 @@ private fun AllOptionsHeader(
             ) {
                 Icon(
                     imageVector = if (showExpandedView) Icons.Default.GridView else Icons.AutoMirrored.Filled.List,
-                    contentDescription = if (showExpandedView) "Grid-Ansicht" else "Listen-Ansicht",
+                    contentDescription = if (showExpandedView) stringResource(R.string.leet_selector_grid_view) else stringResource(R.string.leet_selector_list_view),
                     modifier = Modifier.size(18.dp),
                     tint = MaterialTheme.colorScheme.primary
                 )
@@ -210,7 +212,7 @@ private fun CompactCard(
                 ) {
                     Icon(
                         imageVector = if (option.isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-                        contentDescription = "Favorit umschalten",
+                        contentDescription = stringResource(R.string.leet_selector_toggle_favorite),
                         modifier = Modifier.size(14.dp),
                         tint = if (option.isFavorite) {
                             MaterialTheme.colorScheme.secondary
@@ -252,7 +254,7 @@ private fun CompactCard(
             if (option.isSelected) {
                 Icon(
                     imageVector = Icons.Default.CheckCircle,
-                    contentDescription = "Ausgewählt",
+                    contentDescription = stringResource(R.string.leet_selector_selected),
                     modifier = Modifier
                         .align(Alignment.BottomStart)
                         .size(20.dp),
@@ -326,7 +328,7 @@ private fun DetailedCard(
                         Spacer(modifier = Modifier.width(4.dp))
                         Icon(
                             imageVector = Icons.Default.CheckCircle,
-                            contentDescription = "Ausgewählt",
+                            contentDescription = stringResource(R.string.leet_selector_selected),
                             modifier = Modifier.size(14.dp),
                             tint = MaterialTheme.colorScheme.primary
                         )
@@ -358,7 +360,7 @@ private fun ActionButtons(
         ) {
             Icon(
                 imageVector = if (option.isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-                contentDescription = "Favorit umschalten",
+                contentDescription = stringResource(R.string.leet_selector_toggle_favorite),
                 modifier = Modifier.size(16.dp),
                 tint = MaterialTheme.colorScheme.secondary
             )
@@ -370,7 +372,7 @@ private fun ActionButtons(
         ) {
             Icon(
                 imageVector = Icons.Default.TableChart,
-                contentDescription = "Tabelle anzeigen",
+                contentDescription = stringResource(R.string.leet_selector_show_table),
                 modifier = Modifier.size(16.dp),
                 tint = MaterialTheme.colorScheme.primary
             )
@@ -383,7 +385,7 @@ private fun ActionButtons(
             ) {
                 Icon(
                     imageVector = Icons.Default.Edit,
-                    contentDescription = "Bearbeiten",
+                    contentDescription = stringResource(R.string.leet_selector_edit),
                     modifier = Modifier.size(16.dp),
                     tint = MaterialTheme.colorScheme.primary
                 )

@@ -2,7 +2,10 @@ package com.beigel.leetSpeak_Generator.data
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
+import com.beigel.leetSpeak_Generator.R
 import com.beigel.leetSpeak_Generator.manager.LeetManager
 
 /**
@@ -25,11 +28,12 @@ data class LeetOption(
         /**
          * Creates a Simple Leet option
          */
+        @Composable
         fun createSimple(isSelected: Boolean = false, isFavorite: Boolean = false): LeetOption =
             LeetOption(
                 mode = LeetManager.MODE_SIMPLE,
                 name = "Simple Leet",
-                description = "Einfache Leetspeak-Übersetzung",
+                description = stringResource(R.string.simple_leet_description),
                 iconImageVector = Icons.Default.TextFields,
                 isCustom = false,
                 customIndex = -1,
@@ -40,11 +44,12 @@ data class LeetOption(
         /**
          * Creates an Extended Leet option
          */
+        @Composable
         fun createExtended(isSelected: Boolean = false, isFavorite: Boolean = false): LeetOption =
             LeetOption(
                 mode = LeetManager.MODE_EXTENDED,
                 name = "Extended Leet",
-                description = "Erweiterte Leetspeak-Übersetzung",
+                description = stringResource(R.string.extended_leet_description),
                 iconImageVector = Icons.Default.Extension,
                 isCustom = false,
                 customIndex = -1,
@@ -55,6 +60,7 @@ data class LeetOption(
         /**
          * Creates a Custom Leet option from a profile
          */
+        @Composable
         fun createCustom(
             leet: CustomLeet,
             customIndex: Int,
@@ -64,7 +70,7 @@ data class LeetOption(
             LeetOption(
                 mode = LeetManager.MODE_CUSTOM,
                 name = leet.name,
-                description = "Benutzerdefiniertes Leet",
+                description = stringResource(R.string.custom_leet_description),
                 iconImageVector = leet.iconImageVector,
                 isCustom = true,
                 customIndex = customIndex,

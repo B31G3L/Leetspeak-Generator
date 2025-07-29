@@ -23,12 +23,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.view.WindowCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.beigel.leetSpeak_Generator.R
 import com.beigel.leetSpeak_Generator.ui.components.AboutDialog
 import com.beigel.leetSpeak_Generator.ui.components.LeetSelectorBottomSheet
 import com.beigel.leetSpeak_Generator.ui.theme.LeetspeakGeneratorTheme
@@ -147,7 +149,7 @@ fun MainScreen(
                 title = {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(
-                            "Leetspeak Generator",
+                            stringResource(R.string.app_name),
                             fontWeight = FontWeight.Bold,
                             style = MaterialTheme.typography.headlineSmall.copy(fontSize = 22.sp)
                         )
@@ -198,7 +200,7 @@ fun MainScreen(
                         )
                     }
                     IconButton(onClick = onOpenSettings) {
-                        Icon(Icons.Default.Settings, "Einstellungen")
+                        Icon(Icons.Default.Settings,  stringResource(R.string.settings))
                     }
 
 
@@ -477,9 +479,9 @@ private fun EnhancedAnimatedArrows(
             // Info Text
             Text(
                 text = when {
-                    isReverseMode -> "Reverse"
-                    isInputLikelyLeetspeak -> "Leet erkannt!"
-                    else -> "Modus"
+                    isReverseMode -> stringResource(R.string.mode_display_reverse)
+                    isInputLikelyLeetspeak -> stringResource(R.string.mode_display_leet_detected)
+                    else -> stringResource(R.string.mode_display_mode)
                 },
                 style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp),
                 color = when {

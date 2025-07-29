@@ -17,9 +17,11 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.beigel.leetSpeak_Generator.R
 import com.beigel.leetSpeak_Generator.data.ThemePreferences
 import com.beigel.leetSpeak_Generator.ui.theme.LeetspeakGeneratorTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -65,10 +67,10 @@ fun SettingsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Einstellungen") },
+                title = { Text(stringResource(R.string.settings_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBackPressed) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "Zurück")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.settings_back))
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -89,7 +91,7 @@ fun SettingsScreen(
             // Theme Selection
             item {
                 SettingsSection(
-                    title = "Darstellung",
+                    title = stringResource(R.string.settings_appearance),
                     icon = Icons.Default.Palette
                 ) {
                     ThemeSelector(
@@ -106,7 +108,7 @@ fun SettingsScreen(
             // View Settings
             item {
                 SettingsSection(
-                    title = "Ansicht",
+                    title = stringResource(R.string.settings_view),
                     icon = Icons.Default.ViewModule
                 ) {
                     ViewSelector(
@@ -123,7 +125,7 @@ fun SettingsScreen(
             // Widget Settings
             item {
                 SettingsSection(
-                    title = "Widget",
+                    title = stringResource(R.string.settings_widget),
                     icon = Icons.Default.Widgets
                 ) {
                     WidgetSettings(viewModel = viewModel)
@@ -133,7 +135,7 @@ fun SettingsScreen(
             // About Section
             item {
                 SettingsSection(
-                    title = "Über die App",
+                    title =stringResource(R.string. settings_about_app),
                     icon = Icons.Default.Info
                 ) {
                     AboutSection()
@@ -190,20 +192,20 @@ fun ThemeSelector(
     val themes = listOf(
         ThemeOption(
             key = ThemePreferences.THEME_SYSTEM,
-            name = "System",
-            description = "Folgt den Systemeinstellungen",
+            name = stringResource(R.string.theme_system),
+            description = stringResource(R.string.theme_system_desc),
             icon = Icons.Default.Settings
         ),
         ThemeOption(
             key = ThemePreferences.THEME_LIGHT,
-            name = "Hell",
-            description = "Helles Design",
+            name = stringResource(R.string.theme_light),
+            description = stringResource(R.string.theme_light_desc),
             icon = Icons.Default.LightMode
         ),
         ThemeOption(
             key = ThemePreferences.THEME_DARK,
-            name = "Dunkel",
-            description = "Dunkles Design",
+            name = stringResource(R.string.theme_dark),
+            description = stringResource(R.string.theme_dark_desc),
             icon = Icons.Default.DarkMode
         )
     )

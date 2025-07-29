@@ -7,8 +7,10 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.beigel.leetSpeak_Generator.R
 
 /**
  * Header Component für den Leet Selector mit "Neu erstellen" Button
@@ -26,7 +28,7 @@ fun LeetSelectorHeader(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
-            text = "Leet-Modus auswählen",
+            text = stringResource(R.string.leet_selector_title),
             style = MaterialTheme.typography.headlineSmall,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.weight(1f)
@@ -44,7 +46,7 @@ fun LeetSelectorHeader(
                 modifier = Modifier.size(18.dp)
             )
             Spacer(modifier = Modifier.width(4.dp))
-            Text("Neu")
+            Text(stringResource(R.string.leet_selector_new))
         }
     }
 }
