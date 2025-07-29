@@ -5,6 +5,8 @@ import androidx.datastore.preferences.core.edit
 import androidx.test.core.app.ApplicationProvider
 import app.cash.turbine.test
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Before
@@ -183,8 +185,8 @@ class ThemePreferencesTest {
 
     @Test
     fun `concurrent theme changes are handled correctly`() = runTest {
-        val jobs = List(10) { i ->
-            kotlinx.coroutines.launch {
+        val jobs: List<Job> = List(10) { i ->
+            launch {
                 val theme = when (i % 3) {
                     0 -> ThemePreferences.THEME_SYSTEM
                     1 -> ThemePreferences.THEME_LIGHT
@@ -211,8 +213,8 @@ class ThemePreferencesTest {
 
     @Test
     fun `concurrent expanded state changes are handled correctly`() = runTest {
-        val jobs = List(10) { i ->
-            kotlinx.coroutines.launch {
+        val jobs: List<Job> = List(10) { i ->
+            launch {
                 themePreferences.setDefaultViewExpanded(i % 2 == 0)
             }
         }

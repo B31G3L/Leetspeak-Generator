@@ -7,6 +7,9 @@ import androidx.datastore.preferences.core.edit
 import androidx.test.core.app.ApplicationProvider
 import app.cash.turbine.test
 import io.mockk.*
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Before
@@ -18,6 +21,7 @@ import org.robolectric.RobolectricTestRunner
 /**
  * Tests für WhatsNewPreferences
  */
+@OptIn(ExperimentalCoroutinesApi::class)
 @RunWith(RobolectricTestRunner::class)
 class WhatsNewPreferencesTest {
 
@@ -270,8 +274,8 @@ class WhatsNewPreferencesTest {
 
     @Test
     fun `concurrent operations are handled safely`() = runTest {
-        val jobs = List(10) { i ->
-            kotlinx.coroutines.launch {
+        val jobs: List<Job> = List(10) { i ->
+            launch {
                 when (i % 3) {
                     0 -> whatsNewPreferences.markCurrentVersionAsShown()
                     1 -> whatsNewPreferences.resetForTesting()

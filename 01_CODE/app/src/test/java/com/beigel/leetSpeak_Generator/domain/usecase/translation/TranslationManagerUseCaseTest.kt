@@ -1,13 +1,8 @@
+package com.beigel.leetSpeak_Generator.domain.usecase.translation
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
 import com.beigel.leetSpeak_Generator.data.CustomLeet
-import com.beigel.leetSpeak_Generator.domain.usecase.translation.AnalyzeTranslationUseCase
-import com.beigel.leetSpeak_Generator.domain.usecase.translation.DetectLeetSpeakUseCase
-import com.beigel.leetSpeak_Generator.domain.usecase.translation.GeneratePreviewUseCase
-import com.beigel.leetSpeak_Generator.domain.usecase.translation.ReverseTranslateUseCase
-import com.beigel.leetSpeak_Generator.domain.usecase.translation.TranslateTextUseCase
-import com.beigel.leetSpeak_Generator.domain.usecase.translation.TranslationManagerUseCase
 import com.beigel.leetSpeak_Generator.translation.LeetTranslator
 import io.mockk.*
 import org.junit.Assert.assertEquals

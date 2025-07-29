@@ -1,6 +1,8 @@
 package com.beigel.leetSpeak_Generator.domain.usecase.ui
 
 import app.cash.turbine.test
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test

@@ -1,4 +1,3 @@
-// app/src/test/java/com/beigel/leetSpeak_Generator/widget/LeetWidgetProviderTest.kt
 package com.beigel.leetSpeak_Generator.widget
 
 import android.appwidget.AppWidgetManager
@@ -10,6 +9,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
 import io.mockk.*
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Before
@@ -147,27 +148,14 @@ class LeetWidgetProviderTest {
     // ===== ERROR HANDLING TESTS =====
 
     @Test
-    fun `widget handles null context gracefully`() {
+    fun `widget handles valid context and app widget manager`() {
         val widgetIds = intArrayOf(1)
 
-        // Should not crash with null context (though this is unlikely in practice)
+        // Should not crash with valid parameters
         try {
-            widgetProvider.onUpdate(null, mockAppWidgetManager, widgetIds)
+            widgetProvider.onUpdate(context, mockAppWidgetManager, widgetIds)
         } catch (e: Exception) {
-            // Expected - null context will cause issues, but shouldn't crash the provider
-            assertTrue(e is NullPointerException || e is IllegalArgumentException)
-        }
-    }
-
-    @Test
-    fun `widget handles null app widget manager gracefully`() {
-        val widgetIds = intArrayOf(1)
-
-        try {
-            widgetProvider.onUpdate(context, null, widgetIds)
-        } catch (e: Exception) {
-            // Expected - null manager will cause issues
-            assertTrue(e is NullPointerException || e is IllegalArgumentException)
+            fail("Should not throw exception with valid parameters: ${e.message}")
         }
     }
 
@@ -239,8 +227,8 @@ class LeetWidgetProviderTest {
             LeetRepository.FavoriteLeetResult.simple()
         )
 
-        val jobs = List(5) { i ->
-            kotlinx.coroutines.launch {
+        val jobs: List<Job> = List(5) { i ->
+            launch {
                 widgetProvider.onUpdate(context, mockAppWidgetManager, intArrayOf(i))
             }
         }
