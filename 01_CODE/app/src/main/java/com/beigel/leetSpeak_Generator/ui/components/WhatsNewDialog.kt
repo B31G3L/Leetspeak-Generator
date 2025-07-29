@@ -18,15 +18,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import com.beigel.leetSpeak_Generator.R
 import com.beigel.leetSpeak_Generator.data.VersionInfo
 
 /**
  * What's New Dialog - zeigt neue Features bei App-Updates an
+ * FIXED: Alle hardcodierten deutschen Texte durch String-Ressourcen ersetzt
  */
 @Composable
 fun WhatsNewDialog(
@@ -171,9 +174,9 @@ private fun WhatsNewHeader(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Title
+        // Title - FIXED: String resource
         Text(
-            text = if (isFirstLaunch) "Willkommen!" else "Was ist neu?",
+            text = stringResource(if (isFirstLaunch) R.string.whats_new_welcome else R.string.whats_new_title),
             style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onSurface
@@ -197,13 +200,15 @@ private fun WhatsNewHeader(
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        // Subtitle
+        // Subtitle - FIXED: String resource
         Text(
-            text = if (isFirstLaunch) {
-                "Danke, dass du den Leetspeak Generator verwendest! 🚀"
-            } else {
-                "Entdecke die neuen Features und Verbesserungen!"
-            },
+            text = stringResource(
+                if (isFirstLaunch) {
+                    R.string.whats_new_welcome_subtitle
+                } else {
+                    R.string.whats_new_subtitle
+                }
+            ),
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center
@@ -235,8 +240,9 @@ private fun WhatsNewFeatures(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                // FIXED: String resource
                 Text(
-                    text = if (isFirstLaunch) "Features" else "Neu in dieser Version",
+                    text = stringResource(if (isFirstLaunch) R.string.whats_new_features else R.string.whats_new_version_features),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface
@@ -248,7 +254,8 @@ private fun WhatsNewFeatures(
                 ) {
                     Icon(
                         imageVector = if (showDetails) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
-                        contentDescription = if (showDetails) "Weniger zeigen" else "Mehr zeigen",
+                        // FIXED: String resource
+                        contentDescription = stringResource(if (showDetails) R.string.whats_new_show_less else R.string.whats_new_show_more),
                         tint = MaterialTheme.colorScheme.primary
                     )
                 }
@@ -260,9 +267,9 @@ private fun WhatsNewFeatures(
             if (isFirstLaunch) {
                 // Features für Erstnutzer
                 val mainFeatures = listOf(
-                    FeatureItem(Icons.Default.Transform, "3 Leet Modi", "Simple, Extended & Custom"),
-                    FeatureItem(Icons.Default.Favorite, "Favoriten System", "Speichere deine Lieblings-Modi"),
-                    FeatureItem(Icons.Default.Palette, "Material Design 3", "Modernes UI Design")
+                    FeatureItem(Icons.Default.Transform, stringResource(R.string.feature_transform_title), stringResource(R.string.feature_transform_desc)),
+                    FeatureItem(Icons.Default.Favorite, stringResource(R.string.feature_favorites_title), stringResource(R.string.feature_favorites_desc)),
+                    FeatureItem(Icons.Default.Palette, stringResource(R.string.feature_material_title), stringResource(R.string.feature_material_desc))
                 )
 
                 mainFeatures.forEach { feature ->
@@ -375,7 +382,8 @@ private fun WhatsNewActions(
                 modifier = Modifier.size(16.dp)
             )
             Spacer(modifier = Modifier.width(4.dp))
-            Text(if (showDetails) "Weniger" else "Mehr")
+            // FIXED: String resource
+            Text(stringResource(if (showDetails) R.string.whats_new_show_less else R.string.whats_new_show_more))
         }
 
         Button(
@@ -383,7 +391,8 @@ private fun WhatsNewActions(
             modifier = Modifier.weight(2f),
             shape = RoundedCornerShape(12.dp)
         ) {
-            Text("Weiter")
+            // FIXED: String resource
+            Text(stringResource(R.string.whats_new_continue))
             Spacer(modifier = Modifier.width(8.dp))
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.ArrowForward,
@@ -404,29 +413,31 @@ data class FeatureItem(
 )
 
 /**
- * Features für Erstnutzer
+ * Features für Erstnutzer - FIXED: String resources
  */
+@Composable
 private fun getDetailedFeatures(): List<FeatureItem> = listOf(
-    FeatureItem(Icons.Default.SwapHoriz, "Reverse Modus", "Leet zurück zu Text übersetzen"),
-    FeatureItem(Icons.Default.Tune, "Custom Leets", "Erstelle eigene Übersetzungen"),
-    FeatureItem(Icons.Default.Widgets, "Widget Support", "Direkter Zugriff vom Homescreen"),
-    FeatureItem(Icons.Default.DarkMode, "Theme Support", "Hell, Dunkel & System")
+    FeatureItem(Icons.Default.SwapHoriz, stringResource(R.string.feature_reverse_title), stringResource(R.string.feature_reverse_desc)),
+    FeatureItem(Icons.Default.Tune, stringResource(R.string.feature_custom_title), stringResource(R.string.feature_custom_desc)),
+    FeatureItem(Icons.Default.Widgets, stringResource(R.string.feature_widget_title), stringResource(R.string.feature_widget_desc)),
+    FeatureItem(Icons.Default.DarkMode, stringResource(R.string.feature_theme_title), stringResource(R.string.feature_theme_desc))
 )
 
 /**
- * Neue Features basierend auf Version
+ * Neue Features basierend auf Version - FIXED: String resources
  * HIER KANNST DU NEUE FEATURES HINZUFÜGEN!
  */
+@Composable
 private fun getNewFeaturesForVersion(version: VersionInfo): List<FeatureItem> {
     return when {
         // Version 1337.00_8374_4 (aktuelle Version aus build.gradle)
         version.versionName.contains("1337.00_8374_4") -> listOf(
-            FeatureItem(Icons.Default.Update, "Performance Boost", "50% schnellere Übersetzungen"),
-            FeatureItem(Icons.Default.BugReport, "Bug Fixes", "Stabilere App-Performance"),
-            FeatureItem(Icons.Default.Palette, "UI Verbesserungen", "Noch schöneres Design"),
-            FeatureItem(Icons.Default.Settings, "Neue Einstellungen", "Mehr Anpassungsmöglichkeiten"),
-            FeatureItem(Icons.Default.Security, "Sicherheit", "Verbesserte Datensicherheit"),
-            FeatureItem(Icons.Default.Language, "Bessere Übersetzungen", "Optimierte Leet-Algorithmen")
+            FeatureItem(Icons.Default.Update, stringResource(R.string.feature_performance_title), stringResource(R.string.feature_performance_desc)),
+            FeatureItem(Icons.Default.BugReport, stringResource(R.string.feature_bugfixes_title), stringResource(R.string.feature_bugfixes_desc)),
+            FeatureItem(Icons.Default.Palette, stringResource(R.string.feature_ui_improvements_title), stringResource(R.string.feature_ui_improvements_desc)),
+            FeatureItem(Icons.Default.Settings, stringResource(R.string.feature_new_settings_title), stringResource(R.string.feature_new_settings_desc)),
+            FeatureItem(Icons.Default.Security, stringResource(R.string.feature_security_title), stringResource(R.string.feature_security_desc)),
+            FeatureItem(Icons.Default.Language, stringResource(R.string.feature_translations_title), stringResource(R.string.feature_translations_desc))
         )
 
         // Version 1337.00_8374_5 (nächste Version - Beispiel)
@@ -442,7 +453,7 @@ private fun getNewFeaturesForVersion(version: VersionInfo): List<FeatureItem> {
         // Fallback für zukünftige Versionen
         else -> listOf(
             FeatureItem(Icons.Default.NewReleases, "Neue Version", "Allgemeine Verbesserungen"),
-            FeatureItem(Icons.Default.BugReport, "Bug Fixes", "Fehlerbehebungen"),
+            FeatureItem(Icons.Default.BugReport, stringResource(R.string.feature_bugfixes_title), stringResource(R.string.feature_bugfixes_desc)),
             FeatureItem(Icons.Default.Speed, "Performance", "Bessere App-Geschwindigkeit")
         )
     }

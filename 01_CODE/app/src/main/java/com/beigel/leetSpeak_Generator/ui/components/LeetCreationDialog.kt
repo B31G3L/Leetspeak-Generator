@@ -10,10 +10,12 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import com.beigel.leetSpeak_Generator.R
 import com.beigel.leetSpeak_Generator.data.CustomLeet
 import com.beigel.leetSpeak_Generator.presentation.intent.MainIntent
 import com.beigel.leetSpeak_Generator.ui.components.leet.creation.IconPickerDialog
@@ -28,6 +30,7 @@ import com.beigel.leetSpeak_Generator.viewmodel.MainViewModel
 /**
  * Leet Creation Dialog komplett überarbeitet für Material Icons
  * FIXED: Übersetzungen werden jetzt korrekt gespeichert
+ * FIXED: Alle hardcodierten deutschen Texte durch String-Ressourcen ersetzt
  */
 @Composable
 fun LeetCreationDialog(
@@ -109,6 +112,7 @@ fun LeetCreationDialog(
 
 /**
  * Header mit Toolbar-Style für Dialog
+ * FIXED: Hardcodierte Strings durch String-Ressourcen ersetzt
  */
 @Composable
 private fun LeetCreationHeader(
@@ -129,15 +133,17 @@ private fun LeetCreationHeader(
                 .padding(horizontal = 16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
+            // FIXED: String resource
             Text(
-                text = if (isNewLeet) "Leet erstellen" else "Leet bearbeiten",
+                text = stringResource(if (isNewLeet) R.string.leet_creation_title else R.string.leet_edit_title),
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.weight(1f)
             )
 
+            // FIXED: String resource
             TextButton(onClick = onDismiss) {
-                Text("Abbrechen")
+                Text(stringResource(R.string.leet_creation_cancel))
             }
 
             Spacer(modifier = Modifier.width(8.dp))
@@ -146,7 +152,8 @@ private fun LeetCreationHeader(
                 onClick = onSave,
                 enabled = canSave
             ) {
-                Text("Speichern")
+                // FIXED: String resource
+                Text(stringResource(R.string.leet_creation_save))
             }
         }
     }

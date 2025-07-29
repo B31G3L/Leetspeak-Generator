@@ -19,6 +19,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.platform.UriHandler
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -28,6 +29,7 @@ import com.beigel.leetSpeak_Generator.R
 
 /**
  * Überarbeitete About Dialog mit modernem Design
+ * FIXED: Alle hardcodierten deutschen Texte durch String-Ressourcen ersetzt
  */
 @Composable
 fun AboutDialog(
@@ -148,8 +150,9 @@ private fun AppInfoSection() {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        // FIXED: String resource
         Text(
-            text = "Leetspeak Generator",
+            text = stringResource(R.string.about_dialog_title),
             style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.ExtraBold,
             color = MaterialTheme.colorScheme.onSurface
@@ -161,8 +164,9 @@ private fun AppInfoSection() {
             color = MaterialTheme.colorScheme.primaryContainer,
             shape = RoundedCornerShape(12.dp)
         ) {
+            // FIXED: String resource
             Text(
-                text = "Version 2.0.0",
+                text = stringResource(R.string.about_dialog_version),
                 style = MaterialTheme.typography.labelLarge,
                 color = MaterialTheme.colorScheme.onPrimaryContainer,
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp),
@@ -172,8 +176,9 @@ private fun AppInfoSection() {
 
         Spacer(modifier = Modifier.height(8.dp))
 
+        // FIXED: String resource
         Text(
-            text = "Der ultimative Text-zu-Leetspeak Konverter! 🚀",
+            text = stringResource(R.string.about_dialog_subtitle),
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
@@ -199,17 +204,20 @@ private fun StatsSection() {
             StatItem(
                 icon = Icons.Default.Translate,
                 value = "3",
-                label = "Modi"
+                // FIXED: String resource
+                label = stringResource(R.string.about_stats_modes)
             )
             StatItem(
                 icon = Icons.Default.Speed,
                 value = "∞",
-                label = "Custom Leets"
+                // FIXED: String resource
+                label = stringResource(R.string.about_stats_custom)
             )
             StatItem(
                 icon = Icons.Default.Star,
                 value = "100%",
-                label = "Kostenlos"
+                // FIXED: String resource
+                label = stringResource(R.string.about_stats_free)
             )
         }
     }
@@ -248,8 +256,9 @@ private fun StatItem(
 @Composable
 private fun FeaturesChipSection() {
     Column {
+        // FIXED: String resource
         Text(
-            text = "Features",
+            text = stringResource(R.string.whats_new_features),
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onSurface,
@@ -257,12 +266,13 @@ private fun FeaturesChipSection() {
         )
 
         val features = listOf(
-            "Simple Leet" to Icons.Default.TextFields,
-            "Extended Leet" to Icons.Default.ExtensionOff,
-            "Custom Leets" to Icons.Default.Tune,
-            "Favoriten" to Icons.Default.Favorite,
-            "Material3 Design" to Icons.Default.Palette,
-            "Offline" to Icons.Default.CloudOff
+            // FIXED: String resources
+            stringResource(R.string.about_feature_simple) to Icons.Default.TextFields,
+            stringResource(R.string.about_feature_extended) to Icons.Default.ExtensionOff,
+            stringResource(R.string.about_feature_custom_leets) to Icons.Default.Tune,
+            stringResource(R.string.about_feature_favorites) to Icons.Default.Favorite,
+            stringResource(R.string.about_feature_material3) to Icons.Default.Palette,
+            stringResource(R.string.about_feature_offline) to Icons.Default.CloudOff
         )
 
         // Features als Chips in 2 Spalten
@@ -321,13 +331,10 @@ private fun FeatureChip(
     }
 }
 
-
-
 @Composable
 private fun ActionButtons(
     onDismiss: () -> Unit,
     uriHandler: UriHandler
-
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -338,7 +345,8 @@ private fun ActionButtons(
             modifier = Modifier.weight(1f),
             shape = RoundedCornerShape(12.dp)
         ) {
-            Text("Schließen")
+            // FIXED: String resource
+            Text(stringResource(R.string.about_dialog_close))
         }
 
         Button(
@@ -355,15 +363,16 @@ private fun ActionButtons(
                 modifier = Modifier.size(16.dp)
             )
             Spacer(modifier = Modifier.width(6.dp))
-            Text("Bewerten")
+            // FIXED: String resource
+            Text(stringResource(R.string.about_dialog_rate))
         }
     }
 
     Spacer(modifier = Modifier.height(8.dp))
 
-    // Copyright
+    // Copyright - FIXED: String resource
     Text(
-        text = "© 2025 B31G3L • Made with ❤️",
+        text = stringResource(R.string.about_dialog_copyright),
         style = MaterialTheme.typography.bodySmall,
         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
         textAlign = TextAlign.Center,

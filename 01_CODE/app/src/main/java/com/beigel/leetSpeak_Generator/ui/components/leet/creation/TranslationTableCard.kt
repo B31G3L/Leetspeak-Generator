@@ -6,12 +6,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.beigel.leetSpeak_Generator.R
 
 /**
  * Übersetzungstabelle für die Leet-Erstellung
+ * FIXED: Alle hardcodierten deutschen Texte durch String-Ressourcen ersetzt
  */
 @Composable
 fun TranslationTableCard(
@@ -51,8 +54,9 @@ private fun TranslationTableHeader() {
         color = MaterialTheme.colorScheme.secondary,
         modifier = Modifier.fillMaxWidth()
     ) {
+        // FIXED: String resource
         Text(
-            text = "Übersetzungstabelle",
+            text = stringResource(R.string.leet_creation_table_title),
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onSecondary,
@@ -71,29 +75,33 @@ private fun TranslationTableColumnHeaders() {
         Row(
             modifier = Modifier.padding(12.dp)
         ) {
+            // FIXED: String resource
             Text(
-                text = "Plain",
+                text = stringResource(R.string.translation_table_plain),
                 style = MaterialTheme.typography.titleSmall,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.weight(1f),
                 textAlign = TextAlign.Center
             )
+            // FIXED: String resource
             Text(
-                text = "Leet",
+                text = stringResource(R.string.translation_table_leet),
                 style = MaterialTheme.typography.titleSmall,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.weight(1f),
                 textAlign = TextAlign.Center
             )
+            // FIXED: String resource
             Text(
-                text = "Plain",
+                text = stringResource(R.string.translation_table_plain),
                 style = MaterialTheme.typography.titleSmall,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.weight(1f),
                 textAlign = TextAlign.Center
             )
+            // FIXED: String resource
             Text(
-                text = "Leet",
+                text = stringResource(R.string.translation_table_leet),
                 style = MaterialTheme.typography.titleSmall,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.weight(1f),

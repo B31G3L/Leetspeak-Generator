@@ -8,12 +8,15 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.beigel.leetSpeak_Generator.R
 
 /**
  * Card für Template-Auswahl mit erweiterbarem Interface
+ * FIXED: Alle hardcodierten deutschen Texte durch String-Ressourcen ersetzt
  */
 @Composable
 fun TemplateSelectionCard(
@@ -42,8 +45,9 @@ fun TemplateSelectionCard(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                // FIXED: String resource
                 Text(
-                    text = "Vorlage auswählen",
+                    text = stringResource(R.string.leet_creation_template_title),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold
                 )
@@ -54,7 +58,8 @@ fun TemplateSelectionCard(
                 ) {
                     Icon(
                         imageVector = if (isExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
-                        contentDescription = if (isExpanded) "Zuklappen" else "Aufklappen",
+                        // FIXED: String resource
+                        contentDescription = stringResource(if (isExpanded) R.string.template_collapse else R.string.template_expand),
                         tint = MaterialTheme.colorScheme.tertiary
                     )
                 }
@@ -120,12 +125,14 @@ fun TemplateSelectionCard(
                 }
             }
 
-            // Hilfetext
+            // Hilfetext - FIXED: String resource
             Text(
-                text = if (isExpanded)
-                    "Wähle eine Vorlage als Startpunkt. Du kannst alle Übersetzungen später anpassen."
-                else
-                    "Tippe auf den Pfeil, um alle Vorlagen zu sehen.",
+                text = stringResource(
+                    if (isExpanded)
+                        R.string.leet_creation_template_hint
+                    else
+                        R.string.leet_creation_template_hint_collapsed
+                ),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(top = 8.dp)
@@ -158,14 +165,16 @@ private fun CurrentTemplatePreview(
             )
             Spacer(modifier = Modifier.width(8.dp))
             Column {
+                // FIXED: String resource with formatting
                 Text(
-                    text = "Aktuelle Vorlage: ${selectedTemplate.displayName}",
+                    text = stringResource(R.string.leet_creation_current_template, selectedTemplate.displayName),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.tertiary,
                     fontWeight = FontWeight.Medium
                 )
+                // FIXED: String resource with formatting
                 Text(
-                    text = "Vorschau: ${TemplateHelpers.getTemplatePreview(selectedTemplate)}",
+                    text = stringResource(R.string.leet_creation_preview_short, TemplateHelpers.getTemplatePreview(selectedTemplate)),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -274,8 +283,9 @@ private fun TemplateDetailsCard(
         Column(
             modifier = Modifier.padding(16.dp)
         ) {
+            // FIXED: String resource with formatting
             Text(
-                text = "Details: ${selectedTemplate.displayName}",
+                text = stringResource(R.string.leet_creation_template_details, selectedTemplate.displayName),
                 style = MaterialTheme.typography.titleSmall,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.tertiary
@@ -291,10 +301,9 @@ private fun TemplateDetailsCard(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Beispiel-Übersetzungen
             val examples = TemplateHelpers.getTemplateExamples(selectedTemplate)
             Text(
-                text = "Beispiele:",
+                text = stringResource(R.string.leet_creation_examples),
                 style = MaterialTheme.typography.labelMedium,
                 fontWeight = FontWeight.Medium,
                 color = MaterialTheme.colorScheme.tertiary

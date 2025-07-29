@@ -8,17 +8,20 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import com.beigel.leetSpeak_Generator.R
 import com.beigel.leetSpeak_Generator.data.LeetOption
 import com.beigel.leetSpeak_Generator.manager.LeetManager
 import com.beigel.leetSpeak_Generator.viewmodel.MainViewModel
 
 /**
  * Translation Table Dialog - Vollständig sichtbar ohne internes Scrollen
+ * FIXED: Alle hardcodierten deutschen Texte durch String-Ressourcen ersetzt
  */
 @Composable
 fun TranslationTableDialog(
@@ -51,7 +54,8 @@ fun TranslationTableDialog(
             ) {
                 // Header
                 TranslationTableHeader(
-                    title = "Übersetzungstabelle - ${leetOption.name}",
+                    // FIXED: String resource with formatting
+                    title = stringResource(R.string.translation_table_dialog_title, leetOption.name),
                     onDismiss = onDismiss
                 )
 
@@ -68,6 +72,7 @@ fun TranslationTableDialog(
 
 /**
  * Header mit Schließen-Button
+ * FIXED: Hardcodierte Strings durch String-Ressourcen ersetzt
  */
 @Composable
 private fun TranslationTableHeader(
@@ -99,8 +104,9 @@ private fun TranslationTableHeader(
                     contentColor = MaterialTheme.colorScheme.onSecondary
                 )
             ) {
+                // FIXED: String resource
                 Text(
-                    text = "Schließen",
+                    text = stringResource(R.string.translation_table_close),
                     fontWeight = FontWeight.Medium
                 )
             }
@@ -143,6 +149,7 @@ private fun TranslationTableContent(
 
 /**
  * Column Headers
+ * FIXED: Hardcodierte Strings durch String-Ressourcen ersetzt
  */
 @Composable
 private fun TranslationTableColumnHeaders() {
@@ -155,32 +162,36 @@ private fun TranslationTableColumnHeaders() {
                 .fillMaxWidth()
                 .padding(vertical = 8.dp, horizontal = 12.dp)
         ) {
+            // FIXED: String resource
             Text(
-                text = "Plain",
+                text = stringResource(R.string.translation_table_plain),
                 style = MaterialTheme.typography.labelLarge,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.weight(1f),
                 textAlign = TextAlign.Center
             )
+            // FIXED: String resource
             Text(
-                text = "Leet",
+                text = stringResource(R.string.translation_table_leet),
                 style = MaterialTheme.typography.labelLarge,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.secondary,
                 modifier = Modifier.weight(1f),
                 textAlign = TextAlign.Center
             )
+            // FIXED: String resource
             Text(
-                text = "Plain",
+                text = stringResource(R.string.translation_table_plain),
                 style = MaterialTheme.typography.labelLarge,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.weight(1f),
                 textAlign = TextAlign.Center
             )
+            // FIXED: String resource
             Text(
-                text = "Leet",
+                text = stringResource(R.string.translation_table_leet),
                 style = MaterialTheme.typography.labelLarge,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.secondary,
