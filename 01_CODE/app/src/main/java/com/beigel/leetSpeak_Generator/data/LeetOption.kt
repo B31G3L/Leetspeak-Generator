@@ -10,7 +10,7 @@ import com.beigel.leetSpeak_Generator.manager.LeetManager
 
 /**
  * Represents a leet translation option in the UI
- * Converted to Kotlin data class with improved immutability and Material Icons
+ * FIXED: Factory functions are no longer @Composable to avoid repository errors
  */
 data class LeetOption(
     val mode: Int,
@@ -23,13 +23,65 @@ data class LeetOption(
     var isFavorite: Boolean = false
 ) {
 
-
     companion object {
         /**
-         * Creates a Simple Leet option
+         * Creates a Simple Leet option - NOT @Composable anymore
+         * FIXED: Uses direct strings instead of stringResource()
+         */
+        fun createSimple(isSelected: Boolean = false, isFavorite: Boolean = false): LeetOption =
+            LeetOption(
+                mode = LeetManager.MODE_SIMPLE,
+                name = "Simple Leet",
+                description = "Basic character substitutions (A→4, E→3, etc.)",
+                iconImageVector = Icons.Default.TextFields,
+                isCustom = false,
+                customIndex = -1,
+                isSelected = isSelected,
+                isFavorite = isFavorite
+            )
+
+        /**
+         * Creates an Extended Leet option - NOT @Composable anymore
+         * FIXED: Uses direct strings instead of stringResource()
+         */
+        fun createExtended(isSelected: Boolean = false, isFavorite: Boolean = false): LeetOption =
+            LeetOption(
+                mode = LeetManager.MODE_EXTENDED,
+                name = "Extended Leet",
+                description = "Advanced multi-character substitutions (M→/\\/\\, N→|\\|, etc.)",
+                iconImageVector = Icons.Default.Extension,
+                isCustom = false,
+                customIndex = -1,
+                isSelected = isSelected,
+                isFavorite = isFavorite
+            )
+
+        /**
+         * Creates a Custom Leet option from a profile - NOT @Composable anymore
+         * FIXED: Uses direct strings instead of stringResource()
+         */
+        fun createCustom(
+            leet: CustomLeet,
+            customIndex: Int,
+            isSelected: Boolean = false,
+            isFavorite: Boolean = false
+        ): LeetOption =
+            LeetOption(
+                mode = LeetManager.MODE_CUSTOM,
+                name = leet.name,
+                description = "Custom character mappings",
+                iconImageVector = leet.iconImageVector,
+                isCustom = true,
+                customIndex = customIndex,
+                isSelected = isSelected,
+                isFavorite = isFavorite
+            )
+
+        /**
+         * NEW: Composable versions for UI usage with proper string resources
          */
         @Composable
-        fun createSimple(isSelected: Boolean = false, isFavorite: Boolean = false): LeetOption =
+        fun createSimpleWithResources(isSelected: Boolean = false, isFavorite: Boolean = false): LeetOption =
             LeetOption(
                 mode = LeetManager.MODE_SIMPLE,
                 name = "Simple Leet",
@@ -41,11 +93,8 @@ data class LeetOption(
                 isFavorite = isFavorite
             )
 
-        /**
-         * Creates an Extended Leet option
-         */
         @Composable
-        fun createExtended(isSelected: Boolean = false, isFavorite: Boolean = false): LeetOption =
+        fun createExtendedWithResources(isSelected: Boolean = false, isFavorite: Boolean = false): LeetOption =
             LeetOption(
                 mode = LeetManager.MODE_EXTENDED,
                 name = "Extended Leet",
@@ -57,11 +106,8 @@ data class LeetOption(
                 isFavorite = isFavorite
             )
 
-        /**
-         * Creates a Custom Leet option from a profile
-         */
         @Composable
-        fun createCustom(
+        fun createCustomWithResources(
             leet: CustomLeet,
             customIndex: Int,
             isSelected: Boolean = false,
