@@ -21,7 +21,7 @@ jobs:
         distribution: 'temurin'
         
     - name: Cache Gradle packages
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: |
           ~/.gradle/caches
@@ -48,7 +48,7 @@ jobs:
         reporter: java-junit
         
     - name: Upload Test Results
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: always()
       with:
         name: test-results
@@ -60,7 +60,8 @@ jobs:
       run: ./gradlew jacocoTestReport
       
     - name: Upload Coverage to Codecov
-      uses: codecov/codecov-action@v3
+      uses: codecov/codecov-action@v4
       with:
         file: ./app/build/reports/jacoco/jacocoTestReport/jacocoTestReport.xml
         fail_ci_if_error: false
+        token: ${{ secrets.CODECOV_TOKEN }}
