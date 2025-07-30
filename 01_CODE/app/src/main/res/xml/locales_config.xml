@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<locale-config xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- 🌍 Unterstützte Sprachen für Android 13+ System-Settings -->
+
+    <!-- Englisch (Standard) -->
+    <locale android:name="en" />
+
+    <!-- Deutsch -->
+    <locale android:name="de" />
+
+    <!-- Spanisch -->
+    <locale android:name="es" />
+
+    <!-- Französisch -->
+    <locale android:name="fr" />
+
+    <!-- Italienisch -->
+    <locale android:name="it" />
+
+</locale-config>

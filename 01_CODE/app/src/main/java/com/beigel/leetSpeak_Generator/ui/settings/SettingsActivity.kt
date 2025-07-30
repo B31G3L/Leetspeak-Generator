@@ -4,10 +4,10 @@ package com.beigel.leetSpeak_Generator.ui.settings
 import android.content.Context
 import android.os.Build
 import android.os.Bundle
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.selection.selectable
@@ -34,7 +34,7 @@ import kotlinx.coroutines.launch
 import java.util.Locale
 
 @AndroidEntryPoint
-class SettingsActivity : ComponentActivity() {
+class SettingsActivity : AppCompatActivity() { // ← Bereits AppCompatActivity
 
     private val viewModel: SettingsViewModel by viewModels()
 
@@ -61,17 +61,30 @@ class SettingsActivity : ComponentActivity() {
         }
     }
 
+    // ✅ VERBESSERTE Sprachänderungs-Logik
     private fun applyLanguageChange(languageCode: String) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            // API 33+ - Verwende AppCompatDelegate
+        try {
             val localeList = if (languageCode == ThemePreferences.LANGUAGE_SYSTEM) {
                 LocaleListCompat.getEmptyLocaleList()
             } else {
                 LocaleListCompat.forLanguageTags(languageCode)
             }
+
+            // Verwende AppCompatDelegate für alle Android-Versionen
             AppCompatDelegate.setApplicationLocales(localeList)
-        } else {
-            // Für ältere Versionen - Recreation der Activity
+
+            // Für API < 33 ist manchmal ein manueller recreate() nötig
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+                // Kurze Verzögerung für bessere UX
+                window.decorView.postDelayed({
+                    recreate()
+                }, 100)
+            }
+            // Für API 33+ passiert recreation automatisch
+
+        } catch (e: Exception) {
+            android.util.Log.e("SettingsActivity", "Error changing language", e)
+            // Fallback zu recreation
             recreate()
         }
     }

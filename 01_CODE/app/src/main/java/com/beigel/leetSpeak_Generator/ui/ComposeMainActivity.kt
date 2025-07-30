@@ -7,9 +7,9 @@ import android.content.Intent
 import android.os.Bundle
 import android.os.VibrationEffect
 import android.os.Vibrator
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
@@ -42,10 +42,8 @@ import com.beigel.leetSpeak_Generator.ui.components.input.InputCard
 import com.beigel.leetSpeak_Generator.ui.settings.SettingsActivity
 import com.beigel.leetSpeak_Generator.ui.components.output.OutputCard
 
-
-
 @AndroidEntryPoint
-class ComposeMainActivity : ComponentActivity() {
+class ComposeMainActivity : AppCompatActivity() { // ← GEÄNDERT: AppCompatActivity statt ComponentActivity
 
     private val viewModel: MainViewModel by viewModels()
     private lateinit var vibrator: Vibrator
@@ -98,8 +96,6 @@ class ComposeMainActivity : ComponentActivity() {
     }
 }
 
-// Nur der relevante Teil der ComposeMainActivity.kt mit What's New Integration
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(
@@ -141,7 +137,6 @@ fun MainScreen(
         "Output: $currentModeDisplayName"
     }
 
-    // Bestehender Scaffold Content bleibt gleich...
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = {
@@ -200,10 +195,8 @@ fun MainScreen(
                         )
                     }
                     IconButton(onClick = onOpenSettings) {
-                        Icon(Icons.Default.Settings,  stringResource(R.string.settings))
+                        Icon(Icons.Default.Settings, stringResource(R.string.settings))
                     }
-
-
                 }
             )
         },
@@ -317,7 +310,6 @@ fun MainScreen(
         HandleUiState(uiState, viewModel, context)
     }
 }
-
 
 // ✅ MODE SELECTOR BUTTON - Standalone Komponente
 @Composable
