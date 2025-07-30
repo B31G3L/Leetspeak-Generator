@@ -51,6 +51,16 @@
     <string name="mode_display_leet_detected">Leet detected</string>
     <string name="mode_display_mode">Mode</string>
 
+    <!-- NEU: Bug Report -->
+    <string name="bug_report">Report Bug</string>
+    <string name="bug_report_title">Bug Report</string>
+    <string name="bug_report_description">Help us improve the app by reporting bugs</string>
+    <string name="bug_report_send">Send Bug Report</string>
+    <string name="bug_report_cancel">Cancel</string>
+    <string name="bug_report_no_email_app">No email app found. Bug report copied to clipboard.</string>
+    <string name="bug_report_error">Error creating bug report: %1$s</string>
+    <string name="bug_report_success">Bug report created successfully</string>
+
     <!-- About Dialog -->
     <string name="about_dialog_title">Leetspeak Generator</string>
     <string name="about_dialog_version">Version 1337.00</string>

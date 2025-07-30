@@ -4,6 +4,7 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.os.VibrationEffect
 import android.os.Vibrator
@@ -43,7 +44,7 @@ import com.beigel.leetSpeak_Generator.ui.settings.SettingsActivity
 import com.beigel.leetSpeak_Generator.ui.components.output.OutputCard
 
 @AndroidEntryPoint
-class ComposeMainActivity : AppCompatActivity() { // ← GEÄNDERT: AppCompatActivity statt ComponentActivity
+class ComposeMainActivity : AppCompatActivity() {
 
     private val viewModel: MainViewModel by viewModels()
     private lateinit var vibrator: Vibrator
@@ -81,7 +82,8 @@ class ComposeMainActivity : AppCompatActivity() { // ← GEÄNDERT: AppCompatAct
                                 SettingsActivity::class.java
                             )
                         )
-                    }
+                    },
+                    onBugReport = { sendBugReport() }
                 )
             }
         }
@@ -94,6 +96,63 @@ class ComposeMainActivity : AppCompatActivity() { // ← GEÄNDERT: AppCompatAct
 
         vibrator.vibrate(VibrationEffect.createOneShot(50, VibrationEffect.DEFAULT_AMPLITUDE))
     }
+
+    private fun sendBugReport() {
+        try {
+            val deviceInfo = buildString {
+                appendLine("=== BUG REPORT ===")
+                appendLine()
+                appendLine("Please describe the bug:")
+                appendLine("1. What were you trying to do?")
+                appendLine("2. What happened instead?")
+                appendLine("3. Steps to reproduce:")
+                appendLine()
+                appendLine("=== DEVICE INFO ===")
+                appendLine("App Version: ${getVersionName()}")
+                appendLine("Android Version: ${Build.VERSION.RELEASE} (API ${Build.VERSION.SDK_INT})")
+                appendLine("Device: ${Build.MANUFACTURER} ${Build.MODEL}")
+                appendLine("Brand: ${Build.BRAND}")
+                appendLine("Device Language: ${java.util.Locale.getDefault().language}")
+                appendLine()
+                appendLine("=== ADDITIONAL INFO ===")
+                appendLine("Add any additional information, screenshots, or logs here.")
+            }
+
+            val intent = Intent(Intent.ACTION_SEND).apply {
+                type = "message/rfc822"
+                putExtra(Intent.EXTRA_EMAIL, arrayOf("beigel.dev@gmail.com")) // Deine E-Mail
+                putExtra(Intent.EXTRA_SUBJECT, "Bug Report - Leetspeak Generator v${getVersionName()}")
+                putExtra(Intent.EXTRA_TEXT, deviceInfo)
+            }
+
+            val chooser = Intent.createChooser(intent, "Bug Report senden")
+            if (intent.resolveActivity(packageManager) != null) {
+                startActivity(chooser)
+            } else {
+                // Fallback: Text in Zwischenablage kopieren
+                copyToClipboardWithFeedback(deviceInfo)
+                android.widget.Toast.makeText(
+                    this,
+                    "Keine E-Mail-App gefunden. Bug Report wurde in Zwischenablage kopiert.",
+                    android.widget.Toast.LENGTH_LONG
+                ).show()
+            }
+        } catch (e: Exception) {
+            android.widget.Toast.makeText(
+                this,
+                "Fehler beim Erstellen des Bug Reports: ${e.message}",
+                android.widget.Toast.LENGTH_LONG
+            ).show()
+        }
+    }
+
+    private fun getVersionName(): String {
+        return try {
+            packageManager.getPackageInfo(packageName, 0).versionName ?: "Unknown"
+        } catch (e: Exception) {
+            "Unknown"
+        }
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -101,7 +160,8 @@ class ComposeMainActivity : AppCompatActivity() { // ← GEÄNDERT: AppCompatAct
 fun MainScreen(
     viewModel: MainViewModel,
     onCopyToClipboard: (String) -> Unit,
-    onOpenSettings: () -> Unit
+    onOpenSettings: () -> Unit,
+    onBugReport: () -> Unit = {} // NEU: Bug Report Parameter
 ) {
     // Bestehende State Variables...
     val inputText by viewModel.inputText.collectAsStateWithLifecycle()
@@ -187,6 +247,15 @@ fun MainScreen(
                     titleContentColor = MaterialTheme.colorScheme.onBackground
                 ),
                 actions = {
+                    // NEU: Bug Report Button
+                    IconButton(onClick = onBugReport) {
+                        Icon(
+                            imageVector = Icons.Default.BugReport,
+                            contentDescription = stringResource(R.string.bug_report),
+                            modifier = Modifier.size(24.dp)
+                        )
+                    }
+
                     IconButton(onClick = { showAboutDialog = true }) {
                         Icon(
                             imageVector = Icons.Default.Info,
@@ -311,7 +380,7 @@ fun MainScreen(
     }
 }
 
-// ✅ MODE SELECTOR BUTTON - Standalone Komponente
+// Rest der Datei bleibt unverändert...
 @Composable
 private fun ModeSelectorButton(
     currentMode: String,
@@ -331,7 +400,6 @@ private fun ModeSelectorButton(
                 .fillMaxHeight()
                 .padding(horizontal = 12.dp, vertical = 8.dp)
         ) {
-            // Transform Icon
             Icon(
                 imageVector = Icons.Default.Transform,
                 contentDescription = null,
@@ -341,7 +409,6 @@ private fun ModeSelectorButton(
 
             Spacer(modifier = Modifier.width(8.dp))
 
-            // Mode Text - größere Schrift
             Text(
                 text = currentMode,
                 style = MaterialTheme.typography.labelMedium.copy(fontSize = 12.sp),
@@ -354,7 +421,6 @@ private fun ModeSelectorButton(
     }
 }
 
-// ✅ NEUE ENHANCED ANIMATED ARROWS - clickbar und informativ
 @Composable
 private fun EnhancedAnimatedArrows(
     isReverseMode: Boolean,
@@ -384,7 +450,6 @@ private fun EnhancedAnimatedArrows(
         label = "arrow_offset"
     )
 
-    // Pulsing effect für Leetspeak Detection
     val pulseAlpha by infiniteTransition.animateFloat(
         initialValue = 0.7f,
         targetValue = 1.0f,
@@ -410,13 +475,11 @@ private fun EnhancedAnimatedArrows(
             verticalArrangement = Arrangement.Center,
             modifier = Modifier.padding(8.dp)
         ) {
-            // Arrows
             Row(
                 horizontalArrangement = Arrangement.spacedBy(2.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 if (isReverseMode) {
-                    // Reverse arrows (nach links)
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                         contentDescription = null,
@@ -440,7 +503,6 @@ private fun EnhancedAnimatedArrows(
                         tint = MaterialTheme.colorScheme.tertiary
                     )
                 } else {
-                    // Normal arrows (nach rechts)
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowForward,
                         contentDescription = null,
@@ -468,7 +530,6 @@ private fun EnhancedAnimatedArrows(
 
             Spacer(modifier = Modifier.height(2.dp))
 
-            // Info Text
             Text(
                 text = when {
                     isReverseMode -> stringResource(R.string.mode_display_reverse)

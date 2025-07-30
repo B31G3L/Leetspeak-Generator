@@ -9,5 +9,5 @@
     <!-- Include app preferences but exclude keyboard cache -->
     <include domain="sharedpref" path="."/>
     <exclude domain="sharedpref" path="keyboard_cache.xml"/>
-    <exclude domain="cache" path="keyboard_temp"/>
+    <!-- Cache-Daten werden automatisch ausgeschlossen und müssen nicht explizit erwähnt werden -->
 </full-backup-content>
