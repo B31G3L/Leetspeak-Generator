@@ -32,6 +32,13 @@ class SettingsViewModel @Inject constructor(
             initialValue = false
         )
 
+    val language: StateFlow<String> = themePreferences.language
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = ThemePreferences.LANGUAGE_SYSTEM
+        )
+
     val favoriteLeet: StateFlow<String?> = leetRepository.getFavoriteLeetOptions()
         .map { favorites ->
             favorites.firstOrNull()?.name
@@ -48,5 +55,9 @@ class SettingsViewModel @Inject constructor(
 
     suspend fun setDefaultViewExpanded(expanded: Boolean) {
         themePreferences.setDefaultViewExpanded(expanded)
+    }
+
+    suspend fun setLanguage(language: String) {
+        themePreferences.setLanguage(language)
     }
 }

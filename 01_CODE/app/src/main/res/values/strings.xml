@@ -358,5 +358,18 @@
     <string name="permission_leet_data_read">Read leet data</string>
     <string name="permission_leet_data_write">Write leet data</string>
     <string name="permission_leet_data_description">Allows access to leetspeak configurations and favorites</string>
+    <string name="language_system">cs</string>
+    <string name="language_system_desc">csc</string>
+    <string name="language_english">cscs</string>
+    <string name="language_english_desc">sccs</string>
+    <string name="language_german">cscs</string>
+    <string name="language_german_desc">cscs</string>
+    <string name="language_spanish">cscs</string>
+    <string name="language_spanish_desc">cscs</string>
+    <string name="language_french">cscs</string>
+    <string name="language_french_desc">cscs</string>
+    <string name="language_italian">cscs</string>
+    <string name="language_italian_desc">cscs</string>
+    <string name="settings_language">cscs</string>
 
 </resources>

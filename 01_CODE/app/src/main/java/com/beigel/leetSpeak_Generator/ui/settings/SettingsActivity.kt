@@ -1,10 +1,13 @@
 // SettingsActivity.kt
 package com.beigel.leetSpeak_Generator.ui.settings
 
+import android.content.Context
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.selection.selectable
@@ -17,15 +20,18 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.core.os.LocaleListCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.beigel.leetSpeak_Generator.R
 import com.beigel.leetSpeak_Generator.data.ThemePreferences
 import com.beigel.leetSpeak_Generator.ui.theme.LeetspeakGeneratorTheme
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import java.util.Locale
 
 @AndroidEntryPoint
 class SettingsActivity : ComponentActivity() {
@@ -46,9 +52,27 @@ class SettingsActivity : ComponentActivity() {
             LeetspeakGeneratorTheme(darkTheme = isDarkTheme) {
                 SettingsScreen(
                     viewModel = viewModel,
-                    onBackPressed = { finish() }
+                    onBackPressed = { finish() },
+                    onLanguageChanged = { newLanguage ->
+                        applyLanguageChange(newLanguage)
+                    }
                 )
             }
+        }
+    }
+
+    private fun applyLanguageChange(languageCode: String) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            // API 33+ - Verwende AppCompatDelegate
+            val localeList = if (languageCode == ThemePreferences.LANGUAGE_SYSTEM) {
+                LocaleListCompat.getEmptyLocaleList()
+            } else {
+                LocaleListCompat.forLanguageTags(languageCode)
+            }
+            AppCompatDelegate.setApplicationLocales(localeList)
+        } else {
+            // Für ältere Versionen - Recreation der Activity
+            recreate()
         }
     }
 }
@@ -57,12 +81,15 @@ class SettingsActivity : ComponentActivity() {
 @Composable
 fun SettingsScreen(
     viewModel: SettingsViewModel,
-    onBackPressed: () -> Unit
+    onBackPressed: () -> Unit,
+    onLanguageChanged: (String) -> Unit = {}
 ) {
     val scope = rememberCoroutineScope()
+    val context = LocalContext.current
 
     val themeMode by viewModel.themeMode.collectAsStateWithLifecycle()
     val defaultViewExpanded by viewModel.defaultViewExpanded.collectAsStateWithLifecycle()
+    val language by viewModel.language.collectAsStateWithLifecycle()
 
     Scaffold(
         topBar = {
@@ -77,7 +104,6 @@ fun SettingsScreen(
                     containerColor = MaterialTheme.colorScheme.background,
                     titleContentColor = MaterialTheme.colorScheme.onBackground
                 ),
-
             )
         }
     ) { paddingValues ->
@@ -88,6 +114,24 @@ fun SettingsScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
+            // Language Selection
+            item {
+                SettingsSection(
+                    title = stringResource(R.string.settings_language),
+                    icon = Icons.Default.Language
+                ) {
+                    LanguageSelector(
+                        currentLanguage = language,
+                        onLanguageSelected = { newLanguage ->
+                            scope.launch {
+                                viewModel.setLanguage(newLanguage)
+                                onLanguageChanged(newLanguage)
+                            }
+                        }
+                    )
+                }
+            }
+
             // Theme Selection
             item {
                 SettingsSection(
@@ -135,10 +179,100 @@ fun SettingsScreen(
             // About Section
             item {
                 SettingsSection(
-                    title =stringResource(R.string. settings_about_app),
+                    title = stringResource(R.string.settings_about_app),
                     icon = Icons.Default.Info
                 ) {
                     AboutSection()
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun LanguageSelector(
+    currentLanguage: String,
+    onLanguageSelected: (String) -> Unit
+) {
+    val languages = listOf(
+        LanguageOption(
+            key = ThemePreferences.LANGUAGE_SYSTEM,
+            name = stringResource(R.string.language_system),
+            description = stringResource(R.string.language_system_desc),
+            icon = Icons.Default.Settings,
+            flag = "🌐"
+        ),
+        LanguageOption(
+            key = ThemePreferences.LANGUAGE_ENGLISH,
+            name = stringResource(R.string.language_english),
+            description = stringResource(R.string.language_english_desc),
+            icon = Icons.Default.Language,
+            flag = "🇺🇸"
+        ),
+        LanguageOption(
+            key = ThemePreferences.LANGUAGE_GERMAN,
+            name = stringResource(R.string.language_german),
+            description = stringResource(R.string.language_german_desc),
+            icon = Icons.Default.Language,
+            flag = "🇩🇪"
+        ),
+        LanguageOption(
+            key = ThemePreferences.LANGUAGE_SPANISH,
+            name = stringResource(R.string.language_spanish),
+            description = stringResource(R.string.language_spanish_desc),
+            icon = Icons.Default.Language,
+            flag = "🇪🇸"
+        ),
+        LanguageOption(
+            key = ThemePreferences.LANGUAGE_FRENCH,
+            name = stringResource(R.string.language_french),
+            description = stringResource(R.string.language_french_desc),
+            icon = Icons.Default.Language,
+            flag = "🇫🇷"
+        ),
+        LanguageOption(
+            key = ThemePreferences.LANGUAGE_ITALIAN,
+            name = stringResource(R.string.language_italian),
+            description = stringResource(R.string.language_italian_desc),
+            icon = Icons.Default.Language,
+            flag = "🇮🇹"
+        )
+    )
+
+    Column {
+        languages.forEach { language ->
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .selectable(
+                        selected = currentLanguage == language.key,
+                        onClick = { onLanguageSelected(language.key) }
+                    )
+                    .padding(vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                RadioButton(
+                    selected = currentLanguage == language.key,
+                    onClick = { onLanguageSelected(language.key) }
+                )
+                Spacer(modifier = Modifier.width(12.dp))
+                Text(
+                    text = language.flag,
+                    style = MaterialTheme.typography.headlineSmall,
+                    modifier = Modifier.width(32.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Column {
+                    Text(
+                        text = language.name,
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontWeight = FontWeight.Medium
+                    )
+                    Text(
+                        text = language.description,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 }
             }
         }
@@ -259,21 +393,21 @@ fun ViewSelector(
     val viewOptions = listOf(
         ViewOption(
             key = false,
-            name = "Grid-Ansicht",
-            description = "Kompakte 2-spaltige Darstellung",
+            name = stringResource(R.string.settings_view_grid),
+            description = stringResource(R.string.settings_view_grid_desc),
             icon = Icons.Default.GridView
         ),
         ViewOption(
             key = true,
-            name = "Listen-Ansicht",
-            description = "Detaillierte Darstellung mit allen Buttons",
+            name = stringResource(R.string.settings_view_list),
+            description = stringResource(R.string.settings_view_list_desc),
             icon = Icons.AutoMirrored.Filled.List
         )
     )
 
     Column {
         Text(
-            text = "Standard-Ansicht für 'Alle Modi'",
+            text = stringResource(R.string.settings_view_default),
             style = MaterialTheme.typography.titleSmall,
             fontWeight = FontWeight.Medium,
             modifier = Modifier.padding(bottom = 8.dp)
@@ -328,7 +462,7 @@ fun WidgetSettings(viewModel: SettingsViewModel) {
 
     Column {
         Text(
-            text = "Widget-Konfiguration",
+            text = stringResource(R.string.settings_widget_config),
             style = MaterialTheme.typography.titleSmall,
             fontWeight = FontWeight.Medium,
             modifier = Modifier.padding(bottom = 8.dp)
@@ -352,7 +486,7 @@ fun WidgetSettings(viewModel: SettingsViewModel) {
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "Aktueller Favorit:",
+                        text = stringResource(R.string.settings_widget_current_favorite),
                         style = MaterialTheme.typography.bodyMedium,
                         fontWeight = FontWeight.Medium
                     )
@@ -361,7 +495,7 @@ fun WidgetSettings(viewModel: SettingsViewModel) {
                 Spacer(modifier = Modifier.height(4.dp))
 
                 Text(
-                    text = favoriteLeet ?: "Kein Favorit ausgewählt",
+                    text = favoriteLeet ?: stringResource(R.string.settings_widget_no_favorite),
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.secondary,
                     fontWeight = FontWeight.Bold
@@ -370,7 +504,7 @@ fun WidgetSettings(viewModel: SettingsViewModel) {
                 Spacer(modifier = Modifier.height(8.dp))
 
                 Text(
-                    text = "Das Widget verwendet automatisch den als Favorit markierten Leet-Modus. Ändere den Favoriten in der Hauptapp.",
+                    text = stringResource(R.string.settings_widget_description),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -383,7 +517,7 @@ fun WidgetSettings(viewModel: SettingsViewModel) {
 fun AboutSection() {
     Column {
         Text(
-            text = "Leetspeak Generator",
+            text = stringResource(R.string.app_name),
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold
         )
@@ -391,7 +525,7 @@ fun AboutSection() {
         Spacer(modifier = Modifier.height(4.dp))
 
         Text(
-            text = "Version 2.0.0",
+            text = stringResource(R.string.about_dialog_version),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -399,12 +533,20 @@ fun AboutSection() {
         Spacer(modifier = Modifier.height(8.dp))
 
         Text(
-            text = "Konvertiert Text in Leetspeak mit verschiedenen Modi und benutzerdefinierten Übersetzungen.",
+            text = stringResource(R.string.settings_about_description),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
     }
 }
+
+data class LanguageOption(
+    val key: String,
+    val name: String,
+    val description: String,
+    val icon: ImageVector,
+    val flag: String
+)
 
 data class ThemeOption(
     val key: String,
