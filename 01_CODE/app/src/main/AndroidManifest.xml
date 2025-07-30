@@ -57,7 +57,7 @@
             android:name=".keyboard.LeetKeyboardService"
             android:exported="true"
             android:permission="android.permission.BIND_INPUT_METHOD"
-            android:label="@string/leetspeak_keyboard_label"
+            android:label="leetspeak_keyboard_label"
             android:enabled="true"
             android:directBootAware="false">
 
@@ -93,7 +93,7 @@
         <receiver
             android:name=".widget.LeetWidgetProvider"
             android:exported="true"
-            android:label="@string/widget_description"
+            android:label="widget_description"
             android:enabled="true">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
