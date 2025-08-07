@@ -165,4 +165,9 @@
     <string name="simple_leet_description">Einfache Zeichenersetzungen (A→4, E→3, etc.)</string>
     <string name="extended_leet_description">Erweiterte Mehrzeichen-Ersetzungen (M→/\\/\\, N→|\\|, etc.)</string>
     <string name="custom_leet_description">Benutzerdefinierte Zeichenzuordnungen</string>
+
+    <string name="kofi_support">Auf Ko-Fi unterstützen</string>
+    <string name="kofi_description">Den Entwickler unterstützen</string>
+    <string name="kofi_toast_error">Ko-Fi Link konnte nicht geöffnet werden</string>
+    <string name="kofi_toast_thanks">Vielen Dank für deine Unterstützung! ☕</string>
 </resources>

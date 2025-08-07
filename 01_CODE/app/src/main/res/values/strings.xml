@@ -165,4 +165,9 @@
     <string name="simple_leet_description">Basic character substitutions (A→4, E→3, etc.)</string>
     <string name="extended_leet_description">Advanced multi-character substitutions (M→/\\/\\, N→|\\|, etc.)</string>
     <string name="custom_leet_description">Custom character mappings</string>
+
+    <string name="kofi_support">Support on Ko-Fi</string>
+    <string name="kofi_description">Support the developer</string>
+    <string name="kofi_toast_error">Could not open Ko-Fi link</string>
+    <string name="kofi_toast_thanks">Thank you for your support! ☕</string>
 </resources>

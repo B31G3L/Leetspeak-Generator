@@ -4,6 +4,7 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.VibrationEffect
@@ -83,7 +84,8 @@ class ComposeMainActivity : AppCompatActivity() {
                             )
                         )
                     },
-                    onBugReport = { sendBugReport() }
+                    onBugReport = { sendBugReport() },
+                    onKofiSupport = { openKofiLink() } // NEU: Ko-Fi Funktion
                 )
             }
         }
@@ -120,7 +122,7 @@ class ComposeMainActivity : AppCompatActivity() {
 
             val intent = Intent(Intent.ACTION_SEND).apply {
                 type = "message/rfc822"
-                putExtra(Intent.EXTRA_EMAIL, arrayOf("beigel.dev@gmail.com")) // Deine E-Mail
+                putExtra(Intent.EXTRA_EMAIL, arrayOf("beigel.dev@gmail.com"))
                 putExtra(Intent.EXTRA_SUBJECT, "Bug Report - Leetspeak Generator v${getVersionName()}")
                 putExtra(Intent.EXTRA_TEXT, deviceInfo)
             }
@@ -129,7 +131,6 @@ class ComposeMainActivity : AppCompatActivity() {
             if (intent.resolveActivity(packageManager) != null) {
                 startActivity(chooser)
             } else {
-                // Fallback: Text in Zwischenablage kopieren
                 copyToClipboardWithFeedback(deviceInfo)
                 android.widget.Toast.makeText(
                     this,
@@ -142,6 +143,28 @@ class ComposeMainActivity : AppCompatActivity() {
                 this,
                 "Fehler beim Erstellen des Bug Reports: ${e.message}",
                 android.widget.Toast.LENGTH_LONG
+            ).show()
+        }
+    }
+
+    // NEU: Ko-Fi Link öffnen
+    private fun openKofiLink() {
+        try {
+            val kofiUrl = "https://ko-fi.com/beigel" // Deine Ko-Fi URL hier anpassen
+            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(kofiUrl))
+            startActivity(intent)
+
+            // Optional: Dankeschön-Toast
+            android.widget.Toast.makeText(
+                this,
+                getString(R.string.kofi_toast_thanks),
+                android.widget.Toast.LENGTH_SHORT
+            ).show()
+        } catch (e: Exception) {
+            android.widget.Toast.makeText(
+                this,
+                getString(R.string.kofi_toast_error),
+                android.widget.Toast.LENGTH_SHORT
             ).show()
         }
     }
@@ -161,7 +184,8 @@ fun MainScreen(
     viewModel: MainViewModel,
     onCopyToClipboard: (String) -> Unit,
     onOpenSettings: () -> Unit,
-    onBugReport: () -> Unit = {} // NEU: Bug Report Parameter
+    onBugReport: () -> Unit = {},
+    onKofiSupport: () -> Unit = {} // NEU: Ko-Fi Parameter
 ) {
     // Bestehende State Variables...
     val inputText by viewModel.inputText.collectAsStateWithLifecycle()
@@ -247,7 +271,17 @@ fun MainScreen(
                     titleContentColor = MaterialTheme.colorScheme.onBackground
                 ),
                 actions = {
-                    // NEU: Bug Report Button
+                    // NEU: Ko-Fi Support Button - Mit schöner Farbe!
+                    IconButton(onClick = onKofiSupport) {
+                        Icon(
+                            imageVector = Icons.Default.LocalCafe,
+                            contentDescription = stringResource(R.string.kofi_support),
+                            modifier = Modifier.size(24.dp),
+                            tint = MaterialTheme.colorScheme.secondary // Orange/Amber Farbe passend zu Ko-Fi
+                        )
+                    }
+
+                    // Bug Report Button
                     IconButton(onClick = onBugReport) {
                         Icon(
                             imageVector = Icons.Default.BugReport,
@@ -362,7 +396,7 @@ fun MainScreen(
             )
         }
 
-        // NEW: What's New Dialog
+        // What's New Dialog
         if (shouldShowWhatsNew) {
             WhatsNewDialog(
                 currentVersion = viewModel.currentVersionInfo,
