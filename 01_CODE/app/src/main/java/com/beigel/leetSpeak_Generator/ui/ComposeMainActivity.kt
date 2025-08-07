@@ -187,6 +187,8 @@ fun MainScreen(
     onBugReport: () -> Unit = {},
     onKofiSupport: () -> Unit = {} // NEU: Ko-Fi Parameter
 ) {
+    var showDropdownMenu by remember { mutableStateOf(false) }
+
     // Bestehende State Variables...
     val inputText by viewModel.inputText.collectAsStateWithLifecycle()
     val outputText by viewModel.outputText.collectAsStateWithLifecycle()
@@ -270,35 +272,95 @@ fun MainScreen(
                     containerColor = MaterialTheme.colorScheme.background,
                     titleContentColor = MaterialTheme.colorScheme.onBackground
                 ),
+                // Ersetze den actions Block in der TopBar mit diesem Code:
                 actions = {
-                    // NEU: Ko-Fi Support Button - Mit schöner Farbe!
+                    // Ko-Fi Support Button (bleibt separat)
                     IconButton(onClick = onKofiSupport) {
                         Icon(
                             imageVector = Icons.Default.LocalCafe,
                             contentDescription = stringResource(R.string.kofi_support),
                             modifier = Modifier.size(24.dp),
-                            tint = MaterialTheme.colorScheme.secondary // Orange/Amber Farbe passend zu Ko-Fi
+                            tint = MaterialTheme.colorScheme.secondary
                         )
                     }
 
-                    // Bug Report Button
-                    IconButton(onClick = onBugReport) {
-                        Icon(
-                            imageVector = Icons.Default.BugReport,
-                            contentDescription = stringResource(R.string.bug_report),
-                            modifier = Modifier.size(24.dp)
-                        )
-                    }
+                    // Dropdown Menu Button
+                    Box {
+                        IconButton(onClick = { showDropdownMenu = true }) {
+                            Icon(
+                                imageVector = Icons.Default.MoreVert,
+                                contentDescription = "Menu",
+                                modifier = Modifier.size(24.dp)
+                            )
+                        }
 
-                    IconButton(onClick = { showAboutDialog = true }) {
-                        Icon(
-                            imageVector = Icons.Default.Info,
-                            contentDescription = "About",
-                            modifier = Modifier.size(24.dp)
-                        )
-                    }
-                    IconButton(onClick = onOpenSettings) {
-                        Icon(Icons.Default.Settings, stringResource(R.string.settings))
+                        DropdownMenu(
+                            expanded = showDropdownMenu,
+                            onDismissRequest = { showDropdownMenu = false }
+                        ) {
+                            // Bug Report Option
+                            DropdownMenuItem(
+                                text = {
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.BugReport,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(20.dp)
+                                        )
+                                        Text(stringResource(R.string.bug_report))
+                                    }
+                                },
+                                onClick = {
+                                    showDropdownMenu = false
+                                    onBugReport()
+                                }
+                            )
+
+                            // About/Info Option
+                            DropdownMenuItem(
+                                text = {
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Info,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(20.dp)
+                                        )
+                                        Text("About")
+                                    }
+                                },
+                                onClick = {
+                                    showDropdownMenu = false
+                                    showAboutDialog = true
+                                }
+                            )
+
+                            // Settings Option
+                            DropdownMenuItem(
+                                text = {
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Settings,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(20.dp)
+                                        )
+                                        Text(stringResource(R.string.settings))
+                                    }
+                                },
+                                onClick = {
+                                    showDropdownMenu = false
+                                    onOpenSettings()
+                                }
+                            )
+                        }
                     }
                 }
             )
