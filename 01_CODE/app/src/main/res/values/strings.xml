@@ -43,6 +43,7 @@
     <string name="theme_dark_desc">Dark theme</string>
 
     <!-- App Name -->
+    <string name="app_name_short">Leetspeak</string>
     <string name="app_name">Leetspeak Generator</string>
     <string name="settings">Settings</string>
 
