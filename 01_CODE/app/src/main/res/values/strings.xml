@@ -171,4 +171,21 @@
     <string name="kofi_description">Support the developer</string>
     <string name="kofi_toast_error">Could not open Ko-Fi link</string>
     <string name="kofi_toast_thanks">Thank you for your support! ☕</string>
+
+        <!-- Bestehende Strings bleiben unverändert... -->
+
+        <!-- NEW: About Dialog - Personal Section -->
+        <string name="about_personal_story">Hello! 👋 I\'m a solo developer who created this app out of passion for coding and leetspeak. Every line of code was written with attention to detail to give you the best possible leetspeak experience.</string>
+        <string name="about_free_promise">Always free, no ads</string>
+        <string name="about_features_title">What the app can do</string>
+
+        <!-- NEW: Support Section -->
+        <string name="about_support_title">Support</string>
+        <string name="about_support_message">If you like the app, I would greatly appreciate your support! A good rating or a small coffee helps me a lot to continue developing.</string>
+        <string name="about_support_thanks">Thank you for your support! Every rating and every coffee motivates me to develop even better apps. ❤️</string>
+        <string name="kofi_support_short">Ko-Fi</string>
+
+        <!-- Developer Info -->
+        <string name="about_developer_info">Solo developer with passion</string>
+        <string name="about_made_with_love">Made with ❤️ in Germany</string>
 </resources>

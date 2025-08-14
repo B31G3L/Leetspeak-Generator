@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- NEUE DATEI: values-it/strings.xml (Italienisch) -->
+<resources>
+    <!-- Language Selection -->
+    <string name="language_system">Predefinito del sistema</string>
+    <string name="language_system_desc">Usa lingua del dispositivo</string>
+    <string name="language_english">Inglese</string>
+    <string name="language_english_desc">English (United States)</string>
+    <string name="language_german">Tedesco</string>
+    <string name="language_german_desc">Deutsch (Deutschland)</string>
+    <string name="language_spanish">Spagnolo</string>
+    <string name="language_spanish_desc">Español (España)</string>
+    <string name="language_french">Francese</string>
+    <string name="language_french_desc">Français (France)</string>
+    <string name="language_italian">Italiano</string>
+    <string name="language_italian_desc">Italiano (Italia)</string>
+    <string name="settings_language">Lingua</string>
+
+    <!-- About Dialog - Sezione Personale -->
+    <string name="about_personal_story">Ciao! 👋 Sono uno sviluppatore indipendente che ha creato questa app per passione per la programmazione e il leetspeak. Ogni riga di codice è stata scritta con attenzione ai dettagli per offrirti la migliore esperienza leetspeak possibile.</string>
+    <string name="about_free_promise">Sempre gratuita, senza pubblicità</string>
+    <string name="about_features_title">Cosa può fare l\'app</string>
+
+    <!-- Sezione Supporto -->
+    <string name="about_support_title">Supporto</string>
+    <string name="about_support_message">Se ti piace l\'app, apprezzerei molto il tuo supporto! Una buona valutazione o un piccolo caffè mi aiuta molto a continuare lo sviluppo.</string>
+    <string name="about_support_thanks">Grazie per il tuo supporto! Ogni valutazione e ogni caffè mi motiva a sviluppare app ancora migliori. ❤️</string>
+    <string name="kofi_support_short">Ko-Fi</string>
+
+    <!-- Info Sviluppatore -->
+    <string name="about_developer_info">Sviluppatore indipendente con passione</string>
+    <string name="about_made_with_love">Fatto con ❤️ in Germania</string>
+
+    <!-- App Name -->
+    <string name="app_name">Generatore Leetspeak</string>
+    <string name="settings">Impostazioni</string>
+
+    <!-- About Dialog Basic -->
+    <string name="about_dialog_title">Generatore Leetspeak</string>
+    <string name="about_dialog_version">Versione 1337.00</string>
+    <string name="about_dialog_subtitle">Trasforma il testo in fantastico leetspeak</string>
+    <string name="about_dialog_close">Chiudi</string>
+    <string name="about_dialog_rate">Valuta App</string>
+    <string name="about_dialog_copyright">© 2025 Beigel Dev. Tutti i diritti riservati.</string>
+
+    <!-- About Features -->
+    <string name="about_feature_simple">Leet Semplice</string>
+    <string name="about_feature_extended">Leet Esteso</string>
+    <string name="about_feature_custom_leets">Leet Personalizzati</string>
+    <string name="about_feature_favorites">Preferiti</string>
+    <string name="about_feature_material3">Material 3</string>
+    <string name="about_feature_offline">Offline</string>
+
+    <!-- Ko-Fi Support -->
+    <string name="kofi_support">Supporta su Ko-Fi</string>
+    <string name="kofi_description">Supporta lo sviluppatore</string>
+    <string name="kofi_toast_error">Impossibile aprire il link Ko-Fi</string>
+    <string name="kofi_toast_thanks">Grazie per il tuo supporto! ☕</string>
+</resources>

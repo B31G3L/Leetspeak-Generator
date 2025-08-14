@@ -170,4 +170,19 @@
     <string name="kofi_description">Den Entwickler unterstützen</string>
     <string name="kofi_toast_error">Ko-Fi Link konnte nicht geöffnet werden</string>
     <string name="kofi_toast_thanks">Vielen Dank für deine Unterstützung! ☕</string>
+
+    <!-- NEU: About Dialog - Persönlicher Bereich -->
+    <string name="about_personal_story">Hallo! 👋 Ich bin ein einzelner Entwickler, der diese App aus Leidenschaft für Code und Leetspeak erstellt hat. Jede Zeile wurde mit Liebe zum Detail programmiert, um dir das bestmögliche Leetspeak-Erlebnis zu bieten.</string>
+    <string name="about_free_promise">Immer kostenlos, ohne Werbung</string>
+    <string name="about_features_title">Was die App kann</string>
+
+    <!-- NEU: Support Bereich -->
+    <string name="about_support_title">Unterstützung</string>
+    <string name="about_support_message">Wenn dir die App gefällt, würde ich mich riesig über deine Unterstützung freuen! Eine gute Bewertung oder ein kleiner Kaffee helfen mir sehr, weiter zu entwickeln.</string>
+    <string name="about_support_thanks">Vielen Dank für deine Unterstützung! Jede Bewertung und jeder Kaffee motiviert mich, noch bessere Apps zu entwickeln. ❤️</string>
+    <string name="kofi_support_short">Ko-Fi</string>
+
+    <!-- Entwickler Info -->
+    <string name="about_developer_info">Einzelentwickler mit Leidenschaft</string>
+    <string name="about_made_with_love">Mit ❤️ entwickelt in Deutschland</string>
 </resources>
