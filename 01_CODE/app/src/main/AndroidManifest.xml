@@ -89,20 +89,6 @@
                 android:pathPattern="/leet_settings" />
         </provider>
 
-        <!-- 📱 WIDGET PROVIDER -->
-        <receiver
-            android:name=".widget.LeetWidgetProvider"
-            android:exported="true"
-            android:label="widget_description"
-            android:enabled="true">
-            <intent-filter>
-                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
-            </intent-filter>
-            <meta-data
-                android:name="android.appwidget.provider"
-                android:resource="@xml/widget_info" />
-        </receiver>
-
         <!-- 🌍 LOCALE METADATA SERVICE (NEU: für API < 33) -->
         <service
             android:name="androidx.appcompat.app.AppLocalesMetadataHolderService"

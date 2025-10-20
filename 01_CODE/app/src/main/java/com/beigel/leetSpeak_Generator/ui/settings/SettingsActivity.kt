@@ -202,17 +202,6 @@ fun SettingsScreen(
                     )
                 }
             }
-
-            // Widget Settings
-            item {
-                SettingsSection(
-                    title = stringResource(R.string.settings_widget),
-                    icon = Icons.Default.Widgets
-                ) {
-                    WidgetSettings(viewModel = viewModel)
-                }
-            }
-
             // About Section
             item {
                 SettingsSection(
@@ -494,63 +483,6 @@ fun ViewSelector(
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
-            }
-        }
-    }
-}
-
-@Composable
-fun WidgetSettings(viewModel: SettingsViewModel) {
-    val favoriteLeet by viewModel.favoriteLeet.collectAsStateWithLifecycle()
-
-    Column {
-        Text(
-            text = stringResource(R.string.settings_widget_config),
-            style = MaterialTheme.typography.titleSmall,
-            fontWeight = FontWeight.Medium,
-            modifier = Modifier.padding(bottom = 8.dp)
-        )
-
-        Surface(
-            color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.3f),
-            shape = MaterialTheme.shapes.medium
-        ) {
-            Column(
-                modifier = Modifier.padding(12.dp)
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Star,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.secondary,
-                        modifier = Modifier.size(20.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = stringResource(R.string.settings_widget_current_favorite),
-                        style = MaterialTheme.typography.bodyMedium,
-                        fontWeight = FontWeight.Medium
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(4.dp))
-
-                Text(
-                    text = favoriteLeet ?: stringResource(R.string.settings_widget_no_favorite),
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.secondary,
-                    fontWeight = FontWeight.Bold
-                )
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                Text(
-                    text = stringResource(R.string.settings_widget_description),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
             }
         }
     }

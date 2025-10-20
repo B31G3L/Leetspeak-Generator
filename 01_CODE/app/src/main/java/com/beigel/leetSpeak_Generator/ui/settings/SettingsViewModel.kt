@@ -47,15 +47,6 @@ class SettingsViewModel @Inject constructor(
             initialValue = ThemePreferences.LANGUAGE_SYSTEM
         )
 
-    val favoriteLeet: StateFlow<String?> = leetRepository.getFavoriteLeetOptions()
-        .map { favorites ->
-            favorites.firstOrNull()?.name
-        }
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
-            initialValue = null
-        )
 
     suspend fun setTheme(theme: String) {
         themePreferences.setTheme(theme)
