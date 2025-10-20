@@ -1,6 +1,7 @@
 package com.beigel.leetSpeak_Generator.ui.components.leet.selector
 
 import android.annotation.SuppressLint
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.ui.res.stringResource
 import androidx.compose.material.icons.Icons
@@ -179,10 +180,10 @@ private fun CompactCard(
     modifier: Modifier = Modifier
 ) {
     Card(
-        onClick = { onOptionSelected(option) },
         modifier = modifier
             .fillMaxWidth()
-            .aspectRatio(1.2f),
+            .aspectRatio(1.2f)
+            .clickable { onOptionSelected(option) }, // FIX
         colors = CardDefaults.cardColors(
             containerColor = if (option.isSelected) {
                 MaterialTheme.colorScheme.primaryContainer
@@ -275,8 +276,9 @@ private fun DetailedCard(
     modifier: Modifier = Modifier
 ) {
     Card(
-        onClick = { onOptionSelected(option) },
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier
+            .fillMaxWidth()
+            .clickable { onOptionSelected(option) }, // FIX
         colors = CardDefaults.cardColors(
             containerColor = if (option.isSelected) {
                 MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)

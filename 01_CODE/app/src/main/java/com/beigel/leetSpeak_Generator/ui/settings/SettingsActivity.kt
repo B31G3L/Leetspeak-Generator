@@ -8,9 +8,13 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.List
@@ -19,6 +23,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -28,6 +33,7 @@ import androidx.core.os.LocaleListCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.beigel.leetSpeak_Generator.R
 import com.beigel.leetSpeak_Generator.data.ThemePreferences
+import com.beigel.leetSpeak_Generator.ui.theme.AppTheme
 import com.beigel.leetSpeak_Generator.ui.theme.LeetspeakGeneratorTheme
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -99,7 +105,7 @@ fun SettingsScreen(
 ) {
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
-
+    val appTheme by viewModel.appTheme.collectAsStateWithLifecycle()
     val themeMode by viewModel.themeMode.collectAsStateWithLifecycle()
     val defaultViewExpanded by viewModel.defaultViewExpanded.collectAsStateWithLifecycle()
     val language by viewModel.language.collectAsStateWithLifecycle()
@@ -144,7 +150,21 @@ fun SettingsScreen(
                     )
                 }
             }
-
+            item {
+                SettingsSection(
+                    title = stringResource(R.string.settings_color_theme),
+                    icon = Icons.Default.ColorLens
+                ) {
+                    AppThemeSelector(
+                        currentAppTheme = appTheme,
+                        onAppThemeSelected = { theme ->
+                            scope.launch {
+                                viewModel.setAppTheme(theme)
+                            }
+                        }
+                    )
+                }
+            }
             // Theme Selection
             item {
                 SettingsSection(
@@ -552,6 +572,167 @@ fun AboutSection() {
         )
     }
 }
+// Füge diese Composables zu deiner SettingsActivity.kt hinzu
+
+@Composable
+fun AppThemeSelector(
+    currentAppTheme: AppTheme,
+    onAppThemeSelected: (AppTheme) -> Unit
+) {
+    val themeOptions = listOf(
+        ThemeColorOption(
+            theme = AppTheme.PLANIT,
+            name = "Ocean",
+            description = "Vibrant teal colors (Default)",
+            primaryColor = Color(0xFF00A896),
+            secondaryColor = Color(0xFF536360)
+        ),
+        ThemeColorOption(
+            theme = AppTheme.NEXTIME,
+            name = "Sunset",
+            description = "Warm orange tones",
+            primaryColor = Color(0xFFFF9800),
+            secondaryColor = Color(0xFF934B00)
+        ),
+        ThemeColorOption(
+            theme = AppTheme.LEETSPEAK,
+            name = "Purple Haze",
+            description = "Deep violet theme",
+            primaryColor = Color(0xFF673AB7),
+            secondaryColor = Color(0xFF804FB3)
+        ),
+        ThemeColorOption(
+            theme = AppTheme.DAILYLIST,
+            name = "Nature",
+            description = "Fresh green colors",
+            primaryColor = Color(0xFFA5D63E),
+            secondaryColor = Color(0xFF558B2F)
+        ),
+        ThemeColorOption(
+            theme = AppTheme.UNKNOWN,
+            name = "Alert",
+            description = "Bold red accent",
+            primaryColor = Color(0xFFD32F2F),
+            secondaryColor = Color(0xFFC62828)
+        )
+    )
+
+    Column {
+        Text(
+            text = "Color Theme",
+            style = MaterialTheme.typography.titleSmall,
+            fontWeight = FontWeight.Medium,
+            modifier = Modifier.padding(bottom = 12.dp)
+        )
+
+        themeOptions.forEach { option ->
+            ThemeColorCard(
+                option = option,
+                isSelected = currentAppTheme == option.theme,
+                onSelected = { onAppThemeSelected(option.theme) }
+            )
+
+            if (option != themeOptions.last()) {
+                Spacer(modifier = Modifier.height(8.dp))
+            }
+        }
+    }
+}
+
+@Composable
+private fun ThemeColorCard(
+    option: ThemeColorOption,
+    isSelected: Boolean,
+    onSelected: () -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onSelected() },
+        colors = CardDefaults.cardColors(
+            containerColor = if (isSelected) {
+                MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
+            } else {
+                MaterialTheme.colorScheme.surface
+            }
+        ),
+        border = if (isSelected) {
+            BorderStroke(2.dp, MaterialTheme.colorScheme.primary)
+        } else {
+            BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.3f))
+        }
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Color Preview
+            Row(
+                modifier = Modifier.size(48.dp),
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                Surface(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight(),
+                    color = option.primaryColor,
+                    shape = RoundedCornerShape(8.dp)
+                ) {}
+
+                Surface(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight(),
+                    color = option.secondaryColor,
+                    shape = RoundedCornerShape(8.dp)
+                ) {}
+            }
+
+            Spacer(modifier = Modifier.width(16.dp))
+
+            // Theme Info
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = option.name,
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
+                )
+                Text(
+                    text = option.description,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+
+            // Selection Indicator
+            if (isSelected) {
+                Icon(
+                    imageVector = Icons.Default.CheckCircle,
+                    contentDescription = "Selected",
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(24.dp)
+                )
+            } else {
+                Surface(
+                    modifier = Modifier.size(24.dp),
+                    shape = CircleShape,
+                    border = BorderStroke(2.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.5f)),
+                    color = Color.Transparent
+                ) {}
+            }
+        }
+    }
+}
+
+data class ThemeColorOption(
+    val theme: AppTheme,
+    val name: String,
+    val description: String,
+    val primaryColor: Color,
+    val secondaryColor: Color
+)
 
 data class LanguageOption(
     val key: String,

@@ -66,13 +66,18 @@ class ComposeMainActivity : AppCompatActivity() {
         setContent {
             // Theme aus Settings laden und überwachen
             val themeMode by viewModel.themeMode.collectAsStateWithLifecycle()
+            val appTheme by viewModel.appTheme.collectAsStateWithLifecycle() // NEU
+
             val isDarkTheme = when (themeMode) {
                 com.beigel.leetSpeak_Generator.data.ThemePreferences.THEME_DARK -> true
                 com.beigel.leetSpeak_Generator.data.ThemePreferences.THEME_LIGHT -> false
                 else -> androidx.compose.foundation.isSystemInDarkTheme()
             }
 
-            LeetspeakGeneratorTheme(darkTheme = isDarkTheme) {
+            LeetspeakGeneratorTheme(
+                darkTheme = isDarkTheme,
+                appTheme = appTheme
+            ) {
                 MainScreen(
                     viewModel = viewModel,
                     onCopyToClipboard = { text -> copyToClipboardWithFeedback(text) },
@@ -85,7 +90,7 @@ class ComposeMainActivity : AppCompatActivity() {
                         )
                     },
                     onBugReport = { sendBugReport() },
-                    onKofiSupport = { openKofiLink() } // NEU: Ko-Fi Funktion
+                    onKofiSupport = { openKofiLink() }
                 )
             }
         }

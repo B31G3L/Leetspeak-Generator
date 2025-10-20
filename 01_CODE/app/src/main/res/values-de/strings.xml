@@ -185,4 +185,16 @@
     <!-- Entwickler Info -->
     <string name="about_developer_info">Einzelentwickler mit Leidenschaft</string>
     <string name="about_made_with_love">Mit ❤️ entwickelt in Deutschland</string>
+    <!-- Auch für Deutsch (values-de/strings.xml) -->
+    <string name="settings_color_theme">Farbschema</string>
+    <string name="theme_ocean">Ozean</string>
+    <string name="theme_ocean_desc">Lebendige Türkistöne (Standard)</string>
+    <string name="theme_sunset">Sonnenuntergang</string>
+    <string name="theme_sunset_desc">Warme Orangetöne</string>
+    <string name="theme_purple">Lila Nebel</string>
+    <string name="theme_purple_desc">Tiefes Violett-Thema</string>
+    <string name="theme_nature">Natur</string>
+    <string name="theme_nature_desc">Frische Grüntöne</string>
+    <string name="theme_alert">Alarm</string>
+    <string name="theme_alert_desc">Kräftiger Rot-Akzent</string>
 </resources>

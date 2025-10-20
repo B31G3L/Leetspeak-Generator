@@ -1,10 +1,10 @@
-// SettingsViewModel.kt
 package com.beigel.leetSpeak_Generator.ui.settings
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.beigel.leetSpeak_Generator.data.ThemePreferences
 import com.beigel.leetSpeak_Generator.repository.LeetRepository
+import com.beigel.leetSpeak_Generator.ui.theme.AppTheme
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -23,6 +23,14 @@ class SettingsViewModel @Inject constructor(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
             initialValue = ThemePreferences.THEME_SYSTEM
+        )
+
+    // NEU: App Theme State
+    val appTheme: StateFlow<AppTheme> = themePreferences.appTheme
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = AppTheme.PLANIT
         )
 
     val defaultViewExpanded: StateFlow<Boolean> = themePreferences.defaultViewExpanded
@@ -51,6 +59,11 @@ class SettingsViewModel @Inject constructor(
 
     suspend fun setTheme(theme: String) {
         themePreferences.setTheme(theme)
+    }
+
+    // NEU: App Theme setzen
+    suspend fun setAppTheme(appTheme: AppTheme) {
+        themePreferences.setAppTheme(appTheme)
     }
 
     suspend fun setDefaultViewExpanded(expanded: Boolean) {

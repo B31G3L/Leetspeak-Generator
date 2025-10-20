@@ -19,6 +19,8 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import com.beigel.leetSpeak_Generator.ui.theme.AppTheme
+
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
@@ -53,7 +55,8 @@ class MainViewModel @Inject constructor(
         .stateIn(viewModelScope, SharingStarted.Eagerly, false)
 
     val currentVersionInfo: VersionInfo = whatsNewPreferences.getCurrentVersionInfo()
-
+    val appTheme: StateFlow<AppTheme> = themePreferences.appTheme
+        .stateIn(viewModelScope, SharingStarted.Eagerly, AppTheme.PLANIT)
     val isFirstLaunch: StateFlow<Boolean> = whatsNewPreferences.isFirstLaunch
         .stateIn(viewModelScope, SharingStarted.Eagerly, false)
 
