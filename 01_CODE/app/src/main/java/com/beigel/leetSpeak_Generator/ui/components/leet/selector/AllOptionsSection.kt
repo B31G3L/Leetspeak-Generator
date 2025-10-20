@@ -1,7 +1,6 @@
 package com.beigel.leetSpeak_Generator.ui.components.leet.selector
 
 import android.annotation.SuppressLint
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.ui.res.stringResource
 import androidx.compose.material.icons.Icons
@@ -83,7 +82,7 @@ private fun AllOptionsHeader(
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text =  stringResource(R.string.leet_selector_all_modes),
+                    text = stringResource(R.string.leet_selector_all_modes),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Medium,
                     color = MaterialTheme.colorScheme.primary
@@ -180,10 +179,10 @@ private fun CompactCard(
     modifier: Modifier = Modifier
 ) {
     Card(
+        onClick = { onOptionSelected(option) }, // FIXED: Verwende Card onClick
         modifier = modifier
             .fillMaxWidth()
-            .aspectRatio(1.2f)
-            .clickable { onOptionSelected(option) }, // FIX
+            .aspectRatio(1.2f),
         colors = CardDefaults.cardColors(
             containerColor = if (option.isSelected) {
                 MaterialTheme.colorScheme.primaryContainer
@@ -276,9 +275,8 @@ private fun DetailedCard(
     modifier: Modifier = Modifier
 ) {
     Card(
-        modifier = modifier
-            .fillMaxWidth()
-            .clickable { onOptionSelected(option) }, // FIX
+        onClick = { onOptionSelected(option) }, // FIXED: Verwende Card onClick
+        modifier = modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
             containerColor = if (option.isSelected) {
                 MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)

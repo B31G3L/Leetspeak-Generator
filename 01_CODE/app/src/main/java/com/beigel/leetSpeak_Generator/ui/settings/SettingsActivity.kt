@@ -1,4 +1,3 @@
-// SettingsActivity.kt
 package com.beigel.leetSpeak_Generator.ui.settings
 
 import android.content.Context
@@ -9,7 +8,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.selection.selectable
@@ -40,7 +39,7 @@ import kotlinx.coroutines.launch
 import java.util.Locale
 
 @AndroidEntryPoint
-class SettingsActivity : AppCompatActivity() { // ← Bereits AppCompatActivity
+class SettingsActivity : AppCompatActivity() {
 
     private val viewModel: SettingsViewModel by viewModels()
 
@@ -49,13 +48,19 @@ class SettingsActivity : AppCompatActivity() { // ← Bereits AppCompatActivity
 
         setContent {
             val themeMode by viewModel.themeMode.collectAsStateWithLifecycle()
+            val appTheme by viewModel.appTheme.collectAsStateWithLifecycle() // NEU: AppTheme beobachten
+
             val isDarkTheme = when (themeMode) {
                 ThemePreferences.THEME_DARK -> true
                 ThemePreferences.THEME_LIGHT -> false
                 else -> androidx.compose.foundation.isSystemInDarkTheme()
             }
 
-            LeetspeakGeneratorTheme(darkTheme = isDarkTheme) {
+            // FIXED: appTheme wird jetzt auch übergeben für Live-Updates
+            LeetspeakGeneratorTheme(
+                darkTheme = isDarkTheme,
+                appTheme = appTheme  // ← CRITICAL: AppTheme wird übergeben
+            ) {
                 SettingsScreen(
                     viewModel = viewModel,
                     onBackPressed = { finish() },
@@ -67,7 +72,6 @@ class SettingsActivity : AppCompatActivity() { // ← Bereits AppCompatActivity
         }
     }
 
-    // ✅ VERBESSERTE Sprachänderungs-Logik
     private fun applyLanguageChange(languageCode: String) {
         try {
             val localeList = if (languageCode == ThemePreferences.LANGUAGE_SYSTEM) {
@@ -76,21 +80,16 @@ class SettingsActivity : AppCompatActivity() { // ← Bereits AppCompatActivity
                 LocaleListCompat.forLanguageTags(languageCode)
             }
 
-            // Verwende AppCompatDelegate für alle Android-Versionen
             AppCompatDelegate.setApplicationLocales(localeList)
 
-            // Für API < 33 ist manchmal ein manueller recreate() nötig
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
-                // Kurze Verzögerung für bessere UX
                 window.decorView.postDelayed({
                     recreate()
                 }, 100)
             }
-            // Für API 33+ passiert recreation automatisch
 
         } catch (e: Exception) {
             android.util.Log.e("SettingsActivity", "Error changing language", e)
-            // Fallback zu recreation
             recreate()
         }
     }
@@ -150,6 +149,8 @@ fun SettingsScreen(
                     )
                 }
             }
+
+            // Color Theme Selection - FIRST for better UX
             item {
                 SettingsSection(
                     title = stringResource(R.string.settings_color_theme),
@@ -160,12 +161,14 @@ fun SettingsScreen(
                         onAppThemeSelected = { theme ->
                             scope.launch {
                                 viewModel.setAppTheme(theme)
+                                // Theme ändert sich sofort durch StateFlow
                             }
                         }
                     )
                 }
             }
-            // Theme Selection
+
+            // Theme Selection (Light/Dark)
             item {
                 SettingsSection(
                     title = stringResource(R.string.settings_appearance),
@@ -176,6 +179,7 @@ fun SettingsScreen(
                         onThemeSelected = { theme ->
                             scope.launch {
                                 viewModel.setTheme(theme)
+                                // Theme ändert sich sofort durch StateFlow
                             }
                         }
                     )
@@ -279,7 +283,9 @@ fun LanguageSelector(
                     .fillMaxWidth()
                     .selectable(
                         selected = currentLanguage == language.key,
-                        onClick = { onLanguageSelected(language.key) }
+                        onClick = { onLanguageSelected(language.key) },
+                        indication = null,
+                        interactionSource = remember { MutableInteractionSource() }
                     )
                     .padding(vertical = 8.dp),
                 verticalAlignment = Alignment.CenterVertically
@@ -384,7 +390,9 @@ fun ThemeSelector(
                     .fillMaxWidth()
                     .selectable(
                         selected = currentTheme == theme.key,
-                        onClick = { onThemeSelected(theme.key) }
+                        onClick = { onThemeSelected(theme.key) },
+                        indication = null,
+                        interactionSource = remember { MutableInteractionSource() }
                     )
                     .padding(vertical = 8.dp),
                 verticalAlignment = Alignment.CenterVertically
@@ -452,7 +460,9 @@ fun ViewSelector(
                     .fillMaxWidth()
                     .selectable(
                         selected = defaultViewExpanded == viewOption.key,
-                        onClick = { onViewSelected(viewOption.key) }
+                        onClick = { onViewSelected(viewOption.key) },
+                        indication = null,
+                        interactionSource = remember { MutableInteractionSource() }
                     )
                     .padding(vertical = 8.dp),
                 verticalAlignment = Alignment.CenterVertically
@@ -572,7 +582,6 @@ fun AboutSection() {
         )
     }
 }
-// Füge diese Composables zu deiner SettingsActivity.kt hinzu
 
 @Composable
 fun AppThemeSelector(
@@ -646,9 +655,8 @@ private fun ThemeColorCard(
     onSelected: () -> Unit
 ) {
     Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onSelected() },
+        onClick = onSelected,
+        modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
             containerColor = if (isSelected) {
                 MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)

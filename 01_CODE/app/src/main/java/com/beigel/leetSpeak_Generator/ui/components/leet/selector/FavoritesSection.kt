@@ -1,7 +1,5 @@
-// FavoritesSection.kt - PERFORMANCE-OPTIMIERT
 package com.beigel.leetSpeak_Generator.ui.components.leet.selector
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -22,6 +20,7 @@ import com.beigel.leetSpeak_Generator.data.LeetOption
  * - Vereinfachte Animationen
  * - Reduzierte Recompositions
  * - Faster rendering
+ * - FIXED: clickable durch Card onClick ersetzt
  */
 @Composable
 fun FavoritesSection(
@@ -56,6 +55,7 @@ fun FavoritesSection(
  * - Entfernt schwere AnimatedVisibility für Selected Indicator
  * - Vereinfachte Surface-Operationen
  * - Reduzierte State Dependencies
+ * - FIXED: clickable durch Card onClick ersetzt
  */
 @Composable
 private fun FullWidthFavoriteCard(
@@ -65,9 +65,8 @@ private fun FullWidthFavoriteCard(
     modifier: Modifier = Modifier
 ) {
     Card(
-        modifier = modifier
-            .fillMaxWidth()
-            .clickable { onOptionSelected(option) }, // FIX
+        onClick = { onOptionSelected(option) }, // FIXED: Verwende Card onClick
+        modifier = modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
             containerColor = if (option.isSelected) {
                 MaterialTheme.colorScheme.secondaryContainer
@@ -99,7 +98,7 @@ private fun FullWidthFavoriteCard(
             Box {
                 // Safe Icon Loading
                 Icon(
-                    imageVector = Icons.Default.Settings,
+                    imageVector = option.iconImageVector,
                     contentDescription = null,
                     modifier = Modifier.size(32.dp),
                     tint = MaterialTheme.colorScheme.secondary
