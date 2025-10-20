@@ -519,36 +519,36 @@ fun AppThemeSelector(
     val themeOptions = listOf(
         ThemeColorOption(
             theme = AppTheme.PLANIT,
-            name = "Ocean",
-            description = "Vibrant teal colors (Default)",
+            name = stringResource(R.string.theme_planit),
+            description = stringResource(R.string.theme_planit_desc),
             primaryColor = Color(0xFF00A896),
             secondaryColor = Color(0xFF536360)
         ),
         ThemeColorOption(
             theme = AppTheme.NEXTIME,
-            name = "Sunset",
-            description = "Warm orange tones",
+            name = stringResource(R.string.theme_nextime),
+            description = stringResource(R.string.theme_nextime_desc),
             primaryColor = Color(0xFFFF9800),
             secondaryColor = Color(0xFF934B00)
         ),
         ThemeColorOption(
             theme = AppTheme.LEETSPEAK,
-            name = "Purple Haze",
-            description = "Deep violet theme",
+            name = stringResource(R.string.theme_leetspeak),
+            description = stringResource(R.string.theme_leetspeak_desc),
             primaryColor = Color(0xFF673AB7),
             secondaryColor = Color(0xFF804FB3)
         ),
         ThemeColorOption(
             theme = AppTheme.DAILYLIST,
-            name = "Nature",
-            description = "Fresh green colors",
+            name = stringResource(R.string.theme_dailylist),
+            description = stringResource(R.string.theme_dailylist_desc),
             primaryColor = Color(0xFFA5D63E),
             secondaryColor = Color(0xFF558B2F)
         ),
         ThemeColorOption(
             theme = AppTheme.UNKNOWN,
-            name = "Alert",
-            description = "Bold red accent",
+            name = stringResource(R.string.theme_unknown),
+            description = stringResource(R.string.theme_unknown_desc),
             primaryColor = Color(0xFFD32F2F),
             secondaryColor = Color(0xFFC62828)
         )

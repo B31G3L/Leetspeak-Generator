@@ -12,8 +12,6 @@ sealed class MainIntent {
     data class UpdateInput(val text: String) : MainIntent()
     data class ChangeMode(val leetOption: LeetOption) : MainIntent()
     data class ToggleFavorite(val leetOption: LeetOption) : MainIntent()
-
-    // FIXED: Erweiterte CreateLeet Intent mit individuellen Übersetzungen
     data class CreateLeet(
         val name: String,
         val icon: ImageVector,

@@ -189,16 +189,21 @@
         <string name="about_developer_info">Solo developer with passion</string>
         <string name="about_made_with_love">Made with ❤️ in Germany</string>
 
-    <!-- Theme Settings -->
-    <string name="settings_color_theme">Color Theme</string>
-    <string name="theme_ocean">Ocean</string>
-    <string name="theme_ocean_desc">Vibrant teal colors (Default)</string>
-    <string name="theme_sunset">Sunset</string>
-    <string name="theme_sunset_desc">Warm orange tones</string>
-    <string name="theme_purple">Purple Haze</string>
-    <string name="theme_purple_desc">Deep violet theme</string>
-    <string name="theme_nature">Nature</string>
-    <string name="theme_nature_desc">Fresh green colors</string>
-    <string name="theme_alert">Alert</string>
-    <string name="theme_alert_desc">Bold red accent</string>
+        <!-- Theme Settings -->
+        <string name="settings_color_theme">Color Theme</string>
+
+        <string name="theme_planit">PlanIt</string>
+        <string name="theme_planit_desc">Vibrant teal colors (PlanIt App Logo)</string>
+
+        <string name="theme_nextime">NexTime</string>
+        <string name="theme_nextime_desc">Warm orange tones (NexTime App Logo)</string>
+
+        <string name="theme_leetspeak">Leetspeak</string>
+        <string name="theme_leetspeak_desc">Deep violet theme (Leetspeak App Logo) (Default)</string>
+
+        <string name="theme_dailylist">DailyList</string>
+        <string name="theme_dailylist_desc">Fresh lime green colors (DailyList App Logo)</string>
+
+        <string name="theme_unknown">Unknown</string>
+        <string name="theme_unknown_desc">Bold red accent (Unknown App Logo)</string>
 </resources>

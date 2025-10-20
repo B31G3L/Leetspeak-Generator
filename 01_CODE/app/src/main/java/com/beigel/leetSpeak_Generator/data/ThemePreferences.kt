@@ -40,11 +40,11 @@ class ThemePreferences(private val context: Context) {
 
     // App Theme (Color Scheme) Preference
     val appTheme: Flow<AppTheme> = context.dataStore.data.map { preferences ->
-        val themeName = preferences[APP_THEME_KEY] ?: AppTheme.PLANIT.name
+        val themeName = preferences[APP_THEME_KEY] ?: AppTheme.LEETSPEAK.name
         try {
             AppTheme.valueOf(themeName)
         } catch (e: IllegalArgumentException) {
-            AppTheme.PLANIT // Fallback
+            AppTheme.LEETSPEAK // Fallback
         }
     }
 

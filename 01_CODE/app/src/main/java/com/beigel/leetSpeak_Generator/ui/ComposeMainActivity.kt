@@ -66,7 +66,7 @@ class ComposeMainActivity : AppCompatActivity() {
         setContent {
             // Theme aus Settings laden und überwachen
             val themeMode by viewModel.themeMode.collectAsStateWithLifecycle()
-            val appTheme by viewModel.appTheme.collectAsStateWithLifecycle() // NEU
+            val appTheme by viewModel.appTheme.collectAsStateWithLifecycle()
 
             val isDarkTheme = when (themeMode) {
                 com.beigel.leetSpeak_Generator.data.ThemePreferences.THEME_DARK -> true
