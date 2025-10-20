@@ -36,7 +36,6 @@ import com.beigel.leetSpeak_Generator.ui.theme.AppTheme
 import com.beigel.leetSpeak_Generator.ui.theme.LeetspeakGeneratorTheme
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
-import java.util.Locale
 
 @AndroidEntryPoint
 class SettingsActivity : AppCompatActivity() {
@@ -48,7 +47,7 @@ class SettingsActivity : AppCompatActivity() {
 
         setContent {
             val themeMode by viewModel.themeMode.collectAsStateWithLifecycle()
-            val appTheme by viewModel.appTheme.collectAsStateWithLifecycle() // NEU: AppTheme beobachten
+            val appTheme by viewModel.appTheme.collectAsStateWithLifecycle()
 
             val isDarkTheme = when (themeMode) {
                 ThemePreferences.THEME_DARK -> true
@@ -56,10 +55,9 @@ class SettingsActivity : AppCompatActivity() {
                 else -> androidx.compose.foundation.isSystemInDarkTheme()
             }
 
-            // FIXED: appTheme wird jetzt auch übergeben für Live-Updates
             LeetspeakGeneratorTheme(
                 darkTheme = isDarkTheme,
-                appTheme = appTheme  // ← CRITICAL: AppTheme wird übergeben
+                appTheme = appTheme
             ) {
                 SettingsScreen(
                     viewModel = viewModel,
@@ -103,7 +101,6 @@ fun SettingsScreen(
     onLanguageChanged: (String) -> Unit = {}
 ) {
     val scope = rememberCoroutineScope()
-    val context = LocalContext.current
     val appTheme by viewModel.appTheme.collectAsStateWithLifecycle()
     val themeMode by viewModel.themeMode.collectAsStateWithLifecycle()
     val defaultViewExpanded by viewModel.defaultViewExpanded.collectAsStateWithLifecycle()
@@ -150,7 +147,7 @@ fun SettingsScreen(
                 }
             }
 
-            // Color Theme Selection - FIRST for better UX
+            // Color Theme Selection
             item {
                 SettingsSection(
                     title = stringResource(R.string.settings_color_theme),
@@ -161,7 +158,6 @@ fun SettingsScreen(
                         onAppThemeSelected = { theme ->
                             scope.launch {
                                 viewModel.setAppTheme(theme)
-                                // Theme ändert sich sofort durch StateFlow
                             }
                         }
                     )
@@ -179,7 +175,6 @@ fun SettingsScreen(
                         onThemeSelected = { theme ->
                             scope.launch {
                                 viewModel.setTheme(theme)
-                                // Theme ändert sich sofort durch StateFlow
                             }
                         }
                     )
@@ -202,6 +197,7 @@ fun SettingsScreen(
                     )
                 }
             }
+
             // About Section
             item {
                 SettingsSection(
