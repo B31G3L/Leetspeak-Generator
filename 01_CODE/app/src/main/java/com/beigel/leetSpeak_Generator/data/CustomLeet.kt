@@ -11,9 +11,16 @@ import androidx.compose.ui.graphics.vector.ImageVector
  */
 data class CustomLeet(
     var name: String,
-    var iconName: String = "Settings", // FIXED: String statt ImageVector
+    var iconName: String = "Settings", // FIXED: Default-Wert sicherstellen
     private val _translations: MutableMap<String, String> = mutableMapOf()
 ) {
+
+    init {
+        // FIXED: Stelle sicher, dass iconName niemals null oder leer ist
+        if (iconName.isBlank()) {
+            iconName = "Settings"
+        }
+    }
 
     /**
      * FIXED: Transient computed property - wird nicht serialisiert
@@ -81,6 +88,7 @@ data class CustomLeet(
     companion object {
         /**
          * Creates a CustomLeet with default Simple Leet translations
+         * FIXED: Expliziter Default für iconName
          */
         fun createWithSimpleDefaults(name: String, iconName: String = "Settings"): CustomLeet {
             val leet = CustomLeet(name, iconName)
@@ -101,6 +109,7 @@ data class CustomLeet(
 
         /**
          * Creates a CustomLeet with Extended Leet translations
+         * FIXED: Expliziter Default für iconName
          */
         fun createWithExtendedDefaults(name: String, iconName: String = "Settings"): CustomLeet {
             val leet = CustomLeet(name, iconName)

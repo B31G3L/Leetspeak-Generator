@@ -17,6 +17,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.beigel.leetSpeak_Generator.R
 import com.beigel.leetSpeak_Generator.data.CustomLeet
+import com.beigel.leetSpeak_Generator.data.IconMapper
 import com.beigel.leetSpeak_Generator.presentation.intent.MainIntent
 import com.beigel.leetSpeak_Generator.ui.components.leet.creation.IconPickerDialog
 import com.beigel.leetSpeak_Generator.ui.components.leet.creation.LeetInfoCard
@@ -262,6 +263,10 @@ class LeetCreationDialogState(existingLeet: CustomLeet?) {
     /**
      * HAUPTFIX: Übersetzungen korrekt sammeln und speichern
      */
+    /**
+     * HAUPTFIX: Übersetzungen korrekt sammeln und speichern
+     * FIXED: Icon-Handling auf String-Basis
+     */
     fun saveLeet(
         viewModel: MainViewModel,
         existingLeet: CustomLeet?,
@@ -281,16 +286,17 @@ class LeetCreationDialogState(existingLeet: CustomLeet?) {
             viewModel.handleIntent(
                 MainIntent.CreateLeet(
                     name = finalName,
-                    icon = selectedIcon,
+                    icon = selectedIcon, // ImageVector - wird im ViewModel zu String konvertiert
                     useExtendedDefaults = selectedTemplate == TemplateType.EXTENDED,
                     customTranslations = translations // KRITISCH: Übersetzungen übertragen!
                 )
             )
         } else {
-            // Bestehendes Leet aktualisieren (bleibt gleich)
+            // FIXED: Bestehendes Leet aktualisieren mit String-basiertem Icon
+            val iconName =  IconMapper.getNameByIcon(selectedIcon)
             val updatedLeet = CustomLeet(
                 name = finalName,
-                iconImageVector = selectedIcon
+                iconName = iconName // FIXED: Verwende iconName statt iconImageVector
             ).apply {
                 setTranslations(translations)
             }
