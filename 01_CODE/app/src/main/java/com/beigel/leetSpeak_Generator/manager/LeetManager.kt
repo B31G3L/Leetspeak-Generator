@@ -115,13 +115,22 @@ class LeetManager(context: Context) {
     /**
      * Migrates old favorite index format to new format
      */
+    /**
+     * Migrates old favorite index format to new format
+     * FIXED: Do NOT migrate valid custom leet indices (0, 1, 2, ...) to built-in modes
+     */
     private fun migrateFavoriteIndex(oldIndex: Int, leetCount: Int): Int {
         return when {
+            // Already using new format (negative indices for built-in modes)
             oldIndex == FAV_SIMPLE || oldIndex == FAV_EXTENDED || oldIndex == FAV_NONE -> oldIndex
-            oldIndex == 0 -> FAV_SIMPLE // Migrate old default
-            oldIndex == 1 -> FAV_EXTENDED // Migrate old extended
-            oldIndex >= 0 && oldIndex < leetCount -> oldIndex // Valid custom leet index
-            else -> FAV_NONE // Invalid index
+
+            // Valid custom leet index - DO NOT MIGRATE!
+            // CRITICAL FIX: index 0, 1, 2, ... are VALID custom leet indices
+            // They should NOT be migrated to FAV_SIMPLE or FAV_EXTENDED
+            oldIndex >= 0 && oldIndex < leetCount -> oldIndex
+
+            // Invalid index - reset to none
+            else -> FAV_NONE
         }
     }
 
