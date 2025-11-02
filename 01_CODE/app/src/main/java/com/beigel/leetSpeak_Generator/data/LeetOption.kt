@@ -10,18 +10,24 @@ import com.beigel.leetSpeak_Generator.manager.LeetManager
 
 /**
  * Represents a leet translation option in the UI
- * FIXED: Factory functions are no longer @Composable to avoid repository errors
+ * FIXED: Verwendet String für iconName intern, stellt aber ImageVector bereit
  */
 data class LeetOption(
     val mode: Int,
     val name: String,
     val description: String,
-    val iconImageVector: ImageVector,
+    val iconName: String, // FIXED: String statt ImageVector
     val isCustom: Boolean = false,
     val customIndex: Int = -1,
     var isSelected: Boolean = false,
     var isFavorite: Boolean = false
 ) {
+
+    /**
+     * FIXED: Computed property für Abwärtskompatibilität
+     */
+    val iconImageVector: ImageVector
+        get() = IconMapper.getIconByName(iconName)
 
     companion object {
         /**
@@ -33,7 +39,7 @@ data class LeetOption(
                 mode = LeetManager.MODE_SIMPLE,
                 name = "Simple Leet",
                 description = "Basic character substitutions (A→4, E→3, etc.)",
-                iconImageVector = Icons.Default.TextFields,
+                iconName = "TextFields", // FIXED: String statt ImageVector
                 isCustom = false,
                 customIndex = -1,
                 isSelected = isSelected,
@@ -49,7 +55,7 @@ data class LeetOption(
                 mode = LeetManager.MODE_EXTENDED,
                 name = "Extended Leet",
                 description = "Advanced multi-character substitutions (M→/\\/\\, N→|\\|, etc.)",
-                iconImageVector = Icons.Default.Extension,
+                iconName = "Extension", // FIXED: String statt ImageVector
                 isCustom = false,
                 customIndex = -1,
                 isSelected = isSelected,
@@ -70,7 +76,7 @@ data class LeetOption(
                 mode = LeetManager.MODE_CUSTOM,
                 name = leet.name,
                 description = "Custom character mappings",
-                iconImageVector = leet.iconImageVector,
+                iconName = leet.iconName, // FIXED: Verwendet direkt iconName
                 isCustom = true,
                 customIndex = customIndex,
                 isSelected = isSelected,
@@ -86,7 +92,7 @@ data class LeetOption(
                 mode = LeetManager.MODE_SIMPLE,
                 name = "Simple Leet",
                 description = stringResource(R.string.simple_leet_description),
-                iconImageVector = Icons.Default.TextFields,
+                iconName = "TextFields",
                 isCustom = false,
                 customIndex = -1,
                 isSelected = isSelected,
@@ -99,7 +105,7 @@ data class LeetOption(
                 mode = LeetManager.MODE_EXTENDED,
                 name = "Extended Leet",
                 description = stringResource(R.string.extended_leet_description),
-                iconImageVector = Icons.Default.Extension,
+                iconName = "Extension",
                 isCustom = false,
                 customIndex = -1,
                 isSelected = isSelected,
@@ -117,7 +123,7 @@ data class LeetOption(
                 mode = LeetManager.MODE_CUSTOM,
                 name = leet.name,
                 description = stringResource(R.string.custom_leet_description),
-                iconImageVector = leet.iconImageVector,
+                iconName = leet.iconName,
                 isCustom = true,
                 customIndex = customIndex,
                 isSelected = isSelected,

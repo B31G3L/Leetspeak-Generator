@@ -13,6 +13,7 @@ import android.os.Looper
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
 import com.beigel.leetSpeak_Generator.data.CustomLeet
+import com.beigel.leetSpeak_Generator.data.IconMapper
 import com.beigel.leetSpeak_Generator.repository.LeetRepository
 import com.beigel.leetSpeak_Generator.manager.LeetManager
 import com.google.gson.Gson
@@ -27,6 +28,7 @@ import kotlinx.coroutines.flow.first
  * - Manual LeetRepository creation
  * - Better error handling
  * - Simplified initialization
+ * - FIXED: IconMapper für String-basierte Icon-Speicherung
  */
 class LeetDataProvider : ContentProvider() {
 
@@ -137,7 +139,7 @@ class LeetDataProvider : ContentProvider() {
                             "custom_${favoriteResult.customIndex}",
                             favoriteResult.leet.name,
                             gson.toJson(favoriteResult.leet.translations),
-                            "Settings",
+                            favoriteResult.leet.iconName, // FIXED: Verwende iconName statt iconImageVector
                             "CUSTOM",
                             favoriteResult.customIndex
                         ))
@@ -199,7 +201,7 @@ class LeetDataProvider : ContentProvider() {
                         "custom_$index",
                         leet.name,
                         gson.toJson(leet.translations),
-                        "Settings",
+                        leet.iconName, // FIXED: Verwende iconName statt iconImageVector
                         favoriteNames.contains(leet.name)
                     ))
                 }
@@ -259,6 +261,7 @@ class LeetDataProvider : ContentProvider() {
  * - Removed @Inject annotation
  * - Simplified constructor
  * - Better error handling
+ * - FIXED: IconMapper für String-basierte Icons
  */
 class FavoriteDataObserver(private val context: Context) {
 
@@ -332,6 +335,7 @@ class FavoriteDataObserver(private val context: Context) {
                     when (mode) {
                         "CUSTOM" -> {
                             val name = it.getString(it.getColumnIndexOrThrow(LeetDataProvider.COLUMN_NAME))
+                            val iconName = it.getString(it.getColumnIndexOrThrow(LeetDataProvider.COLUMN_ICON_NAME))
                             val translationsJson = it.getString(it.getColumnIndexOrThrow(LeetDataProvider.COLUMN_TRANSLATIONS))
 
                             val translations = Gson().fromJson<Map<String, String>>(
@@ -339,7 +343,8 @@ class FavoriteDataObserver(private val context: Context) {
                                 object : com.google.gson.reflect.TypeToken<Map<String, String>>() {}.type
                             )
 
-                            CustomLeet(name, Icons.Default.Settings).apply {
+                            // FIXED: Verwende iconName statt Icons.Default.Settings
+                            CustomLeet(name, iconName).apply {
                                 setTranslations(translations)
                             }
                         }
@@ -449,13 +454,15 @@ class KeyboardDataHelper(private val context: Context) {
                     if (mode == "CUSTOM") {
                         val name = it.getString(1)
                         val translationsJson = it.getString(2)
+                        val iconName = it.getString(3) // FIXED: Lese iconName aus Cursor
 
                         val translations = Gson().fromJson<Map<String, String>>(
                             translationsJson,
                             object : com.google.gson.reflect.TypeToken<Map<String, String>>() {}.type
                         )
 
-                        return@use CustomLeet(name, Icons.Default.Settings).apply {
+                        // FIXED: Verwende iconName statt Icons.Default.Settings
+                        return@use CustomLeet(name, iconName).apply {
                             setTranslations(translations)
                         }
                     }

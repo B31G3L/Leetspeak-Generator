@@ -8,6 +8,7 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.beigel.leetSpeak_Generator.R
 import com.beigel.leetSpeak_Generator.data.CustomLeet
+import com.beigel.leetSpeak_Generator.data.IconMapper
 import com.beigel.leetSpeak_Generator.utils.ErrorHandler
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
@@ -17,6 +18,7 @@ import kotlinx.coroutines.flow.*
 /**
  * Modern LeetManager with Kotlin Coroutines and Flow support
  * Handles custom leet configurations with reactive data streams
+ * FIXED: Icon-Handling auf String-Basis - Gson kann jetzt problemlos serialisieren
  */
 class LeetManager(context: Context) {
 
@@ -41,7 +43,7 @@ class LeetManager(context: Context) {
     }
 
     private val prefs: SharedPreferences = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-    private val gson = Gson()
+    private val gson = Gson() // FIXED: Kein TypeAdapter mehr nötig - arbeitet jetzt mit Strings
 
     // Coroutine scope for background operations
     private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
@@ -73,6 +75,7 @@ class LeetManager(context: Context) {
 
     /**
      * Loads leets from SharedPreferences
+     * FIXED: Gson kann jetzt CustomLeet direkt deserialisieren, da nur Strings gespeichert werden
      */
     private fun loadLeets() {
         scope.launch {
@@ -124,6 +127,7 @@ class LeetManager(context: Context) {
 
     /**
      * Saves leets to SharedPreferences
+     * FIXED: Serialisierung funktioniert jetzt einwandfrei mit String-basierten Icons
      */
     private suspend fun saveLeets() = withContext(Dispatchers.IO) {
         try {
@@ -297,20 +301,24 @@ class LeetManager(context: Context) {
 
     /**
      * Creates a leet with simple defaults
+     * FIXED: Akzeptiert ImageVector, konvertiert aber intern zu String
      */
-    suspend fun createLeetWithSimpleDefaults(name: String, iconImageVector: ImageVector = Icons.Default.Settings): ErrorHandler.Result<CustomLeet> = // FIXED: Parameter type
+    suspend fun createLeetWithSimpleDefaults(name: String, iconImageVector: ImageVector = Icons.Default.Settings): ErrorHandler.Result<CustomLeet> =
         ErrorHandler.safeExecute(errorMessage = "Failed to create leet") {
-            val leet = CustomLeet.createWithSimpleDefaults(name, iconImageVector) // FIXED: Pass ImageVector
+            val iconName = IconMapper.getNameByIcon(iconImageVector)
+            val leet = CustomLeet.createWithSimpleDefaults(name, iconName)
             addLeet(leet).getOrNull() // Add to manager
             leet
         }
 
     /**
      * Creates a leet with extended defaults
+     * FIXED: Akzeptiert ImageVector, konvertiert aber intern zu String
      */
-    suspend fun createLeetWithExtendedDefaults(name: String, iconImageVector: ImageVector = Icons.Default.Settings): ErrorHandler.Result<CustomLeet> = // FIXED: Parameter type
+    suspend fun createLeetWithExtendedDefaults(name: String, iconImageVector: ImageVector = Icons.Default.Settings): ErrorHandler.Result<CustomLeet> =
         ErrorHandler.safeExecute(errorMessage = "Failed to create leet") {
-            val leet = CustomLeet.createWithExtendedDefaults(name, iconImageVector) // FIXED: Pass ImageVector
+            val iconName = IconMapper.getNameByIcon(iconImageVector)
+            val leet = CustomLeet.createWithExtendedDefaults(name, iconName)
             addLeet(leet).getOrNull() // Add to manager
             leet
         }
