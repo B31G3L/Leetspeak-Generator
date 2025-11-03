@@ -7,6 +7,8 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.activity.compose.setContent
+import androidx.compose.animation.*
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
@@ -104,6 +106,17 @@ fun SettingsScreen(
     val themeMode by viewModel.themeMode.collectAsStateWithLifecycle()
     val language by viewModel.language.collectAsStateWithLifecycle()
 
+    // NEU: Copy Behavior States
+    val clearInputAfterCopy by viewModel.clearInputAfterCopy.collectAsStateWithLifecycle()
+    val askBeforeClear by viewModel.askBeforeClear.collectAsStateWithLifecycle()
+
+    // Expanded states für jede Sektion
+    var languageExpanded by remember { mutableStateOf(false) }
+    var colorThemeExpanded by remember { mutableStateOf(false) }
+    var appearanceExpanded by remember { mutableStateOf(false) }
+    var aboutExpanded by remember { mutableStateOf(false) }
+    var copyBehaviorExpanded by remember { mutableStateOf(false) } // NEU
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -125,13 +138,16 @@ fun SettingsScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
                 .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             // Language Selection
             item {
-                SettingsSection(
+                CollapsibleSettingsSection(
                     title = stringResource(R.string.settings_language),
-                    icon = Icons.Default.Language
+                    icon = Icons.Default.Language,
+                    isExpanded = languageExpanded,
+                    onExpandToggle = { languageExpanded = !languageExpanded },
+                    preview = getLanguagePreview(language)
                 ) {
                     LanguageSelector(
                         currentLanguage = language,
@@ -147,9 +163,12 @@ fun SettingsScreen(
 
             // Color Theme Selection
             item {
-                SettingsSection(
+                CollapsibleSettingsSection(
                     title = stringResource(R.string.settings_color_theme),
-                    icon = Icons.Default.ColorLens
+                    icon = Icons.Default.ColorLens,
+                    isExpanded = colorThemeExpanded,
+                    onExpandToggle = { colorThemeExpanded = !colorThemeExpanded },
+                    preview = getThemePreview(appTheme)
                 ) {
                     AppThemeSelector(
                         currentAppTheme = appTheme,
@@ -164,9 +183,12 @@ fun SettingsScreen(
 
             // Theme Selection (Light/Dark)
             item {
-                SettingsSection(
+                CollapsibleSettingsSection(
                     title = stringResource(R.string.settings_appearance),
-                    icon = Icons.Default.Palette
+                    icon = Icons.Default.Palette,
+                    isExpanded = appearanceExpanded,
+                    onExpandToggle = { appearanceExpanded = !appearanceExpanded },
+                    preview = getAppearancePreview(themeMode)
                 ) {
                     ThemeSelector(
                         currentTheme = themeMode,
@@ -179,11 +201,44 @@ fun SettingsScreen(
                 }
             }
 
+            // NEU: Copy Behavior Section
+            item {
+                CollapsibleSettingsSection(
+                    title = stringResource(R.string.settings_copy_behavior),
+                    icon = Icons.Default.ContentCopy,
+                    isExpanded = copyBehaviorExpanded,
+                    onExpandToggle = { copyBehaviorExpanded = !copyBehaviorExpanded },
+                    preview = if (clearInputAfterCopy) {
+                        if (askBeforeClear) "Löschen mit Rückfrage" else "Automatisch löschen"
+                    } else {
+                        "Nicht löschen"
+                    }
+                ) {
+                    CopyBehaviorSettings(
+                        clearInputAfterCopy = clearInputAfterCopy,
+                        askBeforeClear = askBeforeClear,
+                        onClearInputAfterCopyChanged = { value ->
+                            scope.launch {
+                                viewModel.setClearInputAfterCopy(value)
+                            }
+                        },
+                        onAskBeforeClearChanged = { value ->
+                            scope.launch {
+                                viewModel.setAskBeforeClear(value)
+                            }
+                        }
+                    )
+                }
+            }
+
             // About Section
             item {
-                SettingsSection(
+                CollapsibleSettingsSection(
                     title = stringResource(R.string.settings_about_app),
-                    icon = Icons.Default.Info
+                    icon = Icons.Default.Info,
+                    isExpanded = aboutExpanded,
+                    onExpandToggle = { aboutExpanded = !aboutExpanded },
+                    preview = stringResource(R.string.app_name)
                 ) {
                     AboutSection()
                 }
@@ -191,6 +246,134 @@ fun SettingsScreen(
         }
     }
 }
+
+/**
+ * Wiederverwendbare Collapsible Settings Section
+ */
+@Composable
+fun CollapsibleSettingsSection(
+    title: String,
+    icon: ImageVector,
+    isExpanded: Boolean,
+    onExpandToggle: () -> Unit,
+    preview: String,
+    content: @Composable () -> Unit
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp)
+        ) {
+            // Header mit Expand/Collapse
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = if (isExpanded) 12.dp else 0.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Icon(
+                        imageVector = icon,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(24.dp)
+                    )
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Column {
+                        Text(
+                            text = title,
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+
+                        // Preview wenn eingeklappt
+                        AnimatedVisibility(
+                            visible = !isExpanded,
+                            enter = fadeIn() + expandVertically(),
+                            exit = fadeOut() + shrinkVertically()
+                        ) {
+                            Text(
+                                text = preview,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.padding(top = 2.dp)
+                            )
+                        }
+                    }
+                }
+
+                // Expand/Collapse Button
+                IconButton(
+                    onClick = onExpandToggle,
+                    modifier = Modifier.size(40.dp)
+                ) {
+                    Icon(
+                        imageVector = if (isExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                        contentDescription = if (isExpanded) "Collapse" else "Expand",
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                }
+            }
+
+            // Content (expandable)
+            AnimatedVisibility(
+                visible = isExpanded,
+                enter = fadeIn(animationSpec = tween(300)) + expandVertically(animationSpec = tween(300)),
+                exit = fadeOut(animationSpec = tween(200)) + shrinkVertically(animationSpec = tween(200))
+            ) {
+                content()
+            }
+        }
+    }
+}
+
+/**
+ * Preview Helper Functions
+ */
+@Composable
+fun getLanguagePreview(languageCode: String): String {
+    return when (languageCode) {
+        ThemePreferences.LANGUAGE_SYSTEM -> stringResource(R.string.language_system)
+        ThemePreferences.LANGUAGE_ENGLISH -> stringResource(R.string.language_english)
+        ThemePreferences.LANGUAGE_GERMAN -> stringResource(R.string.language_german)
+        ThemePreferences.LANGUAGE_SPANISH -> stringResource(R.string.language_spanish)
+        ThemePreferences.LANGUAGE_FRENCH -> stringResource(R.string.language_french)
+        ThemePreferences.LANGUAGE_ITALIAN -> stringResource(R.string.language_italian)
+        else -> stringResource(R.string.language_system)
+    }
+}
+
+@Composable
+fun getThemePreview(appTheme: AppTheme): String {
+    return when (appTheme) {
+        AppTheme.PLANIT -> stringResource(R.string.theme_planit)
+        AppTheme.NEXTIME -> stringResource(R.string.theme_nextime)
+        AppTheme.LEETSPEAK -> stringResource(R.string.theme_leetspeak)
+        AppTheme.DAILYLIST -> stringResource(R.string.theme_dailylist)
+        AppTheme.UNKNOWN -> stringResource(R.string.theme_unknown)
+    }
+}
+
+@Composable
+fun getAppearancePreview(themeMode: String): String {
+    return when (themeMode) {
+        ThemePreferences.THEME_SYSTEM -> stringResource(R.string.theme_system)
+        ThemePreferences.THEME_LIGHT -> stringResource(R.string.theme_light)
+        ThemePreferences.THEME_DARK -> stringResource(R.string.theme_dark)
+        else -> stringResource(R.string.theme_system)
+    }
+}
+
+// Rest der Composables bleiben unverändert...
 
 @Composable
 fun LanguageSelector(
@@ -242,7 +425,7 @@ fun LanguageSelector(
         )
     )
 
-    Column {
+    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
         languages.forEach { language ->
             Row(
                 modifier = Modifier
@@ -285,45 +468,6 @@ fun LanguageSelector(
 }
 
 @Composable
-fun SettingsSection(
-    title: String,
-    icon: ImageVector,
-    content: @Composable () -> Unit
-) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-    ) {
-        Column(
-            modifier = Modifier.padding(16.dp)
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(bottom = 12.dp)
-            ) {
-                Icon(
-                    imageVector = icon,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(24.dp)
-                )
-                Spacer(modifier = Modifier.width(12.dp))
-                Text(
-                    text = title,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold
-                )
-            }
-
-            content()
-        }
-    }
-}
-
-@Composable
 fun ThemeSelector(
     currentTheme: String,
     onThemeSelected: (String) -> Unit
@@ -349,7 +493,7 @@ fun ThemeSelector(
         )
     )
 
-    Column {
+    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
         themes.forEach { theme ->
             Row(
                 modifier = Modifier
@@ -394,14 +538,12 @@ fun ThemeSelector(
 
 @Composable
 fun AboutSection() {
-    Column {
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Text(
             text = stringResource(R.string.app_name),
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold
         )
-
-        Spacer(modifier = Modifier.height(4.dp))
 
         Text(
             text = stringResource(R.string.about_dialog_version),
@@ -409,7 +551,7 @@ fun AboutSection() {
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(4.dp))
 
         Text(
             text = stringResource(R.string.settings_about_description),
@@ -462,24 +604,13 @@ fun AppThemeSelector(
         )
     )
 
-    Column {
-        Text(
-            text = "Color Theme",
-            style = MaterialTheme.typography.titleSmall,
-            fontWeight = FontWeight.Medium,
-            modifier = Modifier.padding(bottom = 12.dp)
-        )
-
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         themeOptions.forEach { option ->
             ThemeColorCard(
                 option = option,
                 isSelected = currentAppTheme == option.theme,
                 onSelected = { onAppThemeSelected(option.theme) }
             )
-
-            if (option != themeOptions.last()) {
-                Spacer(modifier = Modifier.height(8.dp))
-            }
         }
     }
 }
@@ -509,12 +640,12 @@ private fun ThemeColorCard(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
+                .padding(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             // Color Preview
             Row(
-                modifier = Modifier.size(48.dp),
+                modifier = Modifier.size(40.dp),
                 horizontalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 Surface(
@@ -522,7 +653,7 @@ private fun ThemeColorCard(
                         .weight(1f)
                         .fillMaxHeight(),
                     color = option.primaryColor,
-                    shape = RoundedCornerShape(8.dp)
+                    shape = RoundedCornerShape(6.dp)
                 ) {}
 
                 Surface(
@@ -530,17 +661,17 @@ private fun ThemeColorCard(
                         .weight(1f)
                         .fillMaxHeight(),
                     color = option.secondaryColor,
-                    shape = RoundedCornerShape(8.dp)
+                    shape = RoundedCornerShape(6.dp)
                 ) {}
             }
 
-            Spacer(modifier = Modifier.width(16.dp))
+            Spacer(modifier = Modifier.width(12.dp))
 
             // Theme Info
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = option.name,
-                    style = MaterialTheme.typography.bodyLarge,
+                    style = MaterialTheme.typography.bodyMedium,
                     fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
                 )
                 Text(
@@ -556,11 +687,11 @@ private fun ThemeColorCard(
                     imageVector = Icons.Default.CheckCircle,
                     contentDescription = "Selected",
                     tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(24.dp)
+                    modifier = Modifier.size(20.dp)
                 )
             } else {
                 Surface(
-                    modifier = Modifier.size(24.dp),
+                    modifier = Modifier.size(20.dp),
                     shape = CircleShape,
                     border = BorderStroke(2.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.5f)),
                     color = Color.Transparent
@@ -569,7 +700,100 @@ private fun ThemeColorCard(
         }
     }
 }
+@Composable
+fun CopyBehaviorSettings(
+    clearInputAfterCopy: Boolean,
+    askBeforeClear: Boolean,
+    onClearInputAfterCopyChanged: (Boolean) -> Unit,
+    onAskBeforeClearChanged: (Boolean) -> Unit
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        // Clear Input After Copy Switch
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 8.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = stringResource(R.string.settings_copy_clear_title),
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.Medium
+                )
+                Text(
+                    text = stringResource(R.string.settings_copy_clear_desc),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            Switch(
+                checked = clearInputAfterCopy,
+                onCheckedChange = onClearInputAfterCopyChanged
+            )
+        }
 
+        // Ask Before Clear Switch (nur aktiviert wenn clearInputAfterCopy = true)
+        AnimatedVisibility(
+            visible = clearInputAfterCopy,
+            enter = expandVertically() + fadeIn(),
+            exit = shrinkVertically() + fadeOut()
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = stringResource(R.string.settings_copy_ask_title),
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontWeight = FontWeight.Medium
+                    )
+                    Text(
+                        text = stringResource(R.string.settings_copy_ask_desc),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                Switch(
+                    checked = askBeforeClear,
+                    onCheckedChange = onAskBeforeClearChanged
+                )
+            }
+        }
+
+        // Info Text
+        if (clearInputAfterCopy && !askBeforeClear) {
+            Surface(
+                color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f),
+                shape = MaterialTheme.shapes.small,
+                modifier = Modifier.padding(top = 8.dp)
+            ) {
+                Row(
+                    modifier = Modifier.padding(12.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Info,
+                        contentDescription = null,
+                        modifier = Modifier.size(16.dp),
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "Die Eingabe wird automatisch gelöscht, ohne zu fragen",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                }
+            }
+        }
+    }
+}
 data class ThemeColorOption(
     val theme: AppTheme,
     val name: String,

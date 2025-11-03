@@ -206,4 +206,19 @@
 
         <string name="theme_unknown">Unknown</string>
         <string name="theme_unknown_desc">Bold red accent (Unknown App Logo)</string>
+
+    <!-- Clear Input Dialog -->
+    <string name="clear_input_dialog_title">Eingabe löschen?</string>
+    <string name="clear_input_dialog_message_normal">Möchten Sie den Plaintext nach dem Kopieren löschen?</string>
+    <string name="clear_input_dialog_message_reverse">Möchten Sie den Leetspeak-Text nach dem Kopieren löschen?</string>
+    <string name="clear_input_dialog_dont_ask">Nicht mehr fragen und diese Wahl merken</string>
+    <string name="clear_input_dialog_keep">Behalten</string>
+    <string name="clear_input_dialog_clear">Löschen</string>
+
+    <!-- Settings - Copy Behavior -->
+    <string name="settings_copy_behavior">Kopier-Verhalten</string>
+    <string name="settings_copy_clear_title">Eingabe nach Kopieren löschen</string>
+    <string name="settings_copy_clear_desc">Löscht automatisch die Eingabe nach dem Kopieren</string>
+    <string name="settings_copy_ask_title">Vor Löschen fragen</string>
+    <string name="settings_copy_ask_desc">Zeigt einen Dialog vor dem Löschen der Eingabe</string>
 </resources>

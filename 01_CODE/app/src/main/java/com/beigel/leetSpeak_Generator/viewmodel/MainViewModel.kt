@@ -60,6 +60,13 @@ class MainViewModel @Inject constructor(
     val isFirstLaunch: StateFlow<Boolean> = whatsNewPreferences.isFirstLaunch
         .stateIn(viewModelScope, SharingStarted.Eagerly, false)
 
+    // Copy behavior preferences
+    val clearInputAfterCopy: StateFlow<Boolean> = themePreferences.clearInputAfterCopy
+        .stateIn(viewModelScope, SharingStarted.Eagerly, false)
+
+    val askBeforeClear: StateFlow<Boolean> = themePreferences.askBeforeClear
+        .stateIn(viewModelScope, SharingStarted.Eagerly, true)
+
     // FIXED: Leet Options with proper initialization
     private val _isInitialized = MutableStateFlow(false)
 
@@ -340,8 +347,37 @@ class MainViewModel @Inject constructor(
         val text = outputText.value
         if (text.isNotEmpty()) {
             uiManager.setSuccess("Copied to clipboard")
+
+            // Trigger clear input dialog/action
+            if (clearInputAfterCopy.value) {
+                if (askBeforeClear.value) {
+                    // Show dialog - handled in UI
+                    _showClearInputDialog.value = true
+                } else {
+                    // Clear automatically
+                    uiManager.clearInput()
+                }
+            }
         } else {
             uiManager.setError("No text to copy")
+        }
+    }
+
+    // Add this StateFlow
+    private val _showClearInputDialog = MutableStateFlow(false)
+    val showClearInputDialog: StateFlow<Boolean> = _showClearInputDialog.asStateFlow()
+
+    fun dismissClearInputDialog() {
+        _showClearInputDialog.value = false
+    }
+
+    fun confirmClearInput(dontAskAgain: Boolean) {
+        viewModelScope.launch {
+            if (dontAskAgain) {
+                themePreferences.setAskBeforeClear(false)
+            }
+            uiManager.clearInput()
+            _showClearInputDialog.value = false
         }
     }
 

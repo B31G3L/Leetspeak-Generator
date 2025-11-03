@@ -19,6 +19,10 @@ class ThemePreferences(private val context: Context) {
         private val DEFAULT_VIEW_EXPANDED_KEY = androidx.datastore.preferences.core.booleanPreferencesKey("default_view_expanded")
         private val LANGUAGE_KEY = androidx.datastore.preferences.core.stringPreferencesKey("language_preference")
 
+        // Copy behavior preferences
+        private val CLEAR_INPUT_AFTER_COPY_KEY = androidx.datastore.preferences.core.booleanPreferencesKey("clear_input_after_copy")
+        private val ASK_BEFORE_CLEAR_KEY = androidx.datastore.preferences.core.booleanPreferencesKey("ask_before_clear")
+
         // Theme Mode Constants (Light/Dark)
         const val THEME_SYSTEM = "system"
         const val THEME_LIGHT = "light"
@@ -56,6 +60,15 @@ class ThemePreferences(private val context: Context) {
         preferences[LANGUAGE_KEY] ?: LANGUAGE_SYSTEM
     }
 
+    // Copy behavior preferences
+    val clearInputAfterCopy: Flow<Boolean> = context.dataStore.data.map { preferences ->
+        preferences[CLEAR_INPUT_AFTER_COPY_KEY] ?: false
+    }
+
+    val askBeforeClear: Flow<Boolean> = context.dataStore.data.map { preferences ->
+        preferences[ASK_BEFORE_CLEAR_KEY] ?: true // Default: immer fragen
+    }
+
     suspend fun setTheme(theme: String) {
         context.dataStore.edit { preferences ->
             preferences[THEME_KEY] = theme
@@ -77,6 +90,18 @@ class ThemePreferences(private val context: Context) {
     suspend fun setLanguage(language: String) {
         context.dataStore.edit { preferences ->
             preferences[LANGUAGE_KEY] = language
+        }
+    }
+
+    suspend fun setClearInputAfterCopy(clear: Boolean) {
+        context.dataStore.edit { preferences ->
+            preferences[CLEAR_INPUT_AFTER_COPY_KEY] = clear
+        }
+    }
+
+    suspend fun setAskBeforeClear(ask: Boolean) {
+        context.dataStore.edit { preferences ->
+            preferences[ASK_BEFORE_CLEAR_KEY] = ask
         }
     }
 }

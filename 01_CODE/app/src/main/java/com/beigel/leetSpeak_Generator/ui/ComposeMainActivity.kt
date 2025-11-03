@@ -39,6 +39,7 @@ import com.beigel.leetSpeak_Generator.ui.theme.LeetspeakGeneratorTheme
 import com.beigel.leetSpeak_Generator.viewmodel.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import com.beigel.leetSpeak_Generator.presentation.intent.MainIntent
+import com.beigel.leetSpeak_Generator.ui.components.ClearInputDialog
 import com.beigel.leetSpeak_Generator.ui.components.WhatsNewDialog
 import com.beigel.leetSpeak_Generator.ui.components.input.InputCard
 import com.beigel.leetSpeak_Generator.ui.settings.SettingsActivity
@@ -190,7 +191,7 @@ fun MainScreen(
     onCopyToClipboard: (String) -> Unit,
     onOpenSettings: () -> Unit,
     onBugReport: () -> Unit = {},
-    onKofiSupport: () -> Unit = {} // NEU: Ko-Fi Parameter
+    onKofiSupport: () -> Unit = {}
 ) {
     var showDropdownMenu by remember { mutableStateOf(false) }
 
@@ -202,9 +203,12 @@ fun MainScreen(
     val isReverseMode by viewModel.isReverseMode.collectAsStateWithLifecycle()
     val isInputLikelyLeetspeak by viewModel.isInputLikelyLeetspeak.collectAsStateWithLifecycle()
 
-    // NEW: What's New State
+    // What's New State
     val shouldShowWhatsNew by viewModel.shouldShowWhatsNew.collectAsStateWithLifecycle()
     val isFirstLaunch by viewModel.isFirstLaunch.collectAsStateWithLifecycle()
+
+    // NEU: Clear Input Dialog State
+    val showClearInputDialog by viewModel.showClearInputDialog.collectAsStateWithLifecycle()
 
     // Bestehende lokale State Variables...
     val density = LocalDensity.current
@@ -474,6 +478,17 @@ fun MainScreen(
                 onMarkAsShown = {
                     viewModel.handleIntent(MainIntent.MarkWhatsNewAsShown)
                 }
+            )
+        }
+
+        // NEU: Clear Input Dialog - HIER KOMMT ES HIN!
+        if (showClearInputDialog) {
+            ClearInputDialog(
+                onDismiss = { viewModel.dismissClearInputDialog() },
+                onConfirm = { dontAskAgain ->
+                    viewModel.confirmClearInput(dontAskAgain)
+                },
+                isReverseMode = isReverseMode
             )
         }
 

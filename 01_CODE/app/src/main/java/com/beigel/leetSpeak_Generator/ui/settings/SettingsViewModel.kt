@@ -8,7 +8,6 @@ import com.beigel.leetSpeak_Generator.ui.theme.AppTheme
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import javax.inject.Inject
 
@@ -25,7 +24,6 @@ class SettingsViewModel @Inject constructor(
             initialValue = ThemePreferences.THEME_SYSTEM
         )
 
-    // NEU: App Theme State
     val appTheme: StateFlow<AppTheme> = themePreferences.appTheme
         .stateIn(
             scope = viewModelScope,
@@ -47,12 +45,25 @@ class SettingsViewModel @Inject constructor(
             initialValue = ThemePreferences.LANGUAGE_SYSTEM
         )
 
+    // Copy behavior states
+    val clearInputAfterCopy: StateFlow<Boolean> = themePreferences.clearInputAfterCopy
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = false
+        )
+
+    val askBeforeClear: StateFlow<Boolean> = themePreferences.askBeforeClear
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = true
+        )
 
     suspend fun setTheme(theme: String) {
         themePreferences.setTheme(theme)
     }
 
-    // NEU: App Theme setzen
     suspend fun setAppTheme(appTheme: AppTheme) {
         themePreferences.setAppTheme(appTheme)
     }
@@ -63,5 +74,13 @@ class SettingsViewModel @Inject constructor(
 
     suspend fun setLanguage(language: String) {
         themePreferences.setLanguage(language)
+    }
+
+    suspend fun setClearInputAfterCopy(clear: Boolean) {
+        themePreferences.setClearInputAfterCopy(clear)
+    }
+
+    suspend fun setAskBeforeClear(ask: Boolean) {
+        themePreferences.setAskBeforeClear(ask)
     }
 }
