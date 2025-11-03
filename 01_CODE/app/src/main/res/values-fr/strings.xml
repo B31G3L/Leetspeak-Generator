@@ -94,7 +94,7 @@
     <string name="feature_custom_title">Leets personnalisés</string>
     <string name="feature_custom_desc">Créez vos propres traductions</string>
     <string name="feature_widget_title">Widget d\'accueil</string>
-    <string name="feature_widget_desc">Traductions rapides depuis l\'écran d'accueil</string>
+    <string name="feature_widget_desc">Traductions rapides depuis l\'écran d\'accueil</string>
     <string name="feature_theme_title">Thème sombre</string>
     <string name="feature_theme_desc">Agréable pour les yeux</string>
     <string name="feature_performance_title">Performances</string>
@@ -196,5 +196,5 @@
     <string name="settings_copy_clear_title">Effacer l\'entrée après la copie</string>
     <string name="settings_copy_clear_desc">Efface automatiquement l\'entrée après la copie</string>
     <string name="settings_copy_ask_title">Demander avant d\'effacer</string>
-    <string name="settings_copy_ask_desc">Affiche un dialogue avant d\'effacer l'entrée</string>
+    <string name="settings_copy_ask_desc">Affiche un dialogue avant d\'effacer l\'entrée</string>
 </resources>
