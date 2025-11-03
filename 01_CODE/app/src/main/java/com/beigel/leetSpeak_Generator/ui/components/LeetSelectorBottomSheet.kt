@@ -151,14 +151,6 @@ private fun LazyBottomSheetContent(
         // Header
         LeetSelectorHeader(onCreateNew = onCreateNew)
 
-        // Favoriten Section (nur wenn vorhanden)
-        if (favoriteLeetOptions.isNotEmpty()) {
-            FavoritesSection(
-                favoriteOptions = favoriteLeetOptions,
-                onOptionSelected = onOptionSelected,
-                onToggleFavorite = onToggleFavorite
-            )
-        }
 
         // Alle Optionen Section
         AllOptionsSection(
