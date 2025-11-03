@@ -1,4 +1,3 @@
-// LeetSelectorBottomSheet.kt - FIXED
 package com.beigel.leetSpeak_Generator.ui.components
 
 import androidx.compose.foundation.layout.*
@@ -13,10 +12,7 @@ import com.beigel.leetSpeak_Generator.presentation.intent.MainIntent
 import com.beigel.leetSpeak_Generator.ui.components.leet.selector.*
 import com.beigel.leetSpeak_Generator.viewmodel.MainViewModel
 
-/**
- * FIXED: Bottom Sheet für Leet-Auswahl mit korrekter Selection Logic
- * Verwendet jetzt die korrigierten StateFlows aus dem MainViewModel
- */
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LeetSelectorBottomSheet(
@@ -24,12 +20,9 @@ fun LeetSelectorBottomSheet(
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    // FIXED: Verwende die korrigierten StateFlows aus dem MainViewModel
     val leetOptions by viewModel.leetOptions.collectAsStateWithLifecycle()
     val favoriteLeetOptions by viewModel.favoriteLeetOptions.collectAsStateWithLifecycle()
-    val defaultViewExpanded by viewModel.defaultViewExpanded.collectAsStateWithLifecycle()
 
-    // Local state for dialogs
     var showLeetCreationDialog by remember { mutableStateOf(false) }
     var showLeetEditDialog by remember { mutableStateOf(false) }
     var showTranslationTableDialog by remember { mutableStateOf(false) }

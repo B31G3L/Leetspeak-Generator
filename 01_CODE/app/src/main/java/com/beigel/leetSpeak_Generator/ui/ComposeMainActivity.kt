@@ -443,8 +443,12 @@ fun MainScreen(
                 OutputCard(
                     outputText = outputText,
                     currentMode = outputTitle,
-                    onCopyClick = { onCopyToClipboard(outputText) },
-                    showHeader = true,
+                    onCopyClick = {
+                        // Zuerst in Clipboard kopieren
+                        onCopyToClipboard(outputText)
+                        // DANN ViewModel-Intent triggern für Löschlogik
+                        viewModel.handleIntent(MainIntent.CopyToClipboard)
+                    },                    showHeader = true,
                     isReverseMode = isReverseMode,
                     modifier = Modifier
                         .fillMaxWidth()

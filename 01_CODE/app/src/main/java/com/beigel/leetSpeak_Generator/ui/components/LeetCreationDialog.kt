@@ -23,10 +23,7 @@ import com.beigel.leetSpeak_Generator.ui.components.leet.creation.TranslationTab
 import com.beigel.leetSpeak_Generator.ui.components.leet.creation.TemplateHelpers
 import com.beigel.leetSpeak_Generator.viewmodel.MainViewModel
 
-/**
- * Leet Creation Dialog ohne Icon-Auswahl
- * UPDATED: Icon-Handling komplett entfernt
- */
+
 @Composable
 fun LeetCreationDialog(
     viewModel: MainViewModel,

@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- app/src/main/res/values/strings.xml (English - Default) -->
 <resources>
-    <!-- Language Selection -->
     <string name="language_system">System default</string>
     <string name="language_system_desc">Use device language</string>
     <string name="language_english">English</string>
@@ -16,7 +14,6 @@
     <string name="language_italian_desc">Italiano (Italia)</string>
     <string name="settings_language">Language</string>
 
-    <!-- Settings -->
     <string name="settings_title">Settings</string>
     <string name="settings_back">Back</string>
     <string name="settings_appearance">Appearance</string>
@@ -34,7 +31,6 @@
     <string name="settings_about_app">About app</string>
     <string name="settings_about_description">Transform text into awesome leetspeak with custom modes and themes.</string>
 
-    <!-- Theme -->
     <string name="theme_system">System</string>
     <string name="theme_system_desc">Follow system setting</string>
     <string name="theme_light">Light</string>
@@ -42,17 +38,14 @@
     <string name="theme_dark">Dark</string>
     <string name="theme_dark_desc">Dark theme</string>
 
-    <!-- App Name -->
     <string name="app_name_short">Leetspeak</string>
     <string name="app_name">Leetspeak Generator</string>
     <string name="settings">Settings</string>
 
-    <!-- Main Activity -->
     <string name="mode_display_reverse">Reverse</string>
     <string name="mode_display_leet_detected">Leet detected</string>
     <string name="mode_display_mode">Mode</string>
 
-    <!-- NEU: Bug Report -->
     <string name="bug_report">Report Bug</string>
     <string name="bug_report_title">Bug Report</string>
     <string name="bug_report_description">Help us improve the app by reporting bugs</string>
@@ -62,20 +55,17 @@
     <string name="bug_report_error">Error creating bug report: %1$s</string>
     <string name="bug_report_success">Bug report created successfully</string>
 
-    <!-- About Dialog -->
     <string name="about_dialog_title">Leetspeak Generator</string>
-    <string name="about_dialog_version">Version 1337.00</string>
+    <string name="about_dialog_version">Version 1337.009</string>
     <string name="about_dialog_subtitle">Transform text into awesome leetspeak</string>
     <string name="about_dialog_close">Close</string>
     <string name="about_dialog_rate">Rate App</string>
     <string name="about_dialog_copyright">© 2025 Beigel Dev. All rights reserved.</string>
 
-    <!-- About Stats -->
     <string name="about_stats_modes">Modes</string>
     <string name="about_stats_custom">Custom</string>
     <string name="about_stats_free">Free</string>
 
-    <!-- About Features -->
     <string name="about_feature_simple">Simple Leet</string>
     <string name="about_feature_extended">Extended Leet</string>
     <string name="about_feature_custom_leets">Custom Leets</string>
@@ -83,7 +73,6 @@
     <string name="about_feature_material3">Material 3</string>
     <string name="about_feature_offline">Offline</string>
 
-    <!-- What's New Dialog -->
     <string name="whats_new_welcome">Welcome!</string>
     <string name="whats_new_title">What\'s New</string>
     <string name="whats_new_welcome_subtitle">Start your leetspeak journey</string>
@@ -94,7 +83,6 @@
     <string name="whats_new_show_more">Show more</string>
     <string name="whats_new_continue">Continue</string>
 
-    <!-- Features -->
     <string name="feature_transform_title">Transform text</string>
     <string name="feature_transform_desc">Convert any text to leetspeak</string>
     <string name="feature_favorites_title">Favorites</string>
@@ -122,7 +110,6 @@
     <string name="feature_translations_title">New languages</string>
     <string name="feature_translations_desc">More language support</string>
 
-    <!-- Leet Selector -->
     <string name="leet_selector_title">Select Mode</string>
     <string name="leet_selector_new">New</string>
     <string name="leet_selector_all_modes">All modes</string>
@@ -134,13 +121,11 @@
     <string name="leet_selector_edit">Edit</string>
     <string name="leet_selector_show_table">Show translation table</string>
 
-    <!-- Translation Table -->
     <string name="translation_table_dialog_title">Translation table - %1$s</string>
     <string name="translation_table_close">Close</string>
     <string name="translation_table_plain">Plain</string>
     <string name="translation_table_leet">Leet</string>
 
-    <!-- Leet Creation -->
     <string name="leet_creation_title">Create leet</string>
     <string name="leet_edit_title">Edit leet</string>
     <string name="leet_creation_cancel">Cancel</string>
@@ -162,7 +147,6 @@
     <string name="template_collapse">Collapse</string>
     <string name="template_expand">Expand</string>
 
-    <!-- Leet Descriptions -->
     <string name="simple_leet_description">Basic character substitutions (A→4, E→3, etc.)</string>
     <string name="extended_leet_description">Advanced multi-character substitutions (M→/\\/\\, N→|\\|, etc.)</string>
     <string name="custom_leet_description">Custom character mappings</string>
@@ -172,53 +156,45 @@
     <string name="kofi_toast_error">Could not open Ko-Fi link</string>
     <string name="kofi_toast_thanks">Thank you for your support! ☕</string>
 
-        <!-- Bestehende Strings bleiben unverändert... -->
+    <string name="about_personal_story">Hello! 👋 I\'m a solo developer who created this app out of passion for coding and leetspeak. Every line of code was written with attention to detail to give you the best possible leetspeak experience.</string>
+    <string name="about_free_promise">Always free, no ads</string>
+    <string name="about_features_title">What the app can do</string>
 
-        <!-- NEW: About Dialog - Personal Section -->
-        <string name="about_personal_story">Hello! 👋 I\'m a solo developer who created this app out of passion for coding and leetspeak. Every line of code was written with attention to detail to give you the best possible leetspeak experience.</string>
-        <string name="about_free_promise">Always free, no ads</string>
-        <string name="about_features_title">What the app can do</string>
+    <string name="about_support_title">Support</string>
+    <string name="about_support_message">If you like the app, I would greatly appreciate your support! A good rating or a small coffee helps me a lot to continue developing.</string>
+    <string name="about_support_thanks">Thank you for your support! Every rating and every coffee motivates me to develop even better apps. ❤️</string>
+    <string name="kofi_support_short">Ko-Fi</string>
 
-        <!-- NEW: Support Section -->
-        <string name="about_support_title">Support</string>
-        <string name="about_support_message">If you like the app, I would greatly appreciate your support! A good rating or a small coffee helps me a lot to continue developing.</string>
-        <string name="about_support_thanks">Thank you for your support! Every rating and every coffee motivates me to develop even better apps. ❤️</string>
-        <string name="kofi_support_short">Ko-Fi</string>
+    <string name="about_developer_info">Solo developer with passion</string>
+    <string name="about_made_with_love">Made with ❤️ in Germany</string>
 
-        <!-- Developer Info -->
-        <string name="about_developer_info">Solo developer with passion</string>
-        <string name="about_made_with_love">Made with ❤️ in Germany</string>
+    <string name="settings_color_theme">Color Theme</string>
 
-        <!-- Theme Settings -->
-        <string name="settings_color_theme">Color Theme</string>
+    <string name="theme_planit">PlanIt</string>
+    <string name="theme_planit_desc">Vibrant teal colors (PlanIt App Logo)</string>
 
-        <string name="theme_planit">PlanIt</string>
-        <string name="theme_planit_desc">Vibrant teal colors (PlanIt App Logo)</string>
+    <string name="theme_nextime">NexTime</string>
+    <string name="theme_nextime_desc">Warm orange tones (NexTime App Logo)</string>
 
-        <string name="theme_nextime">NexTime</string>
-        <string name="theme_nextime_desc">Warm orange tones (NexTime App Logo)</string>
+    <string name="theme_leetspeak">Leetspeak</string>
+    <string name="theme_leetspeak_desc">Deep violet theme (Leetspeak App Logo) (Default)</string>
 
-        <string name="theme_leetspeak">Leetspeak</string>
-        <string name="theme_leetspeak_desc">Deep violet theme (Leetspeak App Logo) (Default)</string>
+    <string name="theme_dailylist">DailyList</string>
+    <string name="theme_dailylist_desc">Fresh lime green colors (DailyList App Logo)</string>
 
-        <string name="theme_dailylist">DailyList</string>
-        <string name="theme_dailylist_desc">Fresh lime green colors (DailyList App Logo)</string>
+    <string name="theme_unknown">Unknown</string>
+    <string name="theme_unknown_desc">Bold red accent (Unknown App Logo)</string>
 
-        <string name="theme_unknown">Unknown</string>
-        <string name="theme_unknown_desc">Bold red accent (Unknown App Logo)</string>
+    <string name="clear_input_dialog_title">Clear input?</string>
+    <string name="clear_input_dialog_message_normal">Do you want to clear the plaintext after copying?</string>
+    <string name="clear_input_dialog_message_reverse">Do you want to clear the leetspeak text after copying?</string>
+    <string name="clear_input_dialog_dont_ask">Don\'t ask again and remember this choice</string>
+    <string name="clear_input_dialog_keep">Keep</string>
+    <string name="clear_input_dialog_clear">Clear</string>
 
-    <!-- Clear Input Dialog -->
-    <string name="clear_input_dialog_title">Eingabe löschen?</string>
-    <string name="clear_input_dialog_message_normal">Möchten Sie den Plaintext nach dem Kopieren löschen?</string>
-    <string name="clear_input_dialog_message_reverse">Möchten Sie den Leetspeak-Text nach dem Kopieren löschen?</string>
-    <string name="clear_input_dialog_dont_ask">Nicht mehr fragen und diese Wahl merken</string>
-    <string name="clear_input_dialog_keep">Behalten</string>
-    <string name="clear_input_dialog_clear">Löschen</string>
-
-    <!-- Settings - Copy Behavior -->
-    <string name="settings_copy_behavior">Kopier-Verhalten</string>
-    <string name="settings_copy_clear_title">Eingabe nach Kopieren löschen</string>
-    <string name="settings_copy_clear_desc">Löscht automatisch die Eingabe nach dem Kopieren</string>
-    <string name="settings_copy_ask_title">Vor Löschen fragen</string>
-    <string name="settings_copy_ask_desc">Zeigt einen Dialog vor dem Löschen der Eingabe</string>
+    <string name="settings_copy_behavior">Copy Behavior</string>
+    <string name="settings_copy_clear_title">Clear input after copying</string>
+    <string name="settings_copy_clear_desc">Automatically clears the input after copying</string>
+    <string name="settings_copy_ask_title">Ask before clearing</string>
+    <string name="settings_copy_ask_desc">Shows a dialog before clearing the input</string>
 </resources>

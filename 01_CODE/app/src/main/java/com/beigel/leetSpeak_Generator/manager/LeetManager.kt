@@ -3,8 +3,6 @@ package com.beigel.leetSpeak_Generator.manager
 import android.content.Context
 import android.content.SharedPreferences
 import android.util.Log
-import androidx.compose.ui.graphics.vector.ImageVector
-import com.beigel.leetSpeak_Generator.R
 import com.beigel.leetSpeak_Generator.data.CustomLeet
 import com.beigel.leetSpeak_Generator.utils.ErrorHandler
 import com.google.gson.Gson

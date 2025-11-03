@@ -6,10 +6,7 @@ import com.beigel.leetSpeak_Generator.repository.LeetRepository
 import javax.inject.Inject
 import javax.inject.Singleton
 
-/**
- * Use Case für das Erstellen eines neuen Leets
- * UPDATED: Icon-Handling entfernt
- */
+
 @Singleton
 class CreateLeetUseCase @Inject constructor(
     private val repository: LeetRepository

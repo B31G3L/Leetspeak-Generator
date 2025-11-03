@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- app/src/main/res/values-es/strings.xml (Spanish) -->
 <resources>
-    <!-- Language Selection -->
     <string name="language_system">Predeterminado del sistema</string>
-    <string name="language_system_desc">Usar idioma del dispositivo</string>
+    <string name="language_system_desc">Usar el idioma del dispositivo</string>
     <string name="language_english">Inglés</string>
     <string name="language_english_desc">English (United States)</string>
     <string name="language_german">Alemán</string>
@@ -16,55 +14,58 @@
     <string name="language_italian_desc">Italiano (Italia)</string>
     <string name="settings_language">Idioma</string>
 
-    <!-- Settings -->
-    <string name="settings_title">Configuración</string>
+    <string name="settings_title">Ajustes</string>
     <string name="settings_back">Atrás</string>
     <string name="settings_appearance">Apariencia</string>
     <string name="settings_view">Vista</string>
     <string name="settings_view_default">Modo de vista predeterminado</string>
     <string name="settings_view_grid">Vista de cuadrícula</string>
-    <string name="settings_view_grid_desc">Diseño de tarjetas compacto</string>
+    <string name="settings_view_grid_desc">Diseño de tarjeta compacto</string>
     <string name="settings_view_list">Vista de lista</string>
     <string name="settings_view_list_desc">Lista detallada con opciones</string>
     <string name="settings_widget">Widget</string>
     <string name="settings_widget_config">Configuración del widget</string>
     <string name="settings_widget_current_favorite">Favorito actual</string>
     <string name="settings_widget_no_favorite">Ningún favorito seleccionado</string>
-    <string name="settings_widget_description">El widget usa tu modo leet favorito</string>
+    <string name="settings_widget_description">El widget utiliza tu modo leet favorito</string>
     <string name="settings_about_app">Acerca de la aplicación</string>
-    <string name="settings_about_description">Transforma texto en increíble leetspeak con modos personalizados y temas.</string>
+    <string name="settings_about_description">Transforma texto en leetspeak increíble con modos y temas personalizados.</string>
 
-    <!-- Theme -->
     <string name="theme_system">Sistema</string>
-    <string name="theme_system_desc">Seguir configuración del sistema</string>
+    <string name="theme_system_desc">Seguir la configuración del sistema</string>
     <string name="theme_light">Claro</string>
     <string name="theme_light_desc">Tema claro</string>
     <string name="theme_dark">Oscuro</string>
     <string name="theme_dark_desc">Tema oscuro</string>
 
-    <!-- App Name -->
+    <string name="app_name_short">Leetspeak</string>
     <string name="app_name">Generador Leetspeak</string>
-    <string name="settings">Configuración</string>
+    <string name="settings">Ajustes</string>
 
-    <!-- Main Activity -->
-    <string name="mode_display_reverse">Reverso</string>
+    <string name="mode_display_reverse">Inverso</string>
     <string name="mode_display_leet_detected">Leet detectado</string>
     <string name="mode_display_mode">Modo</string>
 
-    <!-- About Dialog -->
+    <string name="bug_report">Informar de un error</string>
+    <string name="bug_report_title">Informe de error</string>
+    <string name="bug_report_description">Ayúdanos a mejorar la aplicación informando de errores</string>
+    <string name="bug_report_send">Enviar informe de error</string>
+    <string name="bug_report_cancel">Cancelar</string>
+    <string name="bug_report_no_email_app">No se encontró ninguna aplicación de correo. Informe de error copiado al portapapeles.</string>
+    <string name="bug_report_error">Error al crear el informe de error: %1$s</string>
+    <string name="bug_report_success">Informe de error creado con éxito</string>
+
     <string name="about_dialog_title">Generador Leetspeak</string>
-    <string name="about_dialog_version">Versión 1337.00</string>
-    <string name="about_dialog_subtitle">Transforma texto en increíble leetspeak</string>
+    <string name="about_dialog_version">Versión 1337.009</string>
+    <string name="about_dialog_subtitle">Transforma texto en leetspeak increíble</string>
     <string name="about_dialog_close">Cerrar</string>
-    <string name="about_dialog_rate">Calificar aplicación</string>
+    <string name="about_dialog_rate">Valorar la aplicación</string>
     <string name="about_dialog_copyright">© 2025 Beigel Dev. Todos los derechos reservados.</string>
 
-    <!-- About Stats -->
     <string name="about_stats_modes">Modos</string>
-    <string name="about_stats_custom">Personalizado</string>
-    <string name="about_stats_free">Gratis</string>
+    <string name="about_stats_custom">Personalizados</string>
+    <string name="about_stats_free">Gratuitos</string>
 
-    <!-- About Features -->
     <string name="about_feature_simple">Leet Simple</string>
     <string name="about_feature_extended">Leet Extendido</string>
     <string name="about_feature_custom_leets">Leets Personalizados</string>
@@ -72,69 +73,64 @@
     <string name="about_feature_material3">Material 3</string>
     <string name="about_feature_offline">Sin conexión</string>
 
-    <!-- What's New Dialog -->
     <string name="whats_new_welcome">¡Bienvenido!</string>
-    <string name="whats_new_title">Qué hay de nuevo</string>
-    <string name="whats_new_welcome_subtitle">Comienza tu viaje de leetspeak</string>
+    <string name="whats_new_title">Novedades</string>
+    <string name="whats_new_welcome_subtitle">Comienza tu viaje leetspeak</string>
     <string name="whats_new_subtitle">Nuevas características y mejoras</string>
     <string name="whats_new_features">Características</string>
-    <string name="whats_new_version_features">Nuevo en esta versión</string>
+    <string name="whats_new_version_features">Novedades de esta versión</string>
     <string name="whats_new_show_less">Mostrar menos</string>
     <string name="whats_new_show_more">Mostrar más</string>
     <string name="whats_new_continue">Continuar</string>
 
-    <!-- Features -->
     <string name="feature_transform_title">Transformar texto</string>
-    <string name="feature_transform_desc">Convertir cualquier texto a leetspeak</string>
+    <string name="feature_transform_desc">Convierte cualquier texto a leetspeak</string>
     <string name="feature_favorites_title">Favoritos</string>
     <string name="feature_favorites_desc">Acceso rápido a tus modos favoritos</string>
-    <string name="feature_material_title">Material Design</string>
-    <string name="feature_material_desc">Interfaz moderna y hermosa</string>
-    <string name="feature_reverse_title">Modo reverso</string>
-    <string name="feature_reverse_desc">Convertir leetspeak de vuelta a texto</string>
+    <string name="feature_material_title">Diseño Material</string>
+    <string name="feature_material_desc">Interfaz moderna y atractiva</string>
+    <string name="feature_reverse_title">Modo inverso</string>
+    <string name="feature_reverse_desc">Convierte leetspeak de nuevo a texto</string>
     <string name="feature_custom_title">Leets personalizados</string>
     <string name="feature_custom_desc">Crea tus propias traducciones</string>
     <string name="feature_widget_title">Widget de inicio</string>
     <string name="feature_widget_desc">Traducciones rápidas desde la pantalla de inicio</string>
     <string name="feature_theme_title">Tema oscuro</string>
-    <string name="feature_theme_desc">Suave para los ojos</string>
+    <string name="feature_theme_desc">Descanso para la vista</string>
     <string name="feature_performance_title">Rendimiento</string>
-    <string name="feature_performance_desc">Más rápido y responsivo</string>
+    <string name="feature_performance_desc">Más rápido y con mejor respuesta</string>
     <string name="feature_bugfixes_title">Corrección de errores</string>
     <string name="feature_bugfixes_desc">Varias mejoras y correcciones</string>
-    <string name="feature_ui_improvements_title">Mejoras de interfaz</string>
+    <string name="feature_ui_improvements_title">Mejoras en la IU</string>
     <string name="feature_ui_improvements_desc">Mejor experiencia de usuario</string>
-    <string name="feature_new_settings_title">Nuevas configuraciones</string>
+    <string name="feature_new_settings_title">Nuevos ajustes</string>
     <string name="feature_new_settings_desc">Más opciones de personalización</string>
     <string name="feature_security_title">Seguridad</string>
     <string name="feature_security_desc">Protección de datos mejorada</string>
     <string name="feature_translations_title">Nuevos idiomas</string>
     <string name="feature_translations_desc">Más soporte de idiomas</string>
 
-    <!-- Leet Selector -->
-    <string name="leet_selector_title">Seleccionar modo</string>
+    <string name="leet_selector_title">Seleccionar Modo</string>
     <string name="leet_selector_new">Nuevo</string>
     <string name="leet_selector_all_modes">Todos los modos</string>
     <string name="leet_selector_grid_view">Vista de cuadrícula</string>
     <string name="leet_selector_list_view">Vista de lista</string>
     <string name="leet_selector_toggle_favorite">Alternar favorito</string>
-    <string name="leet_selector_remove_favorite">Quitar de favoritos</string>
+    <string name="leet_selector_remove_favorite">Eliminar de favoritos</string>
     <string name="leet_selector_selected">Seleccionado</string>
     <string name="leet_selector_edit">Editar</string>
     <string name="leet_selector_show_table">Mostrar tabla de traducción</string>
 
-    <!-- Translation Table -->
     <string name="translation_table_dialog_title">Tabla de traducción - %1$s</string>
     <string name="translation_table_close">Cerrar</string>
-    <string name="translation_table_plain">Normal</string>
+    <string name="translation_table_plain">Texto plano</string>
     <string name="translation_table_leet">Leet</string>
 
-    <!-- Leet Creation -->
     <string name="leet_creation_title">Crear leet</string>
     <string name="leet_edit_title">Editar leet</string>
     <string name="leet_creation_cancel">Cancelar</string>
     <string name="leet_creation_save">Guardar</string>
-    <string name="leet_creation_info_title">Información del leet</string>
+    <string name="leet_creation_info_title">Información Leet</string>
     <string name="leet_creation_base_name">Nombre base</string>
     <string name="leet_creation_name_example">ej. Gaming</string>
     <string name="leet_creation_preview">Vista previa: %1$s</string>
@@ -144,34 +140,61 @@
     <string name="leet_creation_preview_short">Vista previa: %1$s</string>
     <string name="leet_creation_template_hint">Selecciona una plantilla para empezar</string>
     <string name="leet_creation_template_hint_collapsed">Toca para seleccionar plantilla</string>
-    <string name="leet_creation_template_details">Detalles de plantilla - %1$s</string>
+    <string name="leet_creation_template_details">Detalles de la plantilla - %1$s</string>
     <string name="leet_creation_examples">Ejemplos:</string>
     <string name="leet_creation_table_title">Tabla de traducción</string>
     <string name="select_icon">Seleccionar icono</string>
     <string name="template_collapse">Contraer</string>
     <string name="template_expand">Expandir</string>
 
-    <!-- Leet Descriptions -->
-    <string name="simple_leet_description">Sustituciones básicas de caracteres (A→4, E→3, etc.)</string>
+    <string name="simple_leet_description">Sustituciones de caracteres básicos (A→4, E→3, etc.)</string>
     <string name="extended_leet_description">Sustituciones avanzadas de múltiples caracteres (M→/\\/\\, N→|\\|, etc.)</string>
     <string name="custom_leet_description">Mapeos de caracteres personalizados</string>
 
     <string name="kofi_support">Apoyar en Ko-Fi</string>
     <string name="kofi_description">Apoyar al desarrollador</string>
-    <string name="kofi_toast_error">No se pudo abrir el enlace de Ko-Fi</string>
+    <string name="kofi_toast_error">No se pudo abrir el enlace Ko-Fi</string>
     <string name="kofi_toast_thanks">¡Gracias por tu apoyo! ☕</string>
 
-    <string name="about_personal_story">¡Hola! 👋 Soy un desarrollador independiente que creó esta aplicación por pasión por la programación y el leetspeak. Cada línea de código fue escrita con atención al detalle para brindarte la mejor experiencia de leetspeak posible.</string>
+    <string name="about_personal_story">¡Hola! 👋 Soy un desarrollador en solitario que creó esta aplicación por pasión por la codificación y el leetspeak. Cada línea de código fue escrita con atención al detalle para brindarte la mejor experiencia leetspeak posible.</string>
     <string name="about_free_promise">Siempre gratis, sin anuncios</string>
-    <string name="about_features_title">Lo que puede hacer la aplicación</string>
+    <string name="about_features_title">Lo que la aplicación puede hacer</string>
 
-    <!-- NUEVO: Sección de Apoyo -->
-    <string name="about_support_title">Apoyo</string>
-    <string name="about_support_message">¡Si te gusta la aplicación, agradecería mucho tu apoyo! Una buena calificación o un pequeño café me ayuda mucho a continuar desarrollando.</string>
-    <string name="about_support_thanks">¡Gracias por tu apoyo! Cada calificación y cada café me motiva a desarrollar aplicaciones aún mejores. ❤️</string>
+    <string name="about_support_title">Soporte</string>
+    <string name="about_support_message">Si te gusta la aplicación, ¡agradecería mucho tu apoyo! Una buena valoración o un pequeño café me ayudan mucho a seguir desarrollando.</string>
+    <string name="about_support_thanks">¡Gracias por tu apoyo! Cada valoración y cada café me motivan a desarrollar aplicaciones aún mejores. ❤️</string>
     <string name="kofi_support_short">Ko-Fi</string>
 
-    <!-- Información del Desarrollador -->
-    <string name="about_developer_info">Desarrollador independiente con pasión</string>
+    <string name="about_developer_info">Desarrollador en solitario con pasión</string>
     <string name="about_made_with_love">Hecho con ❤️ en Alemania</string>
+
+    <string name="settings_color_theme">Tema de color</string>
+
+    <string name="theme_planit">PlanIt</string>
+    <string name="theme_planit_desc">Colores verde azulado vibrantes (Logo de la App PlanIt)</string>
+
+    <string name="theme_nextime">NexTime</string>
+    <string name="theme_nextime_desc">Tonos naranja cálidos (Logo de la App NexTime)</string>
+
+    <string name="theme_leetspeak">Leetspeak</string>
+    <string name="theme_leetspeak_desc">Tema violeta intenso (Logo de la App Leetspeak) (Predeterminado)</string>
+
+    <string name="theme_dailylist">DailyList</string>
+    <string name="theme_dailylist_desc">Colores verde lima fresco (Logo de la App DailyList)</string>
+
+    <string name="theme_unknown">Desconocido</string>
+    <string name="theme_unknown_desc">Acento rojo audaz (Logo de la App Desconocida)</string>
+
+    <string name="clear_input_dialog_title">¿Borrar la entrada?</string>
+    <string name="clear_input_dialog_message_normal">¿Desea borrar el texto plano después de copiarlo?</string>
+    <string name="clear_input_dialog_message_reverse">¿Desea borrar el texto leetspeak después de copiarlo?</string>
+    <string name="clear_input_dialog_dont_ask">No volver a preguntar y recordar esta elección</string>
+    <string name="clear_input_dialog_keep">Mantener</string>
+    <string name="clear_input_dialog_clear">Borrar</string>
+
+    <string name="settings_copy_behavior">Comportamiento de copia</string>
+    <string name="settings_copy_clear_title">Borrar entrada después de copiar</string>
+    <string name="settings_copy_clear_desc">Borra automáticamente la entrada después de copiar</string>
+    <string name="settings_copy_ask_title">Preguntar antes de borrar</string>
+    <string name="settings_copy_ask_desc">Muestra un diálogo antes de borrar la entrada</string>
 </resources>

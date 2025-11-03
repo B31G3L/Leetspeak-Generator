@@ -2,8 +2,7 @@ package com.beigel.leetSpeak_Generator.data
 
 import android.content.Context
 import android.content.pm.PackageManager
-import androidx.datastore.core.DataStore
-import androidx.datastore.preferences.core.Preferences
+import android.os.Build
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
@@ -29,9 +28,6 @@ class WhatsNewPreferences(private val context: Context) {
         val currentVersionCode = getCurrentVersionCode()
         val lastShownVersionCode = preferences[LAST_SHOWN_VERSION_CODE_KEY] ?: 0
 
-        // Dialog anzeigen wenn:
-        // 1. Erste Installation (lastShownVersionCode == 0)
-        // 2. Version wurde erhöht (currentVersionCode > lastShownVersionCode)
         currentVersionCode > lastShownVersionCode
     }
 
@@ -104,13 +100,32 @@ class WhatsNewPreferences(private val context: Context) {
     // Private Helper Functions
     private fun getCurrentVersionCode(): Int {
         return try {
-            val packageInfo = context.packageManager.getPackageInfo(
-                context.packageName,
-                0
-            )
-            packageInfo.versionCode
+            val packageInfo = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                // NEU (API 33+): Verwendung von PackageInfoFlags
+                context.packageManager.getPackageInfo(
+                    context.packageName,
+                    PackageManager.PackageInfoFlags.of(0L)
+                )
+            } else {
+                @Suppress("DEPRECATION")
+                // ALT (API < 33): Die veraltete Methode ohne Flags
+                context.packageManager.getPackageInfo(context.packageName, 0)
+            }
+
+            // Abrufen der Versionsnummer (longVersionCode ist seit API 28 verfügbar)
+            val versionCodeLong = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                packageInfo.longVersionCode
+            } else {
+                @Suppress("DEPRECATION")
+                packageInfo.versionCode.toLong()
+            }
+
+            // Da die Funktion Int erwartet, wird Long zu Int konvertiert.
+            versionCodeLong.toInt()
+
         } catch (e: PackageManager.NameNotFoundException) {
-            1 // Fallback
+            // Fallback-Wert
+            1
         }
     }
 

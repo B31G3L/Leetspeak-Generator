@@ -13,9 +13,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.beigel.leetSpeak_Generator.R
 
-/**
- * Dialog zum Bestätigen des Löschens nach dem Kopieren
- */
+
 @Composable
 fun ClearInputDialog(
     onDismiss: () -> Unit,

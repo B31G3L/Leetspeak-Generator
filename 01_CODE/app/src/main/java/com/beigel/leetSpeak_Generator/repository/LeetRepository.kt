@@ -1,9 +1,6 @@
 package com.beigel.leetSpeak_Generator.repository
 
 import android.content.Context
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.ui.graphics.vector.ImageVector
 import com.beigel.leetSpeak_Generator.data.CustomLeet
 import com.beigel.leetSpeak_Generator.data.LeetOption
 import com.beigel.leetSpeak_Generator.manager.LeetManager
@@ -12,10 +9,6 @@ import kotlinx.coroutines.flow.*
 import javax.inject.Inject
 import javax.inject.Singleton
 
-/**
- * Leet Repository ohne Icon-Handling
- * UPDATED: Icon-Handling komplett entfernt
- */
 @Singleton
 class LeetRepository @Inject constructor(
     context: Context
@@ -30,10 +23,7 @@ class LeetRepository @Inject constructor(
     val hasLeets: StateFlow<Boolean> = leetManager.hasLeets
     val favoriteIndex: StateFlow<Int> = leetManager.favoriteIndex
 
-    /**
-     * Creates a new leet with the given configuration
-     * UPDATED: Icon-Parameter entfernt
-     */
+
     suspend fun createLeet(request: LeetCreationRequest): Result<LeetCreationResult> {
         return try {
             val leet = CustomLeet(request.name)

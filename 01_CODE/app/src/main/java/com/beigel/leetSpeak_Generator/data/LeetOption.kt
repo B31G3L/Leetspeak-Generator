@@ -66,49 +66,5 @@ data class LeetOption(
                 isSelected = isSelected,
                 isFavorite = isFavorite
             )
-
-        /**
-         * Composable versions for UI usage with proper string resources
-         */
-        @Composable
-        fun createSimpleWithResources(isSelected: Boolean = false, isFavorite: Boolean = false): LeetOption =
-            LeetOption(
-                mode = LeetManager.MODE_SIMPLE,
-                name = "Simple Leet",
-                description = stringResource(R.string.simple_leet_description),
-                isCustom = false,
-                customIndex = -1,
-                isSelected = isSelected,
-                isFavorite = isFavorite
-            )
-
-        @Composable
-        fun createExtendedWithResources(isSelected: Boolean = false, isFavorite: Boolean = false): LeetOption =
-            LeetOption(
-                mode = LeetManager.MODE_EXTENDED,
-                name = "Extended Leet",
-                description = stringResource(R.string.extended_leet_description),
-                isCustom = false,
-                customIndex = -1,
-                isSelected = isSelected,
-                isFavorite = isFavorite
-            )
-
-        @Composable
-        fun createCustomWithResources(
-            leet: CustomLeet,
-            customIndex: Int,
-            isSelected: Boolean = false,
-            isFavorite: Boolean = false
-        ): LeetOption =
-            LeetOption(
-                mode = LeetManager.MODE_CUSTOM,
-                name = leet.name,
-                description = stringResource(R.string.custom_leet_description),
-                isCustom = true,
-                customIndex = customIndex,
-                isSelected = isSelected,
-                isFavorite = isFavorite
-            )
     }
 }

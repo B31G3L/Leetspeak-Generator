@@ -1,4 +1,3 @@
-// TranslationTableDialog.kt - Verbesserte Version
 package com.beigel.leetSpeak_Generator.ui.components
 
 import androidx.compose.foundation.layout.*
@@ -19,10 +18,7 @@ import com.beigel.leetSpeak_Generator.data.LeetOption
 import com.beigel.leetSpeak_Generator.manager.LeetManager
 import com.beigel.leetSpeak_Generator.viewmodel.MainViewModel
 
-/**
- * Translation Table Dialog - Vollständig sichtbar ohne internes Scrollen
- * FIXED: Alle hardcodierten deutschen Texte durch String-Ressourcen ersetzt
- */
+
 @Composable
 fun TranslationTableDialog(
     leetOption: LeetOption,

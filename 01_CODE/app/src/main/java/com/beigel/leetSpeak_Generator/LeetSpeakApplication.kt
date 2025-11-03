@@ -4,22 +4,14 @@ import android.app.Application
 import androidx.appcompat.app.AppCompatDelegate
 import dagger.hilt.android.HiltAndroidApp
 
-/**
- * Application class mit Hilt Setup für die Haupt-App
- *
- * UPDATED: Locale-Initialization hinzugefügt für bessere Sprachunterstützung
- */
+
 @HiltAndroidApp
 class LeetSpeakApplication : Application() {
 
     override fun onCreate() {
         super.onCreate()
-
         try {
-            // Haupt-App Initialisierung mit Hilt
             initializeMainApp()
-
-            // NEU: Locale-Initialization für konsistente Sprachunterstützung
             initializeLocale()
         } catch (e: Exception) {
             android.util.Log.e("LeetSpeakApp", "Error initializing main app", e)
@@ -27,22 +19,11 @@ class LeetSpeakApplication : Application() {
     }
 
     private fun initializeMainApp() {
-        // Hier können weitere Haupt-App Initialisierungen erfolgen
-        // z.B. Crash-Reporting, Analytics, etc.
         android.util.Log.d("LeetSpeakApp", "Main app initialized successfully")
     }
 
-    /**
-     * NEU: Locale-Initialization für konsistente Sprachunterstützung
-     *
-     * Diese Methode stellt sicher, dass:
-     * - Für API 33+ die App-Locale automatisch aus System-Settings geladen wird
-     * - Für API < 33 die App-Locale aus AppCompatDelegate-Storage geladen wird
-     * - Die App beim Start die korrekte Sprache verwendet
-     */
     private fun initializeLocale() {
         try {
-            // Aktuelle App-Locales abrufen
             val currentLocales = AppCompatDelegate.getApplicationLocales()
 
             if (currentLocales.isEmpty) {
@@ -50,13 +31,9 @@ class LeetSpeakApplication : Application() {
             } else {
                 android.util.Log.d("LeetSpeakApp", "Current app locales: $currentLocales")
 
-                // Optional: Locale-spezifische Initialisierungen hier
                 val primaryLocale = currentLocales[0]
                 primaryLocale?.let { locale ->
                     android.util.Log.d("LeetSpeakApp", "Primary app locale: ${locale.displayName}")
-
-                    // Hier könnten locale-spezifische Konfigurationen erfolgen
-                    // z.B. RTL-Support, Number-Formatting, Date-Formatting, etc.
                     configureLocaleSpecificSettings(locale.language)
                 }
             }
@@ -65,9 +42,7 @@ class LeetSpeakApplication : Application() {
         }
     }
 
-    /**
-     * Konfiguriert sprachspezifische Einstellungen
-     */
+
     private fun configureLocaleSpecificSettings(languageCode: String) {
         when (languageCode) {
             "de" -> {
