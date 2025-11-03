@@ -17,8 +17,7 @@ import kotlinx.coroutines.flow.*
 
 /**
  * Modern LeetManager with Kotlin Coroutines and Flow support
- * Handles custom leet configurations with reactive data streams
- * FIXED: Icon-Handling auf String-Basis - Gson kann jetzt problemlos serialisieren
+ * FIXED: Migration Logic für Custom Leet Favoriten korrigiert
  */
 class LeetManager(context: Context) {
 
@@ -43,7 +42,7 @@ class LeetManager(context: Context) {
     }
 
     private val prefs: SharedPreferences = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-    private val gson = Gson() // FIXED: Kein TypeAdapter mehr nötig - arbeitet jetzt mit Strings
+    private val gson = Gson()
 
     // Coroutine scope for background operations
     private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
@@ -75,7 +74,6 @@ class LeetManager(context: Context) {
 
     /**
      * Loads leets from SharedPreferences
-     * FIXED: Gson kann jetzt CustomLeet direkt deserialisieren, da nur Strings gespeichert werden
      */
     private fun loadLeets() {
         scope.launch {
@@ -95,14 +93,15 @@ class LeetManager(context: Context) {
                 withContext(Dispatchers.Main) {
                     _leets.value = loadedLeets
                     _currentLeetIndex.value = currentIndex.coerceIn(0, maxOf(0, loadedLeets.size - 1))
-                    _favoriteIndex.value = migrateFavoriteIndex(favoriteIndex, loadedLeets.size)
+
+                    // CRITICAL FIX: NO migration - use stored value directly
+                    _favoriteIndex.value = favoriteIndex
                 }
 
-                Log.d(TAG, "Loaded ${loadedLeets.size} leets, current: $currentIndex, favorite: $favoriteIndex")
+                Log.d(TAG, "✅ Loaded ${loadedLeets.size} leets, current: $currentIndex, favorite: $favoriteIndex")
 
             } catch (e: Exception) {
                 Log.e(TAG, "Error loading leets", e)
-                // Initialize with empty state on error
                 withContext(Dispatchers.Main) {
                     _leets.value = emptyList()
                     _currentLeetIndex.value = 0
@@ -113,30 +112,7 @@ class LeetManager(context: Context) {
     }
 
     /**
-     * Migrates old favorite index format to new format
-     */
-    /**
-     * Migrates old favorite index format to new format
-     * FIXED: Do NOT migrate valid custom leet indices (0, 1, 2, ...) to built-in modes
-     */
-    private fun migrateFavoriteIndex(oldIndex: Int, leetCount: Int): Int {
-        return when {
-            // Already using new format (negative indices for built-in modes)
-            oldIndex == FAV_SIMPLE || oldIndex == FAV_EXTENDED || oldIndex == FAV_NONE -> oldIndex
-
-            // Valid custom leet index - DO NOT MIGRATE!
-            // CRITICAL FIX: index 0, 1, 2, ... are VALID custom leet indices
-            // They should NOT be migrated to FAV_SIMPLE or FAV_EXTENDED
-            oldIndex >= 0 && oldIndex < leetCount -> oldIndex
-
-            // Invalid index - reset to none
-            else -> FAV_NONE
-        }
-    }
-
-    /**
      * Saves leets to SharedPreferences
-     * FIXED: Serialisierung funktioniert jetzt einwandfrei mit String-basierten Icons
      */
     private suspend fun saveLeets() = withContext(Dispatchers.IO) {
         try {
@@ -150,7 +126,7 @@ class LeetManager(context: Context) {
                 .putInt(FAVORITE_LEET_KEY, favoriteIndex)
                 .apply()
 
-            Log.d(TAG, "Saved ${_leets.value.size} leets")
+            Log.d(TAG, "✅ Saved ${_leets.value.size} leets, current: $currentIndex, favorite: $favoriteIndex")
         } catch (e: Exception) {
             Log.e(TAG, "Error saving leets", e)
             throw e
@@ -229,6 +205,8 @@ class LeetManager(context: Context) {
 
             _currentLeetIndex.value = index
             saveLeets()
+
+            Log.d(TAG, "✅ Current leet index set to: $index")
         }
 
     /**
@@ -245,14 +223,13 @@ class LeetManager(context: Context) {
                     }
                     customIndex
                 }
-
                 else -> throw IllegalArgumentException("Invalid mode: $mode")
             }
 
             _favoriteIndex.value = favoriteIndex
             saveLeets()
 
-            Log.d(TAG, "Favorite set to: $favoriteIndex")
+            Log.d(TAG, "✅ Favorite set to: $favoriteIndex (mode: $mode, customIndex: $customIndex)")
         }
 
     /**
@@ -273,7 +250,7 @@ class LeetManager(context: Context) {
             saveLeets()
 
             val newState = !isCurrentlyFavorite
-            Log.d(TAG, "Favorite toggled for mode $mode: $newState")
+            Log.d(TAG, "✅ Favorite toggled for mode $mode (index: $targetIndex): $newState")
             newState
         }
 
@@ -288,7 +265,9 @@ class LeetManager(context: Context) {
             else -> return false
         }
 
-        return _favoriteIndex.value == targetIndex
+        val result = _favoriteIndex.value == targetIndex
+        Log.d(TAG, "🔍 isFavorite check - mode: $mode, customIndex: $customIndex, targetIndex: $targetIndex, favoriteIndex: ${_favoriteIndex.value}, result: $result")
+        return result
     }
 
     /**
@@ -296,39 +275,51 @@ class LeetManager(context: Context) {
      */
     fun getFavoriteLeetInfo(): FavoriteLeetInfo? {
         return when (val favIndex = _favoriteIndex.value) {
-            FAV_SIMPLE -> FavoriteLeetInfo(MODE_SIMPLE, -1, null)
-            FAV_EXTENDED -> FavoriteLeetInfo(MODE_EXTENDED, -1, null)
-            FAV_NONE -> null
+            FAV_SIMPLE -> {
+                Log.d(TAG, "📋 Favorite is Simple mode")
+                FavoriteLeetInfo(MODE_SIMPLE, -1, null)
+            }
+            FAV_EXTENDED -> {
+                Log.d(TAG, "📋 Favorite is Extended mode")
+                FavoriteLeetInfo(MODE_EXTENDED, -1, null)
+            }
+            FAV_NONE -> {
+                Log.d(TAG, "📋 No favorite set")
+                null
+            }
             else -> {
+                // Custom leet (index 0, 1, 2, ...)
                 val leet = _leets.value.getOrNull(favIndex)
                 if (leet != null) {
+                    Log.d(TAG, "📋 Favorite is Custom leet - index: $favIndex, name: ${leet.name}")
                     FavoriteLeetInfo(MODE_CUSTOM, favIndex, leet)
-                } else null
+                } else {
+                    Log.w(TAG, "⚠️ Favorite index $favIndex is invalid (no leet found)")
+                    null
+                }
             }
         }
     }
 
     /**
      * Creates a leet with simple defaults
-     * FIXED: Akzeptiert ImageVector, konvertiert aber intern zu String
      */
     suspend fun createLeetWithSimpleDefaults(name: String, iconImageVector: ImageVector = Icons.Default.Settings): ErrorHandler.Result<CustomLeet> =
         ErrorHandler.safeExecute(errorMessage = "Failed to create leet") {
             val iconName = IconMapper.getNameByIcon(iconImageVector)
             val leet = CustomLeet.createWithSimpleDefaults(name, iconName)
-            addLeet(leet).getOrNull() // Add to manager
+            addLeet(leet).getOrNull()
             leet
         }
 
     /**
      * Creates a leet with extended defaults
-     * FIXED: Akzeptiert ImageVector, konvertiert aber intern zu String
      */
     suspend fun createLeetWithExtendedDefaults(name: String, iconImageVector: ImageVector = Icons.Default.Settings): ErrorHandler.Result<CustomLeet> =
         ErrorHandler.safeExecute(errorMessage = "Failed to create leet") {
             val iconName = IconMapper.getNameByIcon(iconImageVector)
             val leet = CustomLeet.createWithExtendedDefaults(name, iconName)
-            addLeet(leet).getOrNull() // Add to manager
+            addLeet(leet).getOrNull()
             leet
         }
 
