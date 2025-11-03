@@ -29,7 +29,7 @@ import com.beigel.leetSpeak_Generator.data.VersionInfo
 
 /**
  * What's New Dialog - zeigt neue Features bei App-Updates an
- * FIXED: Alle hardcodierten deutschen Texte durch String-Ressourcen ersetzt
+ * CLEANED: Keyboard-Features entfernt
  */
 @Composable
 fun WhatsNewDialog(
@@ -138,7 +138,7 @@ private fun WhatsNewHeader(
             Box(
                 modifier = Modifier
                     .size(100.dp)
-                    .graphicsLayer(rotationZ = rotation)
+                    .graphicsLayer(rotationZ = rotation * 0.5f)
                     .background(
                         brush = Brush.sweepGradient(
                             colors = listOf(
@@ -174,7 +174,7 @@ private fun WhatsNewHeader(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Title - FIXED: String resource
+        // Title
         Text(
             text = stringResource(if (isFirstLaunch) R.string.whats_new_welcome else R.string.whats_new_title),
             style = MaterialTheme.typography.headlineMedium,
@@ -200,7 +200,7 @@ private fun WhatsNewHeader(
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        // Subtitle - FIXED: String resource
+        // Subtitle
         Text(
             text = stringResource(
                 if (isFirstLaunch) {
@@ -217,7 +217,7 @@ private fun WhatsNewHeader(
 }
 
 /**
- * Features Liste - angepasst an aktuelle Version
+ * Features Liste - OHNE Keyboard Features
  */
 @Composable
 private fun WhatsNewFeatures(
@@ -240,7 +240,6 @@ private fun WhatsNewFeatures(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // FIXED: String resource
                 Text(
                     text = stringResource(if (isFirstLaunch) R.string.whats_new_features else R.string.whats_new_version_features),
                     style = MaterialTheme.typography.titleMedium,
@@ -254,7 +253,6 @@ private fun WhatsNewFeatures(
                 ) {
                     Icon(
                         imageVector = if (showDetails) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
-                        // FIXED: String resource
                         contentDescription = stringResource(if (showDetails) R.string.whats_new_show_less else R.string.whats_new_show_more),
                         tint = MaterialTheme.colorScheme.primary
                     )
@@ -263,9 +261,8 @@ private fun WhatsNewFeatures(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Hauptfeatures - immer sichtbar
+            // Hauptfeatures - immer sichtbar (OHNE Keyboard)
             if (isFirstLaunch) {
-                // Features für Erstnutzer
                 val mainFeatures = listOf(
                     FeatureItem(Icons.Default.Transform, stringResource(R.string.feature_transform_title), stringResource(R.string.feature_transform_desc)),
                     FeatureItem(Icons.Default.Favorite, stringResource(R.string.feature_favorites_title), stringResource(R.string.feature_favorites_desc)),
@@ -279,7 +276,7 @@ private fun WhatsNewFeatures(
                     }
                 }
             } else {
-                // Features für Update (angepasst an Version)
+                // Features für Update (angepasst an Version) - OHNE Keyboard
                 val newFeatures = getNewFeaturesForVersion(currentVersion)
 
                 newFeatures.take(3).forEach { feature ->
@@ -382,7 +379,6 @@ private fun WhatsNewActions(
                 modifier = Modifier.size(16.dp)
             )
             Spacer(modifier = Modifier.width(4.dp))
-            // FIXED: String resource
             Text(stringResource(if (showDetails) R.string.whats_new_show_less else R.string.whats_new_show_more))
         }
 
@@ -391,7 +387,6 @@ private fun WhatsNewActions(
             modifier = Modifier.weight(2f),
             shape = RoundedCornerShape(12.dp)
         ) {
-            // FIXED: String resource
             Text(stringResource(R.string.whats_new_continue))
             Spacer(modifier = Modifier.width(8.dp))
             Icon(
@@ -413,7 +408,7 @@ data class FeatureItem(
 )
 
 /**
- * Features für Erstnutzer - FIXED: String resources
+ * Features für Erstnutzer - OHNE Keyboard
  */
 @Composable
 private fun getDetailedFeatures(): List<FeatureItem> = listOf(
@@ -424,13 +419,13 @@ private fun getDetailedFeatures(): List<FeatureItem> = listOf(
 )
 
 /**
- * Neue Features basierend auf Version - FIXED: String resources
+ * Neue Features basierend auf Version - OHNE Keyboard
  * HIER KANNST DU NEUE FEATURES HINZUFÜGEN!
  */
 @Composable
 private fun getNewFeaturesForVersion(version: VersionInfo): List<FeatureItem> {
     return when {
-        // Version 1337.00_8374_4 (aktuelle Version aus build.gradle)
+        // Version 1337.00_8374_4 (aktuelle Version)
         version.versionName.contains("1337.00_8374_4") -> listOf(
             FeatureItem(Icons.Default.Update, stringResource(R.string.feature_performance_title), stringResource(R.string.feature_performance_desc)),
             FeatureItem(Icons.Default.BugReport, stringResource(R.string.feature_bugfixes_title), stringResource(R.string.feature_bugfixes_desc)),
@@ -440,9 +435,8 @@ private fun getNewFeaturesForVersion(version: VersionInfo): List<FeatureItem> {
             FeatureItem(Icons.Default.Language, stringResource(R.string.feature_translations_title), stringResource(R.string.feature_translations_desc))
         )
 
-        // Version 1337.00_8374_5 (nächste Version - Beispiel)
+        // Version 1337.00_8374_5 (nächste Version - Beispiel) - OHNE Keyboard
         version.versionName.contains("1337.00_8374_5") -> listOf(
-            FeatureItem(Icons.Default.Keyboard, "Leetspeak Keyboard", "Systemweite Leetspeak-Eingabe"),
             FeatureItem(Icons.Default.Share, "Sharing Features", "Teile Leets einfacher"),
             FeatureItem(Icons.Default.History, "Verlauf", "Kürzlich übersetzte Texte"),
             FeatureItem(Icons.Default.Backup, "Backup & Sync", "Sichere deine Custom Leets"),

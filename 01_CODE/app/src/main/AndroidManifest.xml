@@ -52,42 +52,6 @@
                 android:value=".ui.ComposeMainActivity" />
         </activity>
 
-        <!-- 🎹 LEETSPEAK KEYBOARD SERVICE (FIXED - Removed android:process) -->
-        <service
-            android:name=".keyboard.LeetKeyboardService"
-            android:exported="true"
-            android:permission="android.permission.BIND_INPUT_METHOD"
-            android:label="leetspeak_keyboard_label"
-            android:enabled="true"
-            android:directBootAware="false">
-
-            <intent-filter>
-                <action android:name="android.view.InputMethod" />
-            </intent-filter>
-
-            <meta-data
-                android:name="android.view.im"
-                android:resource="@xml/method" />
-        </service>
-
-        <!-- 📊 LEET DATA PROVIDER (für App-Keyboard Sync) -->
-        <provider
-            android:name=".keyboard.data.LeetDataProvider"
-            android:authorities="com.beigel.leetspeak.provider"
-            android:exported="true"
-            android:readPermission="com.beigel.leetspeak.READ_LEET_DATA"
-            android:writePermission="com.beigel.leetspeak.WRITE_LEET_DATA"
-            android:grantUriPermissions="true"
-            android:enabled="true">
-
-            <!-- Allow keyboard access without explicit permission -->
-            <grant-uri-permission
-                android:pathPattern="/favorite_leet" />
-            <grant-uri-permission
-                android:pathPattern="/all_leets" />
-            <grant-uri-permission
-                android:pathPattern="/leet_settings" />
-        </provider>
 
         <!-- 🌍 LOCALE METADATA SERVICE (NEU: für API < 33) -->
         <service
