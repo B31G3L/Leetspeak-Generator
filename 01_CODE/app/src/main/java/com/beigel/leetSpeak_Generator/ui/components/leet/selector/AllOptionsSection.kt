@@ -24,21 +24,10 @@ fun AllOptionsSection(
     onToggleFavorite: (LeetOption) -> Unit,
     onEditOption: (LeetOption) -> Unit,
     onShowTable: (LeetOption) -> Unit,
-    defaultViewExpanded: Boolean = false,
     @SuppressLint("ModifierParameter") modifier: Modifier = Modifier
 ) {
-    var showExpandedView by remember { mutableStateOf(defaultViewExpanded) }
-
     Column(modifier = modifier) {
-        AllOptionsHeader(
-            totalCount = leetOptions.size,
-            showExpandedView = showExpandedView,
-            onToggleView = { showExpandedView = !showExpandedView }
-        )
 
-        Spacer(modifier = Modifier.height(12.dp))
-
-        if (showExpandedView) {
             DetailedListView(
                 leetOptions = leetOptions,
                 onOptionSelected = onOptionSelected,
@@ -46,13 +35,7 @@ fun AllOptionsSection(
                 onEditOption = onEditOption,
                 onShowTable = onShowTable
             )
-        } else {
-            CompactGridView(
-                leetOptions = leetOptions,
-                onOptionSelected = onOptionSelected,
-                onToggleFavorite = onToggleFavorite
-            )
-        }
+
     }
 }
 
@@ -179,7 +162,7 @@ private fun CompactCard(
     modifier: Modifier = Modifier
 ) {
     Card(
-        onClick = { onOptionSelected(option) }, // FIXED: Verwende Card onClick
+        onClick = { onOptionSelected(option) },
         modifier = modifier
             .fillMaxWidth()
             .aspectRatio(1.2f),
@@ -227,15 +210,7 @@ private fun CompactCard(
                 modifier = Modifier.align(Alignment.Center),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Icon(
-                    imageVector = option.iconImageVector,
-                    contentDescription = null,
-                    modifier = Modifier.size(24.dp),
-                    tint = MaterialTheme.colorScheme.secondary
-                )
-
-                Spacer(modifier = Modifier.height(8.dp))
-
+                // Kein Icon mehr - nur Name
                 Text(
                     text = option.name,
                     style = MaterialTheme.typography.labelLarge,
@@ -275,7 +250,7 @@ private fun DetailedCard(
     modifier: Modifier = Modifier
 ) {
     Card(
-        onClick = { onOptionSelected(option) }, // FIXED: Verwende Card onClick
+        onClick = { onOptionSelected(option) },
         modifier = modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
             containerColor = if (option.isSelected) {
@@ -297,15 +272,7 @@ private fun DetailedCard(
                 .padding(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(
-                imageVector = option.iconImageVector,
-                contentDescription = null,
-                modifier = Modifier.size(24.dp),
-                tint = MaterialTheme.colorScheme.primary
-            )
-
-            Spacer(modifier = Modifier.width(12.dp))
-
+            // Kein Icon mehr
             Column(modifier = Modifier.weight(1f)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(

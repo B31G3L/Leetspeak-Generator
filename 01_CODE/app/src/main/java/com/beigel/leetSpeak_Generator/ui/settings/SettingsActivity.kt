@@ -16,7 +16,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -103,7 +102,6 @@ fun SettingsScreen(
     val scope = rememberCoroutineScope()
     val appTheme by viewModel.appTheme.collectAsStateWithLifecycle()
     val themeMode by viewModel.themeMode.collectAsStateWithLifecycle()
-    val defaultViewExpanded by viewModel.defaultViewExpanded.collectAsStateWithLifecycle()
     val language by viewModel.language.collectAsStateWithLifecycle()
 
     Scaffold(
@@ -175,23 +173,6 @@ fun SettingsScreen(
                         onThemeSelected = { theme ->
                             scope.launch {
                                 viewModel.setTheme(theme)
-                            }
-                        }
-                    )
-                }
-            }
-
-            // View Settings
-            item {
-                SettingsSection(
-                    title = stringResource(R.string.settings_view),
-                    icon = Icons.Default.ViewModule
-                ) {
-                    ViewSelector(
-                        defaultViewExpanded = defaultViewExpanded,
-                        onViewSelected = { expanded ->
-                            scope.launch {
-                                viewModel.setDefaultViewExpanded(expanded)
                             }
                         }
                     )
@@ -412,79 +393,6 @@ fun ThemeSelector(
 }
 
 @Composable
-fun ViewSelector(
-    defaultViewExpanded: Boolean,
-    onViewSelected: (Boolean) -> Unit
-) {
-    val viewOptions = listOf(
-        ViewOption(
-            key = false,
-            name = stringResource(R.string.settings_view_grid),
-            description = stringResource(R.string.settings_view_grid_desc),
-            icon = Icons.Default.GridView
-        ),
-        ViewOption(
-            key = true,
-            name = stringResource(R.string.settings_view_list),
-            description = stringResource(R.string.settings_view_list_desc),
-            icon = Icons.AutoMirrored.Filled.List
-        )
-    )
-
-    Column {
-        Text(
-            text = stringResource(R.string.settings_view_default),
-            style = MaterialTheme.typography.titleSmall,
-            fontWeight = FontWeight.Medium,
-            modifier = Modifier.padding(bottom = 8.dp)
-        )
-
-        viewOptions.forEach { viewOption ->
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .selectable(
-                        selected = defaultViewExpanded == viewOption.key,
-                        onClick = { onViewSelected(viewOption.key) },
-                        indication = null,
-                        interactionSource = remember { MutableInteractionSource() }
-                    )
-                    .padding(vertical = 8.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                RadioButton(
-                    selected = defaultViewExpanded == viewOption.key,
-                    onClick = { onViewSelected(viewOption.key) },
-                    colors = RadioButtonDefaults.colors(
-                        selectedColor = MaterialTheme.colorScheme.secondary
-                    )
-                )
-                Spacer(modifier = Modifier.width(12.dp))
-                Icon(
-                    imageVector = viewOption.icon,
-                    contentDescription = null,
-                    modifier = Modifier.size(20.dp),
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                Spacer(modifier = Modifier.width(12.dp))
-                Column {
-                    Text(
-                        text = viewOption.name,
-                        style = MaterialTheme.typography.bodyLarge,
-                        fontWeight = FontWeight.Medium
-                    )
-                    Text(
-                        text = viewOption.description,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            }
-        }
-    }
-}
-
-@Composable
 fun AboutSection() {
     Column {
         Text(
@@ -680,13 +588,6 @@ data class LanguageOption(
 
 data class ThemeOption(
     val key: String,
-    val name: String,
-    val description: String,
-    val icon: ImageVector
-)
-
-data class ViewOption(
-    val key: Boolean,
     val name: String,
     val description: String,
     val icon: ImageVector

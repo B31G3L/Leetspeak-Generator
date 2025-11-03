@@ -2,14 +2,13 @@ package com.beigel.leetSpeak_Generator.domain.usecase.leet
 
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.beigel.leetSpeak_Generator.data.CustomLeet
-import com.beigel.leetSpeak_Generator.data.IconMapper
 import com.beigel.leetSpeak_Generator.repository.LeetRepository
 import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
  * Use Case für das Erstellen eines neuen Leets
- * FIXED: Konvertiert ImageVector zu String für CustomLeet
+ * UPDATED: Icon-Handling entfernt
  */
 @Singleton
 class CreateLeetUseCase @Inject constructor(
@@ -17,18 +16,15 @@ class CreateLeetUseCase @Inject constructor(
 ) {
     suspend operator fun invoke(
         name: String,
-        iconImageVector: ImageVector,
+        iconImageVector: ImageVector, // Wird ignoriert, aber aus Kompatibilitätsgründen behalten
         useExtendedDefaults: Boolean = false,
         customTranslations: Map<String, String>? = null
     ): Result<CustomLeet> {
 
-        // FIXED: Konvertiere ImageVector zu String
-        val iconName = IconMapper.getNameByIcon(iconImageVector)
-
-        // FIXED: Wenn individuelle Übersetzungen bereitgestellt wurden, verwende diese
+        // Wenn individuelle Übersetzungen bereitgestellt wurden, verwende diese
         return if (customTranslations != null) {
             // Erstelle Leet mit individuellen Übersetzungen
-            val customLeet = CustomLeet(name, iconName)
+            val customLeet = CustomLeet(name)
             customLeet.setTranslations(customTranslations)
 
             // Füge zum Repository hinzu
@@ -36,9 +32,9 @@ class CreateLeetUseCase @Inject constructor(
         } else {
             // Fallback zu Standard-Verhalten
             if (useExtendedDefaults) {
-                repository.createLeetWithExtendedDefaults(name, iconImageVector)
+                repository.createLeetWithExtendedDefaults(name)
             } else {
-                repository.createLeetWithSimpleDefaults(name, iconImageVector)
+                repository.createLeetWithSimpleDefaults(name)
             }
         }
     }

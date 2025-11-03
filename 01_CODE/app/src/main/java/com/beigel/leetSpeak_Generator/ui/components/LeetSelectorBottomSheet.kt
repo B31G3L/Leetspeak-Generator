@@ -55,7 +55,6 @@ fun LeetSelectorBottomSheet(
         LazyBottomSheetContent(
             leetOptions = leetOptions,
             favoriteLeetOptions = favoriteLeetOptions,
-            defaultViewExpanded = defaultViewExpanded,
             onCreateNew = { showLeetCreationDialog = true },
             onOptionSelected = { option ->
                 viewModel.handleIntent(MainIntent.ChangeMode(option))
@@ -136,7 +135,6 @@ fun LeetSelectorBottomSheet(
 private fun LazyBottomSheetContent(
     leetOptions: List<LeetOption>,
     favoriteLeetOptions: List<LeetOption>,
-    defaultViewExpanded: Boolean,
     onCreateNew: () -> Unit,
     onOptionSelected: (LeetOption) -> Unit,
     onToggleFavorite: (LeetOption) -> Unit,
@@ -169,7 +167,6 @@ private fun LazyBottomSheetContent(
             onToggleFavorite = onToggleFavorite,
             onEditOption = onEditOption,
             onShowTable = onShowTable,
-            defaultViewExpanded = defaultViewExpanded
         )
 
         // Bottom spacer

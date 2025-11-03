@@ -14,13 +14,8 @@ import com.beigel.leetSpeak_Generator.R
 import com.beigel.leetSpeak_Generator.data.LeetOption
 
 /**
- * PERFORMANCE-OPTIMIERTE Favoriten-Sektion
- * FIXES:
- * - Entfernt schwere AnimatedVisibility
- * - Vereinfachte Animationen
- * - Reduzierte Recompositions
- * - Faster rendering
- * - FIXED: clickable durch Card onClick ersetzt
+ * Favoriten-Sektion ohne Icons
+ * UPDATED: Icon-Handling entfernt
  */
 @Composable
 fun FavoritesSection(
@@ -29,12 +24,10 @@ fun FavoritesSection(
     onToggleFavorite: (LeetOption) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    // PERFORMANCE FIX: Simple conditional rendering instead of AnimatedVisibility
     if (favoriteOptions.isNotEmpty()) {
         Column(modifier = modifier) {
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Vollbreite Favoriten-Cards
             favoriteOptions.forEach { option ->
                 FullWidthFavoriteCard(
                     option = option,
@@ -49,14 +42,6 @@ fun FavoritesSection(
     }
 }
 
-/**
- * PERFORMANCE-OPTIMIERTE Vollbreite Favoriten-Card
- * FIXES:
- * - Entfernt schwere AnimatedVisibility für Selected Indicator
- * - Vereinfachte Surface-Operationen
- * - Reduzierte State Dependencies
- * - FIXED: clickable durch Card onClick ersetzt
- */
 @Composable
 private fun FullWidthFavoriteCard(
     option: LeetOption,
@@ -65,7 +50,7 @@ private fun FullWidthFavoriteCard(
     modifier: Modifier = Modifier
 ) {
     Card(
-        onClick = { onOptionSelected(option) }, // FIXED: Verwende Card onClick
+        onClick = { onOptionSelected(option) },
         modifier = modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
             containerColor = if (option.isSelected) {
@@ -94,35 +79,7 @@ private fun FullWidthFavoriteCard(
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Icon mit Selection Indicator - PERFORMANCE FIX: Simplified structure
-            Box {
-                // Safe Icon Loading
-                Icon(
-                    imageVector = option.iconImageVector,
-                    contentDescription = null,
-                    modifier = Modifier.size(32.dp),
-                    tint = MaterialTheme.colorScheme.secondary
-                )
-
-                // Selected Ring - PERFORMANCE FIX: Simple conditional rendering
-                if (option.isSelected) {
-                    Surface(
-                        modifier = Modifier
-                            .size(40.dp)
-                            .offset(x = (-4).dp, y = (-4).dp),
-                        color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.2f),
-                        shape = androidx.compose.foundation.shape.CircleShape,
-                        border = androidx.compose.foundation.BorderStroke(
-                            2.dp,
-                            MaterialTheme.colorScheme.secondary
-                        )
-                    ) {}
-                }
-            }
-
-            Spacer(modifier = Modifier.width(16.dp))
-
-            // Content
+            // Kein Icon mehr - nur Text
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = option.name,
@@ -142,12 +99,11 @@ private fun FullWidthFavoriteCard(
                 )
             }
 
-            // Action Buttons - PERFORMANCE FIX: Simplified structure
+            // Action Buttons
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
-                // Selected Indicator - PERFORMANCE FIX: Simple conditional rendering
                 if (option.isSelected) {
                     Surface(
                         color = MaterialTheme.colorScheme.secondary,
@@ -164,7 +120,6 @@ private fun FullWidthFavoriteCard(
                     }
                 }
 
-                // Remove from Favorites Button
                 IconButton(
                     onClick = { onToggleFavorite(option) },
                     modifier = Modifier.size(32.dp)

@@ -5,7 +5,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.beigel.leetSpeak_Generator.data.CustomLeet
-import com.beigel.leetSpeak_Generator.data.IconMapper
 import com.beigel.leetSpeak_Generator.data.LeetOption
 import com.beigel.leetSpeak_Generator.manager.LeetManager
 import com.beigel.leetSpeak_Generator.utils.ErrorHandler
@@ -14,8 +13,8 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * FIXED: Entfernte fehlerhafte Selection Logic - wird jetzt im MainViewModel korrekt gehandhabt
- * FIXED: Icon-Handling auf String-Basis umgestellt
+ * Leet Repository ohne Icon-Handling
+ * UPDATED: Icon-Handling komplett entfernt
  */
 @Singleton
 class LeetRepository @Inject constructor(
@@ -33,13 +32,11 @@ class LeetRepository @Inject constructor(
 
     /**
      * Creates a new leet with the given configuration
-     * FIXED: Akzeptiert jetzt ImageVector als Parameter, konvertiert aber intern zu String
+     * UPDATED: Icon-Parameter entfernt
      */
     suspend fun createLeet(request: LeetCreationRequest): Result<LeetCreationResult> {
         return try {
-            // FIXED: Konvertiere ImageVector zu String für Speicherung
-            val iconName = IconMapper.getNameByIcon(request.iconImageVector)
-            val leet = CustomLeet(request.name, iconName)
+            val leet = CustomLeet(request.name)
             leet.setTranslations(request.translations)
 
             when (val indexResult = leetManager.addLeet(leet)) {
@@ -188,13 +185,11 @@ class LeetRepository @Inject constructor(
     }
 
     /**
-     * Creates a leet with simple defaults
-     * FIXED: Akzeptiert ImageVector, konvertiert aber zu String
+     * Creates a leet with simple defaults (ohne Icon-Parameter)
      */
-    suspend fun createLeetWithSimpleDefaults(name: String, icon: ImageVector = Icons.Default.Settings): Result<CustomLeet> {
+    suspend fun createLeetWithSimpleDefaults(name: String): Result<CustomLeet> {
         return try {
-            val iconName = IconMapper.getNameByIcon(icon)
-            val leet = CustomLeet.createWithSimpleDefaults(name, iconName)
+            val leet = CustomLeet.createWithSimpleDefaults(name)
             when (val result = leetManager.addLeet(leet)) {
                 is ErrorHandler.Result.Success -> Result.success(leet)
                 is ErrorHandler.Result.Error -> Result.failure(result.exception)
@@ -205,13 +200,11 @@ class LeetRepository @Inject constructor(
     }
 
     /**
-     * Creates a leet with extended defaults
-     * FIXED: Akzeptiert ImageVector, konvertiert aber zu String
+     * Creates a leet with extended defaults (ohne Icon-Parameter)
      */
-    suspend fun createLeetWithExtendedDefaults(name: String, icon: ImageVector = Icons.Default.Settings): Result<CustomLeet> {
+    suspend fun createLeetWithExtendedDefaults(name: String): Result<CustomLeet> {
         return try {
-            val iconName = IconMapper.getNameByIcon(icon)
-            val leet = CustomLeet.createWithExtendedDefaults(name, iconName)
+            val leet = CustomLeet.createWithExtendedDefaults(name)
             when (val result = leetManager.addLeet(leet)) {
                 is ErrorHandler.Result.Success -> Result.success(leet)
                 is ErrorHandler.Result.Error -> Result.failure(result.exception)
@@ -231,33 +224,33 @@ class LeetRepository @Inject constructor(
             Result.failure(e)
         }
     }
+
     /**
-     * FIXED: Gets leet options WITHOUT selection logic - handled in MainViewModel
-     * Entfernte die fehlerhafte isSelected Logic, die das Problem verursacht hat
+     * Gets leet options WITHOUT selection logic - handled in MainViewModel
      */
     fun getLeetOptions(): Flow<List<LeetOption>> = combine(
         leets,
         favoriteIndex
     ) { leets, favoriteIndex ->
         buildList {
-            // Add Simple Leet - OHNE isSelected Logic
+            // Add Simple Leet
             add(LeetOption.createSimple(
-                isSelected = false, // FIXED: Wird im MainViewModel korrekt gesetzt
+                isSelected = false,
                 isFavorite = favoriteIndex == LeetManager.FAV_SIMPLE
             ))
 
-            // Add Extended Leet - OHNE isSelected Logic
+            // Add Extended Leet
             add(LeetOption.createExtended(
-                isSelected = false, // FIXED: Wird im MainViewModel korrekt gesetzt
+                isSelected = false,
                 isFavorite = favoriteIndex == LeetManager.FAV_EXTENDED
             ))
 
-            // Add Custom Leets - OHNE isSelected Logic
+            // Add Custom Leets
             leets.forEachIndexed { index, leet ->
                 add(LeetOption.createCustom(
                     leet = leet,
                     customIndex = index,
-                    isSelected = false, // FIXED: Wird im MainViewModel korrekt gesetzt
+                    isSelected = false,
                     isFavorite = favoriteIndex == index
                 ))
             }
@@ -265,7 +258,7 @@ class LeetRepository @Inject constructor(
     }
 
     /**
-     * FIXED: Gets only favorite leet options WITHOUT selection logic
+     * Gets only favorite leet options
      */
     fun getFavoriteLeetOptions(): Flow<List<LeetOption>> =
         getLeetOptions().map { options ->
@@ -279,7 +272,7 @@ class LeetRepository @Inject constructor(
         leetManager.isFavorite(mode, customIndex)
 
     /**
-     * Gets the current leet synchronously (for compatibility)
+     * Gets the current leet synchronously
      */
     fun getCurrentLeet(): CustomLeet? = currentLeet.value
 
@@ -306,11 +299,10 @@ class LeetRepository @Inject constructor(
     }
 
     /**
-     * Data class for leet creation request
+     * Data class for leet creation request (ohne Icon)
      */
     data class LeetCreationRequest(
         val name: String,
-        val iconImageVector: ImageVector,
         val translations: Map<String, String>
     )
 

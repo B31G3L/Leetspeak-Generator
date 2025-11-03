@@ -3,12 +3,9 @@ package com.beigel.leetSpeak_Generator.manager
 import android.content.Context
 import android.content.SharedPreferences
 import android.util.Log
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.beigel.leetSpeak_Generator.R
 import com.beigel.leetSpeak_Generator.data.CustomLeet
-import com.beigel.leetSpeak_Generator.data.IconMapper
 import com.beigel.leetSpeak_Generator.utils.ErrorHandler
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
@@ -17,7 +14,7 @@ import kotlinx.coroutines.flow.*
 
 /**
  * Modern LeetManager with Kotlin Coroutines and Flow support
- * FIXED: Migration Logic für Custom Leet Favoriten korrigiert
+ * UPDATED: Icon-Handling entfernt
  */
 class LeetManager(context: Context) {
 
@@ -93,8 +90,6 @@ class LeetManager(context: Context) {
                 withContext(Dispatchers.Main) {
                     _leets.value = loadedLeets
                     _currentLeetIndex.value = currentIndex.coerceIn(0, maxOf(0, loadedLeets.size - 1))
-
-                    // CRITICAL FIX: NO migration - use stored value directly
                     _favoriteIndex.value = favoriteIndex
                 }
 
@@ -302,23 +297,21 @@ class LeetManager(context: Context) {
     }
 
     /**
-     * Creates a leet with simple defaults
+     * Creates a leet with simple defaults (ohne Icon-Parameter)
      */
-    suspend fun createLeetWithSimpleDefaults(name: String, iconImageVector: ImageVector = Icons.Default.Settings): ErrorHandler.Result<CustomLeet> =
+    suspend fun createLeetWithSimpleDefaults(name: String): ErrorHandler.Result<CustomLeet> =
         ErrorHandler.safeExecute(errorMessage = "Failed to create leet") {
-            val iconName = IconMapper.getNameByIcon(iconImageVector)
-            val leet = CustomLeet.createWithSimpleDefaults(name, iconName)
+            val leet = CustomLeet.createWithSimpleDefaults(name)
             addLeet(leet).getOrNull()
             leet
         }
 
     /**
-     * Creates a leet with extended defaults
+     * Creates a leet with extended defaults (ohne Icon-Parameter)
      */
-    suspend fun createLeetWithExtendedDefaults(name: String, iconImageVector: ImageVector = Icons.Default.Settings): ErrorHandler.Result<CustomLeet> =
+    suspend fun createLeetWithExtendedDefaults(name: String): ErrorHandler.Result<CustomLeet> =
         ErrorHandler.safeExecute(errorMessage = "Failed to create leet") {
-            val iconName = IconMapper.getNameByIcon(iconImageVector)
-            val leet = CustomLeet.createWithExtendedDefaults(name, iconName)
+            val leet = CustomLeet.createWithExtendedDefaults(name)
             addLeet(leet).getOrNull()
             leet
         }

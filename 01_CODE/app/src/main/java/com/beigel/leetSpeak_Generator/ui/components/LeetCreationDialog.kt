@@ -3,13 +3,11 @@ package com.beigel.leetSpeak_Generator.ui.components
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -17,21 +15,17 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.beigel.leetSpeak_Generator.R
 import com.beigel.leetSpeak_Generator.data.CustomLeet
-import com.beigel.leetSpeak_Generator.data.IconMapper
 import com.beigel.leetSpeak_Generator.presentation.intent.MainIntent
-import com.beigel.leetSpeak_Generator.ui.components.leet.creation.IconPickerDialog
 import com.beigel.leetSpeak_Generator.ui.components.leet.creation.LeetInfoCard
-import com.beigel.leetSpeak_Generator.ui.components.leet.creation.TemplateHelpers
-import com.beigel.leetSpeak_Generator.ui.components.leet.creation.TemplatePickerDialog
 import com.beigel.leetSpeak_Generator.ui.components.leet.creation.TemplateSelectionCard
 import com.beigel.leetSpeak_Generator.ui.components.leet.creation.TemplateType
 import com.beigel.leetSpeak_Generator.ui.components.leet.creation.TranslationTableCard
+import com.beigel.leetSpeak_Generator.ui.components.leet.creation.TemplateHelpers
 import com.beigel.leetSpeak_Generator.viewmodel.MainViewModel
 
 /**
- * Leet Creation Dialog komplett überarbeitet für Material Icons
- * FIXED: Übersetzungen werden jetzt korrekt gespeichert
- * FIXED: Alle hardcodierten deutschen Texte durch String-Ressourcen ersetzt
+ * Leet Creation Dialog ohne Icon-Auswahl
+ * UPDATED: Icon-Handling komplett entfernt
  */
 @Composable
 fun LeetCreationDialog(
@@ -75,13 +69,11 @@ fun LeetCreationDialog(
                         .padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    // Leet Info Card (Name + Icon)
+                    // Leet Info Card (nur Name)
                     LeetInfoCard(
                         baseName = dialogState.baseName,
                         onBaseNameChange = { dialogState.baseName = it },
-                        displayName = dialogState.displayName,
-                        selectedIcon = dialogState.selectedIcon,
-                        onIconClick = { dialogState.showIconPicker = true }
+                        displayName = dialogState.displayName
                     )
 
                     // Template Selection Card
@@ -102,18 +94,10 @@ fun LeetCreationDialog(
             }
         }
     }
-
-    // Dialog Management
-    LeetCreationDialogManager(
-        dialogState = dialogState,
-        onDismissIconPicker = { dialogState.showIconPicker = false },
-        onDismissTemplatePicker = { dialogState.showTemplatePicker = false }
-    )
 }
 
 /**
  * Header mit Toolbar-Style für Dialog
- * FIXED: Hardcodierte Strings durch String-Ressourcen ersetzt
  */
 @Composable
 private fun LeetCreationHeader(
@@ -134,7 +118,6 @@ private fun LeetCreationHeader(
                 .padding(horizontal = 16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // FIXED: String resource
             Text(
                 text = stringResource(if (isNewLeet) R.string.leet_creation_title else R.string.leet_edit_title),
                 style = MaterialTheme.typography.titleLarge,
@@ -142,7 +125,6 @@ private fun LeetCreationHeader(
                 modifier = Modifier.weight(1f)
             )
 
-            // FIXED: String resource
             TextButton(onClick = onDismiss) {
                 Text(stringResource(R.string.leet_creation_cancel))
             }
@@ -153,7 +135,6 @@ private fun LeetCreationHeader(
                 onClick = onSave,
                 enabled = canSave
             ) {
-                // FIXED: String resource
                 Text(stringResource(R.string.leet_creation_save))
             }
         }
@@ -161,43 +142,7 @@ private fun LeetCreationHeader(
 }
 
 /**
- * Dialog Manager für Icon und Template Picker
- */
-@Composable
-private fun LeetCreationDialogManager(
-    dialogState: LeetCreationDialogState,
-    onDismissIconPicker: () -> Unit,
-    onDismissTemplatePicker: () -> Unit
-) {
-    // Icon Picker Dialog
-    if (dialogState.showIconPicker) {
-        IconPickerDialog(
-            selectedIcon = dialogState.selectedIcon,
-            onIconSelected = { icon ->
-                dialogState.selectedIcon = icon
-                onDismissIconPicker()
-            },
-            onDismiss = onDismissIconPicker
-        )
-    }
-
-    // Template Picker Dialog (Alternative zur Inline-Auswahl)
-    if (dialogState.showTemplatePicker) {
-        TemplatePickerDialog(
-            selectedTemplate = dialogState.selectedTemplate,
-            onTemplateSelected = { template ->
-                dialogState.selectedTemplate = template
-                dialogState.applyTemplate()
-                onDismissTemplatePicker()
-            },
-            onDismiss = onDismissTemplatePicker
-        )
-    }
-}
-
-/**
  * State Management für Leet Creation Dialog
- * FIXED: Bessere Template-Anwendung und Übersetzungs-Speicherung
  */
 @Composable
 private fun rememberLeetCreationDialogState(
@@ -205,7 +150,6 @@ private fun rememberLeetCreationDialogState(
 ): LeetCreationDialogState {
     return remember(existingLeet) {
         LeetCreationDialogState(existingLeet).apply {
-            // Template automatisch beim ersten Laden anwenden (nur bei neuen Leets)
             if (existingLeet == null) {
                 applyTemplate()
             }
@@ -214,8 +158,7 @@ private fun rememberLeetCreationDialogState(
 }
 
 /**
- * State-Klasse für Dialog-Verwaltung
- * FIXED: Verbesserte Übersetzungs-Speicherung
+ * State-Klasse für Dialog-Verwaltung (ohne Icon)
  */
 class LeetCreationDialogState(existingLeet: CustomLeet?) {
     val alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
@@ -224,13 +167,7 @@ class LeetCreationDialogState(existingLeet: CustomLeet?) {
         existingLeet?.name?.removeSuffix("-Leet") ?: ""
     )
 
-    var selectedIcon by mutableStateOf(
-        existingLeet?.iconImageVector ?: Icons.Default.Settings
-    )
-
     var selectedTemplate by mutableStateOf(TemplateType.SIMPLE)
-    var showIconPicker by mutableStateOf(false)
-    var showTemplatePicker by mutableStateOf(false)
 
     // Translation states für alle Buchstaben
     val translationStates = alphabet.map { char ->
@@ -242,38 +179,24 @@ class LeetCreationDialogState(existingLeet: CustomLeet?) {
     val displayName: String
         get() = if (baseName.isBlank()) "Neues Leet" else "$baseName-Leet"
 
-    /**
-     * FIXED: Template-Anwendung überschreibt nicht Benutzeränderungen
-     */
     fun applyTemplate() {
-        // Prüfe ob der Nutzer bereits manuelle Änderungen gemacht hat
         val hasUserChanges = translationStates.any { state ->
             val originalChar = alphabet[translationStates.indexOf(state)]
             state.value != originalChar.toString()
         }
 
-        // Nur Template anwenden wenn:
-        // 1. Noch keine Benutzeränderungen vorhanden ODER
-        // 2. Das Template explizit gewechselt wurde (nicht CUSTOM)
         if (!hasUserChanges || selectedTemplate != TemplateType.CUSTOM) {
             TemplateHelpers.applyTemplate(selectedTemplate, translationStates, alphabet)
         }
     }
 
-    /**
-     * HAUPTFIX: Übersetzungen korrekt sammeln und speichern
-     */
-    /**
-     * HAUPTFIX: Übersetzungen korrekt sammeln und speichern
-     * FIXED: Icon-Handling auf String-Basis
-     */
     fun saveLeet(
         viewModel: MainViewModel,
         existingLeet: CustomLeet?,
         leetIndex: Int,
         onDismiss: () -> Unit
     ) {
-        // FIXED: Übersetzungen korrekt sammeln von den Eingabefeldern
+        // Übersetzungen sammeln
         val translations = mutableMapOf<String, String>()
         alphabet.forEachIndexed { index, char ->
             translations[char.toString()] = translationStates[index].value
@@ -282,22 +205,18 @@ class LeetCreationDialogState(existingLeet: CustomLeet?) {
         val finalName = displayName.ifEmpty { "Custom-Leet" }
 
         if (existingLeet == null) {
-            // HAUPTFIX: Neues Leet erstellen MIT individuellen Übersetzungen
+            // Neues Leet erstellen
             viewModel.handleIntent(
                 MainIntent.CreateLeet(
                     name = finalName,
-                    icon = selectedIcon, // ImageVector - wird im ViewModel zu String konvertiert
+                    icon = androidx.compose.material.icons.Icons.Default.Settings, // Dummy - wird ignoriert
                     useExtendedDefaults = selectedTemplate == TemplateType.EXTENDED,
-                    customTranslations = translations // KRITISCH: Übersetzungen übertragen!
+                    customTranslations = translations
                 )
             )
         } else {
-            // FIXED: Bestehendes Leet aktualisieren mit String-basiertem Icon
-            val iconName =  IconMapper.getNameByIcon(selectedIcon)
-            val updatedLeet = CustomLeet(
-                name = finalName,
-                iconName = iconName // FIXED: Verwende iconName statt iconImageVector
-            ).apply {
+            // Bestehendes Leet aktualisieren
+            val updatedLeet = CustomLeet(name = finalName).apply {
                 setTranslations(translations)
             }
 
