@@ -39,17 +39,23 @@ import com.beigel.leetSpeak_Generator.ui.theme.LeetspeakGeneratorTheme
 import com.beigel.leetSpeak_Generator.viewmodel.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import com.beigel.leetSpeak_Generator.presentation.intent.MainIntent
+import com.beigel.leetSpeak_Generator.review.InAppReviewManager
 import com.beigel.leetSpeak_Generator.ui.components.ClearInputDialog
 import com.beigel.leetSpeak_Generator.ui.components.WhatsNewDialog
 import com.beigel.leetSpeak_Generator.ui.components.input.InputCard
 import com.beigel.leetSpeak_Generator.ui.settings.SettingsActivity
 import com.beigel.leetSpeak_Generator.ui.components.output.OutputCard
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class ComposeMainActivity : AppCompatActivity() {
 
     private val viewModel: MainViewModel by viewModels()
     private lateinit var vibrator: Vibrator
+
+    @Inject
+    lateinit var inAppReviewManager: InAppReviewManager
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -79,6 +85,8 @@ class ComposeMainActivity : AppCompatActivity() {
                 darkTheme = isDarkTheme,
                 appTheme = appTheme
             ) {
+                val shouldRequestReview by viewModel.shouldRequestReview.collectAsStateWithLifecycle()
+
                 MainScreen(
                     viewModel = viewModel,
                     onCopyToClipboard = { text -> copyToClipboardWithFeedback(text) },
@@ -93,6 +101,24 @@ class ComposeMainActivity : AppCompatActivity() {
                     onBugReport = { sendBugReport() },
                     onKofiSupport = { openKofiLink() }
                 )
+                LaunchedEffect(shouldRequestReview) {
+                    if (shouldRequestReview) {
+                        // Kurze Verzögerung für bessere UX
+                        kotlinx.coroutines.delay(1000)
+
+                        // Review Dialog anzeigen
+                        val success = inAppReviewManager.requestReview(this@ComposeMainActivity)
+
+                        if (success) {
+                            android.util.Log.d("Review", "✅ Review dialog shown successfully")
+                        } else {
+                            android.util.Log.w("Review", "⚠️ Review dialog failed to show")
+                        }
+
+                        // Markiere als behandelt
+                        viewModel.onReviewHandled()
+                    }
+                }
             }
         }
     }

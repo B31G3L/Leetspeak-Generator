@@ -197,4 +197,31 @@
     <string name="settings_copy_clear_desc">Automatically clears the input after copying</string>
     <string name="settings_copy_ask_title">Ask before clearing</string>
     <string name="settings_copy_ask_desc">Shows a dialog before clearing the input</string>
+
+    <string name="review_title">App bewerten</string>
+    <string name="review_message">Gefällt dir die App? Hilf uns mit deiner Bewertung!</string>
+    <string name="review_button">Jetzt bewerten</string>
+    <string name="review_later">Später</string>
+    <string name="review_never">Nicht mehr fragen</string>
+
+    <string name="review_stats_title">Review-Statistiken</string>
+    <string name="review_stats_translations">Übersetzungen</string>
+    <string name="review_stats_requests">Review-Anfragen</string>
+    <string name="review_stats_remaining">Noch benötigt</string>
+    <string name="review_stats_successful">Bewertungen abgegeben</string>
+
+    <string name="review_manual_button">App bewerten</string>
+    <string name="review_reset_button">Review-Daten zurücksetzen (Debug)</string>
+    <string name="review_reset_dialog_title">Review-Daten zurücksetzen?</string>
+    <string name="review_reset_dialog_message">Alle Review-Statistiken werden gelöscht. Dies ist nur für Testing gedacht.</string>
+    <string name="review_reset_confirm">Zurücksetzen</string>
+    <string name="review_reset_cancel">Abbrechen</string>
+
+    <string name="review_hint">Die App fragt gelegentlich nach einer Bewertung. Du kannst auch jederzeit manuell eine Bewertung abgeben.</string>
+    <string name="review_success">Vielen Dank für deine Bewertung! ⭐</string>
+    <string name="review_error">Bewertung konnte nicht angezeigt werden</string>
+
+    <string name="review_section_title">App Bewertung</string>
+    <string name="review_section_preview">Hilf uns mit deinem Feedback</string>
+
 </resources>

@@ -14,6 +14,7 @@ import com.beigel.leetSpeak_Generator.domain.usecase.ui.UiManagerUseCase
 import com.beigel.leetSpeak_Generator.manager.LeetManager
 import com.beigel.leetSpeak_Generator.presentation.intent.MainIntent
 import com.beigel.leetSpeak_Generator.repository.LeetRepository
+import com.beigel.leetSpeak_Generator.review.InAppReviewManager
 import com.beigel.leetSpeak_Generator.translation.LeetTranslator
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
@@ -29,7 +30,8 @@ class MainViewModel @Inject constructor(
     private val uiManager: UiManagerUseCase,
     private val repository: LeetRepository,
     private val themePreferences: ThemePreferences,
-    private val whatsNewPreferences: WhatsNewPreferences
+    private val whatsNewPreferences: WhatsNewPreferences,
+    private val inAppReviewManager: InAppReviewManager  // NEU
 ) : ViewModel() {
 
     // Core UI State
@@ -415,8 +417,52 @@ class MainViewModel @Inject constructor(
 
         return translationManager.generatePreview(mode, leet, sampleText)
     }
+    // NEU: Review Stats State
+    val reviewStats: StateFlow<InAppReviewManager.ReviewStats> =
+        inAppReviewManager.getReviewStats()
+            .stateIn(
+                viewModelScope,
+                SharingStarted.WhileSubscribed(5000),
+                InAppReviewManager.ReviewStats(0, 0, 0, 0)
+            )
 
-    fun updateInputText(text: String) = uiManager.updateInputText(text)
+    // NEU: Funktion zum Inkrementieren des Translation-Counters
+    private fun trackTranslation() {
+        viewModelScope.launch {
+            inAppReviewManager.incrementTranslationCount()
+
+            // Prüfe ob Review angezeigt werden sollte
+            if (inAppReviewManager.shouldShowReview()) {
+                // Trigger für UI - siehe unten
+                _shouldRequestReview.value = true
+            }
+        }
+    }
+
+    // NEU: StateFlow für Review-Request
+    private val _shouldRequestReview = MutableStateFlow(false)
+    val shouldRequestReview: StateFlow<Boolean> = _shouldRequestReview.asStateFlow()
+
+    // NEU: Review wurde angezeigt/abgelehnt
+    fun onReviewHandled() {
+        _shouldRequestReview.value = false
+    }
+
+    // NEU: Review Reset für Testing
+    fun resetReviewForTesting() {
+        viewModelScope.launch {
+            inAppReviewManager.resetForTesting()
+            uiManager.setSuccess("Review-Daten zurückgesetzt")
+        }
+    }
+    fun updateInputText(text: String) {
+        uiManager.updateInputText(text)
+
+        // Wenn Text nicht leer ist und es eine Übersetzung gibt, tracke es
+        if (text.isNotEmpty()) {
+            trackTranslation()
+        }
+    }
     fun clearInput() = uiManager.clearInput()
 
     override fun onCleared() {

@@ -1,5 +1,6 @@
 package com.beigel.leetSpeak_Generator.ui.settings
 
+import android.app.Activity
 import android.content.Context
 import android.os.Build
 import android.os.Bundle
@@ -102,20 +103,27 @@ fun SettingsScreen(
     onLanguageChanged: (String) -> Unit = {}
 ) {
     val scope = rememberCoroutineScope()
+    val context = LocalContext.current
+    val activity = context as? Activity
+
     val appTheme by viewModel.appTheme.collectAsStateWithLifecycle()
     val themeMode by viewModel.themeMode.collectAsStateWithLifecycle()
     val language by viewModel.language.collectAsStateWithLifecycle()
 
-    // NEU: Copy Behavior States
+    // Copy behavior preferences
     val clearInputAfterCopy by viewModel.clearInputAfterCopy.collectAsStateWithLifecycle()
     val askBeforeClear by viewModel.askBeforeClear.collectAsStateWithLifecycle()
+
+    // Review Stats
+    val reviewStats by viewModel.reviewStats.collectAsStateWithLifecycle()
 
     // Expanded states für jede Sektion
     var languageExpanded by remember { mutableStateOf(false) }
     var colorThemeExpanded by remember { mutableStateOf(false) }
     var appearanceExpanded by remember { mutableStateOf(false) }
+    var copyBehaviorExpanded by remember { mutableStateOf(false) }
+    var reviewExpanded by remember { mutableStateOf(false) }
     var aboutExpanded by remember { mutableStateOf(false) }
-    var copyBehaviorExpanded by remember { mutableStateOf(false) } // NEU
 
     Scaffold(
         topBar = {
@@ -201,7 +209,7 @@ fun SettingsScreen(
                 }
             }
 
-            // NEU: Copy Behavior Section
+            // Copy Behavior Section
             item {
                 CollapsibleSettingsSection(
                     title = stringResource(R.string.settings_copy_behavior),
@@ -229,6 +237,23 @@ fun SettingsScreen(
                         }
                     )
                 }
+            }
+
+            // Review Settings Section
+            item {
+                ReviewSettingsSection(
+                    reviewStats = reviewStats,
+                    onRequestReview = {
+                        activity?.let { act ->
+                            viewModel.requestReview(act)
+                        } ?: false
+                    },
+                    onResetReview = {
+                        viewModel.resetReviewForTesting()
+                    },
+                    isExpanded = reviewExpanded,
+                    onExpandToggle = { reviewExpanded = !reviewExpanded }
+                )
             }
 
             // About Section
@@ -372,8 +397,6 @@ fun getAppearancePreview(themeMode: String): String {
         else -> stringResource(R.string.theme_system)
     }
 }
-
-// Rest der Composables bleiben unverändert...
 
 @Composable
 fun LanguageSelector(
@@ -700,6 +723,7 @@ private fun ThemeColorCard(
         }
     }
 }
+
 @Composable
 fun CopyBehaviorSettings(
     clearInputAfterCopy: Boolean,
@@ -794,6 +818,8 @@ fun CopyBehaviorSettings(
         }
     }
 }
+
+// Data Classes
 data class ThemeColorOption(
     val theme: AppTheme,
     val name: String,

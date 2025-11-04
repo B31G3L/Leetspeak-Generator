@@ -4,6 +4,7 @@ import android.content.Context
 import com.beigel.leetSpeak_Generator.data.ThemePreferences
 import com.beigel.leetSpeak_Generator.data.WhatsNewPreferences
 import com.beigel.leetSpeak_Generator.repository.LeetRepository
+import com.beigel.leetSpeak_Generator.review.InAppReviewManager
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -14,7 +15,7 @@ import javax.inject.Singleton
 /**
  * Hilt Module für Dependency Injection
  * Stellt alle benötigten Dependencies zur Verfügung
- * UPDATED: WhatsNewPreferences hinzugefügt
+ * UPDATED: WhatsNewPreferences & InAppReviewManager hinzugefügt
  */
 
 @Module(includes = [DomainModule::class])
@@ -43,5 +44,13 @@ object AppModule {
         @ApplicationContext context: Context
     ): WhatsNewPreferences {
         return WhatsNewPreferences(context)
+    }
+
+    @Provides
+    @Singleton
+    fun provideInAppReviewManager(
+        @ApplicationContext context: Context
+    ): InAppReviewManager {
+        return InAppReviewManager(context)
     }
 }

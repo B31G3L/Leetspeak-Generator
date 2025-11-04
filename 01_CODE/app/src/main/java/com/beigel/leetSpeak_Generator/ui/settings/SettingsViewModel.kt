@@ -1,19 +1,23 @@
 package com.beigel.leetSpeak_Generator.ui.settings
 
+import android.app.Activity
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.beigel.leetSpeak_Generator.data.ThemePreferences
 import com.beigel.leetSpeak_Generator.repository.LeetRepository
+import com.beigel.leetSpeak_Generator.review.InAppReviewManager
 import com.beigel.leetSpeak_Generator.ui.theme.AppTheme
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
     private val themePreferences: ThemePreferences,
+    private val inAppReviewManager: InAppReviewManager,
     leetRepository: LeetRepository
 ) : ViewModel() {
 
@@ -60,6 +64,15 @@ class SettingsViewModel @Inject constructor(
             initialValue = true
         )
 
+    // NEU: Review Stats
+    val reviewStats: StateFlow<InAppReviewManager.ReviewStats> =
+        inAppReviewManager.getReviewStats()
+            .stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(5000),
+                initialValue = InAppReviewManager.ReviewStats(0, 0, 0, 0)
+            )
+
     suspend fun setTheme(theme: String) {
         themePreferences.setTheme(theme)
     }
@@ -82,5 +95,16 @@ class SettingsViewModel @Inject constructor(
 
     suspend fun setAskBeforeClear(ask: Boolean) {
         themePreferences.setAskBeforeClear(ask)
+    }
+
+    // NEU: Review-Funktionen
+    suspend fun requestReview(activity: Activity): Boolean {
+        return inAppReviewManager.requestReview(activity)
+    }
+
+    fun resetReviewForTesting() {
+        viewModelScope.launch {
+            inAppReviewManager.resetForTesting()
+        }
     }
 }
