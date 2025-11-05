@@ -17,6 +17,7 @@ import kotlinx.coroutines.launch
 
 /**
  * Settings Section für In-App Review
+ * UPDATED: Von Übersetzungen auf App-Starts umgestellt
  */
 @Composable
 fun ReviewSettingsSection(
@@ -56,8 +57,8 @@ fun ReviewSettingsSection(
                     )
 
                     ReviewStatRow(
-                        label = "Übersetzungen",
-                        value = "${reviewStats.translationCount} / 10"
+                        label = "App-Starts",
+                        value = "${reviewStats.appStartCount} / 3"
                     )
 
                     ReviewStatRow(
@@ -65,10 +66,10 @@ fun ReviewSettingsSection(
                         value = "${reviewStats.reviewPromptsShown} / 3"
                     )
 
-                    if (reviewStats.translationsUntilReview > 0) {
+                    if (reviewStats.startsUntilReview > 0) {
                         ReviewStatRow(
                             label = "Noch benötigt",
-                            value = "${reviewStats.translationsUntilReview} Übersetzungen"
+                            value = "${reviewStats.startsUntilReview} App-Starts"
                         )
                     }
 
@@ -119,7 +120,7 @@ fun ReviewSettingsSection(
             }
 
             // Testing: Reset Button (nur in Debug-Builds)
-            // Kommentiert für Release-Builds
+            // Auskommentiert für Release-Builds
             /*
             OutlinedButton(
                 onClick = { showResetDialog = true },
@@ -140,7 +141,7 @@ fun ReviewSettingsSection(
 
             // Hinweistext
             Text(
-                text = "Die App fragt gelegentlich nach einer Bewertung. " +
+                text = "Die App fragt nach dem 3. Start nach einer Bewertung. " +
                         "Du kannst auch jederzeit manuell eine Bewertung abgeben.",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant

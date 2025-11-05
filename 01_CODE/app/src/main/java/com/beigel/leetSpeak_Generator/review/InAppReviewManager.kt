@@ -22,7 +22,7 @@ import java.util.concurrent.TimeUnit
  * Manager für Google Play In-App Reviews
  *
  * Strategie:
- * - Zeigt Review-Dialog nach bestimmten Aktionen (z.B. erfolgreiche Übersetzungen)
+ * - Zeigt Review-Dialog nach dem 3. App-Start
  * - Berücksichtigt Zeit seit letztem Review-Request
  * - Limitiert Häufigkeit der Review-Anfragen
  */
@@ -36,11 +36,11 @@ class InAppReviewManager(private val context: Context) {
         // DataStore Keys
         private val REVIEW_COUNT_KEY = intPreferencesKey("review_prompt_count")
         private val LAST_REVIEW_TIME_KEY = longPreferencesKey("last_review_time")
-        private val TRANSLATION_COUNT_KEY = intPreferencesKey("translation_count")
+        private val APP_STARTS_KEY = intPreferencesKey("app_starts_count")
         private val SUCCESSFUL_REVIEWS_KEY = intPreferencesKey("successful_reviews")
 
         // Schwellenwerte
-        private const val MIN_TRANSLATIONS_BEFORE_REVIEW = 10
+        private const val MIN_APP_STARTS_BEFORE_REVIEW = 3
         private const val DAYS_BETWEEN_REVIEW_PROMPTS = 90L
         private const val MAX_REVIEW_PROMPTS = 3
     }
@@ -57,19 +57,19 @@ class InAppReviewManager(private val context: Context) {
 
         val reviewCount = prefs[REVIEW_COUNT_KEY] ?: 0
         val lastReviewTime = prefs[LAST_REVIEW_TIME_KEY] ?: 0L
-        val translationCount = prefs[TRANSLATION_COUNT_KEY] ?: 0
+        val appStarts = prefs[APP_STARTS_KEY] ?: 0
 
         // Bedingungen prüfen
-        val hasEnoughTranslations = translationCount >= MIN_TRANSLATIONS_BEFORE_REVIEW
+        val hasEnoughStarts = appStarts >= MIN_APP_STARTS_BEFORE_REVIEW
         val enoughTimePassed = System.currentTimeMillis() - lastReviewTime >=
                 TimeUnit.DAYS.toMillis(DAYS_BETWEEN_REVIEW_PROMPTS)
         val notTooManyPrompts = reviewCount < MAX_REVIEW_PROMPTS
 
-        val shouldShow = hasEnoughTranslations && enoughTimePassed && notTooManyPrompts
+        val shouldShow = hasEnoughStarts && enoughTimePassed && notTooManyPrompts
 
         Log.d(TAG, """
             Review Check:
-            - Translations: $translationCount (need $MIN_TRANSLATIONS_BEFORE_REVIEW)
+            - App Starts: $appStarts (need $MIN_APP_STARTS_BEFORE_REVIEW)
             - Time passed: $enoughTimePassed
             - Prompts shown: $reviewCount (max $MAX_REVIEW_PROMPTS)
             - Should show: $shouldShow
@@ -79,14 +79,14 @@ class InAppReviewManager(private val context: Context) {
     }
 
     /**
-     * Erhöht den Übersetzungszähler
+     * Erhöht den App-Start-Zähler
      */
-    suspend fun incrementTranslationCount() {
+    suspend fun incrementAppStartCount() {
         context.reviewDataStore.edit { prefs ->
-            val current = prefs[TRANSLATION_COUNT_KEY] ?: 0
-            prefs[TRANSLATION_COUNT_KEY] = current + 1
+            val current = prefs[APP_STARTS_KEY] ?: 0
+            prefs[APP_STARTS_KEY] = current + 1
 
-            Log.d(TAG, "Translation count: ${current + 1}")
+            Log.d(TAG, "App start count: ${current + 1}")
         }
     }
 
@@ -131,7 +131,7 @@ class InAppReviewManager(private val context: Context) {
             prefs[REVIEW_COUNT_KEY] = reviewCount
             prefs[LAST_REVIEW_TIME_KEY] = System.currentTimeMillis()
             prefs[SUCCESSFUL_REVIEWS_KEY] = successfulReviews
-            prefs[TRANSLATION_COUNT_KEY] = 0 // Counter zurücksetzen
+            prefs[APP_STARTS_KEY] = 0 // Counter zurücksetzen
 
             Log.d(TAG, "Review marked as shown. Total prompts: $reviewCount")
         }
@@ -153,7 +153,7 @@ class InAppReviewManager(private val context: Context) {
     fun getReviewStats(): Flow<ReviewStats> {
         return context.reviewDataStore.data.map { prefs ->
             ReviewStats(
-                translationCount = prefs[TRANSLATION_COUNT_KEY] ?: 0,
+                appStartCount = prefs[APP_STARTS_KEY] ?: 0,
                 reviewPromptsShown = prefs[REVIEW_COUNT_KEY] ?: 0,
                 lastReviewTime = prefs[LAST_REVIEW_TIME_KEY] ?: 0L,
                 successfulReviews = prefs[SUCCESSFUL_REVIEWS_KEY] ?: 0
@@ -165,16 +165,16 @@ class InAppReviewManager(private val context: Context) {
      * Data class für Review-Statistiken
      */
     data class ReviewStats(
-        val translationCount: Int,
+        val appStartCount: Int,
         val reviewPromptsShown: Int,
         val lastReviewTime: Long,
         val successfulReviews: Int
     ) {
-        val translationsUntilReview: Int
-            get() = (MIN_TRANSLATIONS_BEFORE_REVIEW - translationCount).coerceAtLeast(0)
+        val startsUntilReview: Int
+            get() = (MIN_APP_STARTS_BEFORE_REVIEW - appStartCount).coerceAtLeast(0)
 
         val canShowReview: Boolean
-            get() = translationCount >= MIN_TRANSLATIONS_BEFORE_REVIEW &&
+            get() = appStartCount >= MIN_APP_STARTS_BEFORE_REVIEW &&
                     reviewPromptsShown < MAX_REVIEW_PROMPTS
     }
 }

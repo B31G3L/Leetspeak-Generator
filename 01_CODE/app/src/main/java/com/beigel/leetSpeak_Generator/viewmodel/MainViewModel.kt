@@ -31,7 +31,7 @@ class MainViewModel @Inject constructor(
     private val repository: LeetRepository,
     private val themePreferences: ThemePreferences,
     private val whatsNewPreferences: WhatsNewPreferences,
-    private val inAppReviewManager: InAppReviewManager  // NEU
+    private val inAppReviewManager: InAppReviewManager
 ) : ViewModel() {
 
     // Core UI State
@@ -137,8 +137,44 @@ class MainViewModel @Inject constructor(
     val shouldShowOutput: StateFlow<Boolean> = outputText.map { it.isNotEmpty() }
         .stateIn(viewModelScope, SharingStarted.Lazily, false)
 
+    // NEU: Review Stats State
+    val reviewStats: StateFlow<InAppReviewManager.ReviewStats> =
+        inAppReviewManager.getReviewStats()
+            .stateIn(
+                viewModelScope,
+                SharingStarted.WhileSubscribed(5000),
+                InAppReviewManager.ReviewStats(0, 0, 0, 0)
+            )
+
+    // NEU: StateFlow für Review-Request
+    private val _shouldRequestReview = MutableStateFlow(false)
+    val shouldRequestReview: StateFlow<Boolean> = _shouldRequestReview.asStateFlow()
+
+    // Add this StateFlow
+    private val _showClearInputDialog = MutableStateFlow(false)
+    val showClearInputDialog: StateFlow<Boolean> = _showClearInputDialog.asStateFlow()
+
     init {
         initializeFavoriteLeet()
+        trackAppStart() // NEU: App-Start tracken
+    }
+
+    /**
+     * NEU: Trackt den App-Start und prüft Review-Bedingungen
+     */
+    private fun trackAppStart() {
+        viewModelScope.launch {
+            // App-Start zählen
+            inAppReviewManager.incrementAppStartCount()
+
+            // Prüfe ob Review angezeigt werden sollte
+            if (inAppReviewManager.shouldShowReview()) {
+                android.util.Log.d("MainViewModel", "✅ Review conditions met - triggering review request")
+                _shouldRequestReview.value = true
+            } else {
+                android.util.Log.d("MainViewModel", "ℹ️ Review conditions not met yet")
+            }
+        }
     }
 
     private fun initializeFavoriteLeet() {
@@ -365,10 +401,6 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    // Add this StateFlow
-    private val _showClearInputDialog = MutableStateFlow(false)
-    val showClearInputDialog: StateFlow<Boolean> = _showClearInputDialog.asStateFlow()
-
     fun dismissClearInputDialog() {
         _showClearInputDialog.value = false
     }
@@ -417,31 +449,6 @@ class MainViewModel @Inject constructor(
 
         return translationManager.generatePreview(mode, leet, sampleText)
     }
-    // NEU: Review Stats State
-    val reviewStats: StateFlow<InAppReviewManager.ReviewStats> =
-        inAppReviewManager.getReviewStats()
-            .stateIn(
-                viewModelScope,
-                SharingStarted.WhileSubscribed(5000),
-                InAppReviewManager.ReviewStats(0, 0, 0, 0)
-            )
-
-    // NEU: Funktion zum Inkrementieren des Translation-Counters
-    private fun trackTranslation() {
-        viewModelScope.launch {
-            inAppReviewManager.incrementTranslationCount()
-
-            // Prüfe ob Review angezeigt werden sollte
-            if (inAppReviewManager.shouldShowReview()) {
-                // Trigger für UI - siehe unten
-                _shouldRequestReview.value = true
-            }
-        }
-    }
-
-    // NEU: StateFlow für Review-Request
-    private val _shouldRequestReview = MutableStateFlow(false)
-    val shouldRequestReview: StateFlow<Boolean> = _shouldRequestReview.asStateFlow()
 
     // NEU: Review wurde angezeigt/abgelehnt
     fun onReviewHandled() {
@@ -455,14 +462,11 @@ class MainViewModel @Inject constructor(
             uiManager.setSuccess("Review-Daten zurückgesetzt")
         }
     }
+
     fun updateInputText(text: String) {
         uiManager.updateInputText(text)
-
-        // Wenn Text nicht leer ist und es eine Übersetzung gibt, tracke es
-        if (text.isNotEmpty()) {
-            trackTranslation()
-        }
     }
+
     fun clearInput() = uiManager.clearInput()
 
     override fun onCleared() {
