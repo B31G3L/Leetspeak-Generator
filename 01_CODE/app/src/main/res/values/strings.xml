@@ -210,8 +210,6 @@
     <string name="review_stats_remaining">Noch benötigt</string>
     <string name="review_stats_successful">Bewertungen abgegeben</string>
 
-    <string name="review_manual_button">App bewerten</string>
-    <string name="review_reset_button">Review-Daten zurücksetzen (Debug)</string>
     <string name="review_reset_dialog_title">Review-Daten zurücksetzen?</string>
     <string name="review_reset_dialog_message">Alle Review-Statistiken werden gelöscht. Dies ist nur für Testing gedacht.</string>
     <string name="review_reset_confirm">Zurücksetzen</string>
@@ -275,21 +273,6 @@
     <string name="bug_report_subject">Bug Report - Leetspeak Generator v%1$s</string>
     <string name="bug_report_email">beigel.dev@gmail.com</string>
 
-    <!-- Review Settings Section -->
-    <string name="review_stats_title_full">Review Statistics</string>
-    <string name="review_stat_app_starts">App Starts</string>
-    <string name="review_stat_app_starts_value">%1$d / 3</string>
-    <string name="review_stat_app_starts_suffix">App Starts</string>
-    <string name="review_stats_requests">Review Requests</string>
-    <string name="review_stats_remaining">Still Needed</string>
-    <string name="review_stats_successful">Reviews Given</string>
-    <string name="review_manual_button_full">Rate App</string>
-    <string name="review_hint_full">The app asks for a review after the 3rd start. You can also manually rate at any time.</string>
-    <string name="review_reset_dialog_title">Reset Review Data?</string>
-    <string name="review_reset_dialog_message">All review statistics will be deleted. This is intended for testing only.</string>
-    <string name="review_reset_confirm">Reset</string>
-    <string name="review_reset_cancel">Cancel</string>
-    <string name="review_reset_button">Reset Review Data (Debug)</string>
 
     <!-- Copy Behavior Settings -->
     <string name="copy_behavior_ask_clear">Ask Before Deleting</string>

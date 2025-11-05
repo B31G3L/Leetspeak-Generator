@@ -1,7 +1,6 @@
 package com.beigel.leetSpeak_Generator.ui.settings
 
 import android.app.Activity
-import android.content.Context
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.viewModels
@@ -239,22 +238,7 @@ fun SettingsScreen(
                 }
             }
 
-            // Review Settings Section
-            item {
-                ReviewSettingsSection(
-                    reviewStats = reviewStats,
-                    onRequestReview = {
-                        activity?.let { act ->
-                            viewModel.requestReview(act)
-                        } ?: false
-                    },
-                    onResetReview = {
-                        viewModel.resetReviewForTesting()
-                    },
-                    isExpanded = reviewExpanded,
-                    onExpandToggle = { reviewExpanded = !reviewExpanded }
-                )
-            }
+
 
             // About Section
             item {
