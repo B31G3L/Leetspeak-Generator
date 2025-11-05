@@ -173,8 +173,9 @@ class LeetCreationDialogState(existingLeet: CustomLeet?) {
         )
     }
 
+    val defaultName = stringResource(R.string.leet_default_name)
     val displayName: String
-        get() = if (baseName.isBlank()) "Neues Leet" else "$baseName-Leet"
+        get() = if (baseName.isBlank()) defaultName else "$baseName-Leet"
 
     fun applyTemplate() {
         val hasUserChanges = translationStates.any { state ->
@@ -199,7 +200,8 @@ class LeetCreationDialogState(existingLeet: CustomLeet?) {
             translations[char.toString()] = translationStates[index].value
         }
 
-        val finalName = displayName.ifEmpty { "Custom-Leet" }
+        val fallbackName = stringResource(R.string.leet_fallback_name)
+        val finalName = displayName.ifEmpty { fallbackName }
 
         if (existingLeet == null) {
             // Neues Leet erstellen

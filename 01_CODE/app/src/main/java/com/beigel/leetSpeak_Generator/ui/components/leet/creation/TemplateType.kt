@@ -1,16 +1,18 @@
 package com.beigel.leetSpeak_Generator.ui.components.leet.creation
 
+import androidx.annotation.StringRes
 import androidx.compose.runtime.MutableState
+import com.beigel.leetSpeak_Generator.R
 
 /**
  * Template-Typen für Leet-Erstellung mit zugehöriger Logik
  */
-enum class TemplateType(val displayName: String, val description: String) {
-    SIMPLE("Simple", "Einfache 1:1 Ersetzungen"),
-    EXTENDED("Extended", "Erweiterte Multi-Zeichen Ersetzungen"),
-    CUSTOM("Leer", "Startet mit leerer Tabelle"),
-    NUMERIC("Numerisch", "Nur Zahlen als Ersetzungen"),
-    SYMBOLS("Symbole", "Nur Symbole als Ersetzungen")
+enum class TemplateType(@StringRes val displayNameRes: Int, @StringRes val descriptionRes: Int) {
+    SIMPLE(R.string.template_simple, R.string.template_simple_desc),
+    EXTENDED(R.string.template_extended, R.string.template_extended_desc),
+    CUSTOM(R.string.template_empty, R.string.template_empty_desc),
+    NUMERIC(R.string.template_numeric, R.string.template_numeric_desc),
+    SYMBOLS(R.string.template_symbols, R.string.template_symbols_desc)
 }
 
 /**

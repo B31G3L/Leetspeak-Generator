@@ -305,4 +305,62 @@
     <!-- About Dialog -->
     <string name="about_logo_description">Leetspeak Generator Logo</string>
 
+    <!-- Error Handler Messages -->
+    <string name="error_occurred">An error occurred</string>
+    <string name="error_network">Network error occurred</string>
+    <string name="error_loading_data">Error loading data</string>
+    <string name="error_critical">A critical error has occurred</string>
+
+    <!-- Main ViewModel Messages -->
+    <string name="error_set_custom_index">Failed to set custom leet index: %1$s</string>
+    <string name="error_load_favorite">Failed to load favorite leet: %1$s</string>
+    <string name="success_leet_created">Leet \'%1$s\' created successfully</string>
+    <string name="error_create_leet">Failed to create leet: %1$s</string>
+    <string name="error_change_mode">Failed to change mode: %1$s</string>
+    <string name="success_added_favorite">Added to favorites</string>
+    <string name="success_removed_favorite">Removed from favorites</string>
+    <string name="error_toggle_favorite">Failed to toggle favorite: %1$s</string>
+    <string name="success_leet_updated">Leet \'%1$s\' updated successfully</string>
+    <string name="error_update_leet">Failed to update leet: %1$s</string>
+    <string name="info_switched_to_simple">Last leet deleted, switched to Simple mode</string>
+    <string name="info_favorite_deleted">Favorite leet deleted</string>
+    <string name="success_leet_deleted">Leet deleted successfully</string>
+    <string name="error_delete_leet">Failed to delete leet: %1$s</string>
+    <string name="success_copied_to_clipboard">Copied to clipboard</string>
+    <string name="error_no_text_to_copy">No text to copy</string>
+    <string name="debug_whatsnew_reset_shown">What\'s New Dialog reset - will be shown on next start</string>
+    <string name="debug_whatsnew_will_show">What\'s New Dialog will be shown on next start</string>
+    <string name="debug_review_data_reset">Review data reset</string>
+
+    <!-- Leet Repository Messages -->
+    <string name="success_leet_created_repo">Leet created successfully</string>
+    <string name="success_leet_updated_repo">Leet updated successfully</string>
+    <string name="success_leet_deleted_repo">Leet deleted successfully</string>
+
+    <!-- Template Types -->
+    <string name="template_simple">Simple</string>
+    <string name="template_simple_desc">Simple 1:1 substitutions</string>
+    <string name="template_extended">Extended</string>
+    <string name="template_extended_desc">Advanced multi-character substitutions</string>
+    <string name="template_empty">Empty</string>
+    <string name="template_empty_desc">Start with empty table</string>
+    <string name="template_numeric">Numeric</string>
+    <string name="template_numeric_desc">Numbers only as substitutions</string>
+    <string name="template_symbols">Symbols</string>
+    <string name="template_symbols_desc">Symbols only as substitutions</string>
+
+    <!-- Leet Option Names -->
+    <string name="leet_option_simple_name">Simple Leet</string>
+    <string name="leet_option_extended_name">Extended Leet</string>
+    <string name="leet_option_custom_name">Custom</string>
+
+    <!-- URLs -->
+    <string name="url_kofi">https://ko-fi.com/beigel</string>
+    <string name="url_play_store">https://play.google.com/store/apps/details?id=com.beigel.leetSpeak_Generator</string>
+
+    <!-- UI Component Strings -->
+    <string name="content_description_favorite">Favorite</string>
+    <string name="leet_default_name">New Leet</string>
+    <string name="leet_fallback_name">Custom-Leet</string>
+
 </resources>

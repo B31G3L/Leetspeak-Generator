@@ -282,4 +282,86 @@
     <!-- About Dialog -->
     <string name="about_logo_description">Leetspeak Generator Logo</string>
 
+    <string name="review_title">App bewerten</string>
+    <string name="review_message">Gefällt dir die App? Hilf uns mit deiner Bewertung!</string>
+    <string name="review_button">Jetzt bewerten</string>
+    <string name="review_later">Später</string>
+    <string name="review_never">Nicht mehr fragen</string>
+
+    <string name="review_stats_title">Review-Statistiken</string>
+    <string name="review_stats_translations">Übersetzungen</string>
+    <string name="review_stats_requests">Review-Anfragen</string>
+    <string name="review_stats_remaining">Noch benötigt</string>
+    <string name="review_stats_successful">Bewertungen abgegeben</string>
+
+    <string name="review_reset_dialog_title">Review-Daten zurücksetzen?</string>
+    <string name="review_reset_dialog_message">Alle Review-Statistiken werden gelöscht. Dies ist nur für Testing gedacht.</string>
+    <string name="review_reset_confirm">Zurücksetzen</string>
+    <string name="review_reset_cancel">Abbrechen</string>
+
+    <string name="review_hint">Die App fragt gelegentlich nach einer Bewertung. Du kannst auch jederzeit manuell eine Bewertung abgeben.</string>
+    <string name="review_success">Vielen Dank für deine Bewertung! ⭐</string>
+    <string name="review_error">Bewertung konnte nicht angezeigt werden</string>
+
+    <string name="review_section_title">App Bewertung</string>
+    <string name="review_section_preview">Hilf uns mit deinem Feedback</string>
+
+    <!-- Error Handler Messages -->
+    <string name="error_occurred">Ein Fehler ist aufgetreten</string>
+    <string name="error_network">Netzwerkfehler aufgetreten</string>
+    <string name="error_loading_data">Fehler beim Laden der Daten</string>
+    <string name="error_critical">Ein schwerwiegender Fehler ist aufgetreten</string>
+
+    <!-- Main ViewModel Messages -->
+    <string name="error_set_custom_index">Custom-Leet-Index konnte nicht gesetzt werden: %1$s</string>
+    <string name="error_load_favorite">Favoriten-Leet konnte nicht geladen werden: %1$s</string>
+    <string name="success_leet_created">Leet \'%1$s\' erfolgreich erstellt</string>
+    <string name="error_create_leet">Leet konnte nicht erstellt werden: %1$s</string>
+    <string name="error_change_mode">Modus konnte nicht gewechselt werden: %1$s</string>
+    <string name="success_added_favorite">Zu Favoriten hinzugefügt</string>
+    <string name="success_removed_favorite">Aus Favoriten entfernt</string>
+    <string name="error_toggle_favorite">Favorit konnte nicht umgeschaltet werden: %1$s</string>
+    <string name="success_leet_updated">Leet \'%1$s\' erfolgreich aktualisiert</string>
+    <string name="error_update_leet">Leet konnte nicht aktualisiert werden: %1$s</string>
+    <string name="info_switched_to_simple">Letztes Leet gelöscht, zu Simple-Modus gewechselt</string>
+    <string name="info_favorite_deleted">Favoriten-Leet gelöscht</string>
+    <string name="success_leet_deleted">Leet erfolgreich gelöscht</string>
+    <string name="error_delete_leet">Leet konnte nicht gelöscht werden: %1$s</string>
+    <string name="success_copied_to_clipboard">In Zwischenablage kopiert</string>
+    <string name="error_no_text_to_copy">Kein Text zum Kopieren</string>
+    <string name="debug_whatsnew_reset_shown">Was-ist-neu-Dialog zurückgesetzt - wird beim nächsten Start angezeigt</string>
+    <string name="debug_whatsnew_will_show">Was-ist-neu-Dialog wird beim nächsten Start angezeigt</string>
+    <string name="debug_review_data_reset">Review-Daten zurückgesetzt</string>
+
+    <!-- Leet Repository Messages -->
+    <string name="success_leet_created_repo">Leet erfolgreich erstellt</string>
+    <string name="success_leet_updated_repo">Leet erfolgreich aktualisiert</string>
+    <string name="success_leet_deleted_repo">Leet erfolgreich gelöscht</string>
+
+    <!-- Template Types -->
+    <string name="template_simple">Simple</string>
+    <string name="template_simple_desc">Einfache 1:1 Ersetzungen</string>
+    <string name="template_extended">Extended</string>
+    <string name="template_extended_desc">Erweiterte Multi-Zeichen Ersetzungen</string>
+    <string name="template_empty">Leer</string>
+    <string name="template_empty_desc">Startet mit leerer Tabelle</string>
+    <string name="template_numeric">Numerisch</string>
+    <string name="template_numeric_desc">Nur Zahlen als Ersetzungen</string>
+    <string name="template_symbols">Symbole</string>
+    <string name="template_symbols_desc">Nur Symbole als Ersetzungen</string>
+
+    <!-- Leet Option Names -->
+    <string name="leet_option_simple_name">Simple Leet</string>
+    <string name="leet_option_extended_name">Extended Leet</string>
+    <string name="leet_option_custom_name">Custom</string>
+
+    <!-- URLs -->
+    <string name="url_kofi">https://ko-fi.com/beigel</string>
+    <string name="url_play_store">https://play.google.com/store/apps/details?id=com.beigel.leetSpeak_Generator</string>
+
+    <!-- UI Component Strings -->
+    <string name="content_description_favorite">Favorit</string>
+    <string name="leet_default_name">Neues Leet</string>
+    <string name="leet_fallback_name">Custom-Leet</string>
+
 </resources>

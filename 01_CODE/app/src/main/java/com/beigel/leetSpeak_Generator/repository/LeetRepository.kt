@@ -1,6 +1,7 @@
 package com.beigel.leetSpeak_Generator.repository
 
 import android.content.Context
+import com.beigel.leetSpeak_Generator.R
 import com.beigel.leetSpeak_Generator.data.CustomLeet
 import com.beigel.leetSpeak_Generator.data.LeetOption
 import com.beigel.leetSpeak_Generator.manager.LeetManager
@@ -11,7 +12,7 @@ import javax.inject.Singleton
 
 @Singleton
 class LeetRepository @Inject constructor(
-    context: Context
+    private val context: Context
 ) {
 
     private val leetManager = LeetManager(context)
@@ -36,7 +37,7 @@ class LeetRepository @Inject constructor(
                             leet = leet,
                             index = indexResult.data,
                             success = true,
-                            message = "Leet created successfully"
+                            message = context.getString(R.string.success_leet_created_repo)
                         )
                     )
                 }
@@ -62,7 +63,7 @@ class LeetRepository @Inject constructor(
                                 leet = leet,
                                 index = index,
                                 success = true,
-                                message = "Leet updated successfully"
+                                message = context.getString(R.string.success_leet_updated_repo)
                             )
                         )
                     }
@@ -90,7 +91,7 @@ class LeetRepository @Inject constructor(
                                 wasFavorite = result.data.wasFavorite,
                                 wasLastLeet = result.data.wasLastLeet,
                                 success = true,
-                                message = "Leet deleted successfully"
+                                message = context.getString(R.string.success_leet_deleted_repo)
                             )
                         )
                     }
@@ -225,12 +226,14 @@ class LeetRepository @Inject constructor(
         buildList {
             // Add Simple Leet
             add(LeetOption.createSimple(
+                context = context,
                 isSelected = false,
                 isFavorite = favoriteIndex == LeetManager.FAV_SIMPLE
             ))
 
             // Add Extended Leet
             add(LeetOption.createExtended(
+                context = context,
                 isSelected = false,
                 isFavorite = favoriteIndex == LeetManager.FAV_EXTENDED
             ))
@@ -238,6 +241,7 @@ class LeetRepository @Inject constructor(
             // Add Custom Leets
             leets.forEachIndexed { index, leet ->
                 add(LeetOption.createCustom(
+                    context = context,
                     leet = leet,
                     customIndex = index,
                     isSelected = false,

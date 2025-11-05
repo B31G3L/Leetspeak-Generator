@@ -1,5 +1,6 @@
 package com.beigel.leetSpeak_Generator.data
 
+import android.content.Context
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import com.beigel.leetSpeak_Generator.R
@@ -23,11 +24,11 @@ data class LeetOption(
         /**
          * Creates a Simple Leet option
          */
-        fun createSimple(isSelected: Boolean = false, isFavorite: Boolean = false): LeetOption =
+        fun createSimple(context: Context, isSelected: Boolean = false, isFavorite: Boolean = false): LeetOption =
             LeetOption(
                 mode = LeetManager.MODE_SIMPLE,
-                name = "Simple Leet",
-                description = "Basic character substitutions (A→4, E→3, etc.)",
+                name = context.getString(R.string.leet_option_simple_name),
+                description = context.getString(R.string.simple_leet_description),
                 isCustom = false,
                 customIndex = -1,
                 isSelected = isSelected,
@@ -37,11 +38,11 @@ data class LeetOption(
         /**
          * Creates an Extended Leet option
          */
-        fun createExtended(isSelected: Boolean = false, isFavorite: Boolean = false): LeetOption =
+        fun createExtended(context: Context, isSelected: Boolean = false, isFavorite: Boolean = false): LeetOption =
             LeetOption(
                 mode = LeetManager.MODE_EXTENDED,
-                name = "Extended Leet",
-                description = "Advanced multi-character substitutions (M→/\\/\\, N→|\\|, etc.)",
+                name = context.getString(R.string.leet_option_extended_name),
+                description = context.getString(R.string.extended_leet_description),
                 isCustom = false,
                 customIndex = -1,
                 isSelected = isSelected,
@@ -52,6 +53,7 @@ data class LeetOption(
          * Creates a Custom Leet option from a profile
          */
         fun createCustom(
+            context: Context,
             leet: CustomLeet,
             customIndex: Int,
             isSelected: Boolean = false,
@@ -60,7 +62,7 @@ data class LeetOption(
             LeetOption(
                 mode = LeetManager.MODE_CUSTOM,
                 name = leet.name,
-                description = "Custom character mappings",
+                description = context.getString(R.string.custom_leet_description),
                 isCustom = true,
                 customIndex = customIndex,
                 isSelected = isSelected,

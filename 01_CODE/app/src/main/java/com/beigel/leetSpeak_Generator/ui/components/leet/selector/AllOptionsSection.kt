@@ -111,7 +111,7 @@ private fun DetailedCard(
                         Spacer(modifier = Modifier.width(4.dp))
                         Icon(
                             imageVector = Icons.Default.Star,
-                            contentDescription = "Favorit",
+                            contentDescription = stringResource(R.string.content_description_favorite),
                             modifier = Modifier.size(14.dp),
                             tint = MaterialTheme.colorScheme.secondary
                         )
