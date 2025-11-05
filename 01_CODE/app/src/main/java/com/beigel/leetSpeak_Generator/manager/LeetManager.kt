@@ -14,7 +14,7 @@ import kotlinx.coroutines.flow.*
  * Modern LeetManager with Kotlin Coroutines and Flow support
  * UPDATED: Icon-Handling entfernt
  */
-class LeetManager(context: Context) {
+class LeetManager(private val context: Context) {
 
     companion object {
         private const val PREFS_NAME = "LeetSpeakProfiles"
@@ -130,7 +130,7 @@ class LeetManager(context: Context) {
      * Adds a new leet
      */
     suspend fun addLeet(leet: CustomLeet): ErrorHandler.Result<Int> =
-        ErrorHandler.safeExecute(errorMessage = "Failed to add leet") {
+        ErrorHandler.safeExecuteSuspend(context = context, errorMessage = "Failed to add leet") {
             val currentLeets = _leets.value.toMutableList()
             currentLeets.add(leet)
             val newIndex = currentLeets.size - 1
@@ -146,7 +146,7 @@ class LeetManager(context: Context) {
      * Updates a leet at the given index
      */
     suspend fun updateLeet(index: Int, leet: CustomLeet): ErrorHandler.Result<Unit> =
-        ErrorHandler.safeExecute(errorMessage = "Failed to update leet") {
+        ErrorHandler.safeExecuteSuspend(context = context, errorMessage = "Failed to update leet") {
             require(index in 0 until _leets.value.size) { "Invalid leet index: $index" }
 
             val currentLeets = _leets.value.toMutableList()
@@ -160,7 +160,7 @@ class LeetManager(context: Context) {
      * Deletes a leet at the given index
      */
     suspend fun deleteLeet(index: Int): ErrorHandler.Result<LeetDeletionResult> =
-        ErrorHandler.safeExecute(errorMessage = "Failed to delete leet") {
+        ErrorHandler.safeExecuteSuspend(context = context, errorMessage = "Failed to delete leet") {
             require(index in 0 until _leets.value.size) { "Invalid leet index: $index" }
 
             val currentLeets = _leets.value.toMutableList()
@@ -193,7 +193,7 @@ class LeetManager(context: Context) {
      * Sets the current leet index
      */
     suspend fun setCurrentLeetIndex(index: Int): ErrorHandler.Result<Unit> =
-        ErrorHandler.safeExecute(errorMessage = "Failed to set current leet") {
+        ErrorHandler.safeExecuteSuspend(context = context, errorMessage = "Failed to set current leet") {
             require(index in 0 until _leets.value.size) { "Invalid leet index: $index" }
 
             _currentLeetIndex.value = index
@@ -206,7 +206,7 @@ class LeetManager(context: Context) {
      * Sets the favorite leet
      */
     suspend fun setFavorite(mode: Int, customIndex: Int = 0): ErrorHandler.Result<Unit> =
-        ErrorHandler.safeExecute(errorMessage = "Failed to set favorite") {
+        ErrorHandler.safeExecuteSuspend(context = context, errorMessage = "Failed to set favorite") {
             val favoriteIndex = when (mode) {
                 MODE_SIMPLE -> FAV_SIMPLE
                 MODE_EXTENDED -> FAV_EXTENDED
@@ -229,7 +229,7 @@ class LeetManager(context: Context) {
      * Toggles favorite status for a mode
      */
     suspend fun toggleFavorite(mode: Int, customIndex: Int = 0): ErrorHandler.Result<Boolean> =
-        ErrorHandler.safeExecute(errorMessage = "Failed to toggle favorite") {
+        ErrorHandler.safeExecuteSuspend(context = context, errorMessage = "Failed to toggle favorite") {
             val targetIndex = when (mode) {
                 MODE_SIMPLE -> FAV_SIMPLE
                 MODE_EXTENDED -> FAV_EXTENDED
@@ -298,7 +298,7 @@ class LeetManager(context: Context) {
      * Creates a leet with simple defaults (ohne Icon-Parameter)
      */
     suspend fun createLeetWithSimpleDefaults(name: String): ErrorHandler.Result<CustomLeet> =
-        ErrorHandler.safeExecute(errorMessage = "Failed to create leet") {
+        ErrorHandler.safeExecuteSuspend(context = context, errorMessage = "Failed to create leet") {
             val leet = CustomLeet.createWithSimpleDefaults(name)
             addLeet(leet).getOrNull()
             leet
@@ -308,7 +308,7 @@ class LeetManager(context: Context) {
      * Creates a leet with extended defaults (ohne Icon-Parameter)
      */
     suspend fun createLeetWithExtendedDefaults(name: String): ErrorHandler.Result<CustomLeet> =
-        ErrorHandler.safeExecute(errorMessage = "Failed to create leet") {
+        ErrorHandler.safeExecuteSuspend(context = context, errorMessage = "Failed to create leet") {
             val leet = CustomLeet.createWithExtendedDefaults(name)
             addLeet(leet).getOrNull()
             leet

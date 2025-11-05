@@ -108,6 +108,21 @@ object ErrorHandler {
     }
 
     /**
+     * Safe execution wrapper for suspend operations
+     */
+    suspend inline fun <T> safeExecuteSuspend(
+        context: Context,
+        errorMessage: String,
+        severity: ErrorSeverity = ErrorSeverity.ERROR,
+        crossinline operation: suspend () -> T
+    ): Result<T> = try {
+        Result.Success(operation())
+    } catch (e: Exception) {
+        handleError(context, e, errorMessage, severity)
+        Result.Error(e, errorMessage)
+    }
+
+    /**
      * Extension function to check if app is in debug mode
      */
     private fun Context.isDebugMode(): Boolean = try {
