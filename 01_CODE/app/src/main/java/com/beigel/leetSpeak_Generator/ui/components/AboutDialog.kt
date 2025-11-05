@@ -325,6 +325,10 @@ private fun SupportSection(
     uriHandler: UriHandler,
     onDismiss: () -> Unit
 ) {
+    // Get string resources in composable context
+    val kofiUrl = stringResource(R.string.url_kofi)
+    val playStoreUrl = stringResource(R.string.url_play_store)
+
     Card(
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.3f)
@@ -373,7 +377,7 @@ private fun SupportSection(
                 // Ko-Fi Button
                 Button(
                     onClick = {
-                        uriHandler.openUri(stringResource(R.string.url_kofi))
+                        uriHandler.openUri(kofiUrl)
                     },
                     modifier = Modifier.weight(1f),
                     colors = ButtonDefaults.buttonColors(
@@ -396,7 +400,7 @@ private fun SupportSection(
                 // Play Store Bewertung
                 Button(
                     onClick = {
-                        uriHandler.openUri(stringResource(R.string.url_play_store))
+                        uriHandler.openUri(playStoreUrl)
                         onDismiss()
                     },
                     modifier = Modifier.weight(1f),
