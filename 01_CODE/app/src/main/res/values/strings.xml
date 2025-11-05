@@ -276,40 +276,48 @@
     <string name="bug_report_email">beigel.dev@gmail.com</string>
 
     <!-- Review Settings Section -->
-    <string name="review_stats_title_full">Review-Statistiken</string>
-    <string name="review_stat_app_starts">App-Starts</string>
+    <string name="review_stats_title_full">Review Statistics</string>
+    <string name="review_stat_app_starts">App Starts</string>
     <string name="review_stat_app_starts_value">%1$d / 3</string>
-    <string name="review_stat_app_starts_suffix">App-Starts</string>
-    <string name="review_manual_button_full">App bewerten</string>
-    <string name="review_hint_full">Die App fragt nach dem 3. Start nach einer Bewertung. Du kannst auch jederzeit manuell eine Bewertung abgeben.</string>
+    <string name="review_stat_app_starts_suffix">App Starts</string>
+    <string name="review_stats_requests">Review Requests</string>
+    <string name="review_stats_remaining">Still Needed</string>
+    <string name="review_stats_successful">Reviews Given</string>
+    <string name="review_manual_button_full">Rate App</string>
+    <string name="review_hint_full">The app asks for a review after the 3rd start. You can also manually rate at any time.</string>
+    <string name="review_reset_dialog_title">Reset Review Data?</string>
+    <string name="review_reset_dialog_message">All review statistics will be deleted. This is intended for testing only.</string>
+    <string name="review_reset_confirm">Reset</string>
+    <string name="review_reset_cancel">Cancel</string>
+    <string name="review_reset_button">Reset Review Data (Debug)</string>
 
     <!-- Copy Behavior Settings -->
-    <string name="copy_behavior_ask_clear">Löschen mit Rückfrage</string>
-    <string name="copy_behavior_auto_clear">Automatisch löschen</string>
-    <string name="copy_behavior_no_clear">Nicht löschen</string>
-    <string name="copy_auto_clear_info">Die Eingabe wird automatisch gelöscht, ohne zu fragen</string>
+    <string name="copy_behavior_ask_clear">Ask Before Deleting</string>
+    <string name="copy_behavior_auto_clear">Auto Delete</string>
+    <string name="copy_behavior_no_clear">Don\'t Delete</string>
+    <string name="copy_auto_clear_info">The input will be automatically deleted without asking</string>
 
     <!-- Template Picker Dialog -->
-    <string name="template_picker_title">Vorlage auswählen</string>
+    <string name="template_picker_title">Select Template</string>
     <string name="ok">OK</string>
-    <string name="cancel">Abbrechen</string>
-    <string name="example_prefix">Beispiel: </string>
+    <string name="cancel">Cancel</string>
+    <string name="example_prefix">Example: </string>
 
     <!-- What\'s New Dialog - Additional Features -->
     <string name="whats_new_feature_sharing">Sharing Features</string>
-    <string name="whats_new_feature_sharing_desc">Teile Leets einfacher</string>
-    <string name="whats_new_feature_history">Verlauf</string>
-    <string name="whats_new_feature_history_desc">Kürzlich übersetzte Texte</string>
+    <string name="whats_new_feature_sharing_desc">Share Leets more easily</string>
+    <string name="whats_new_feature_history">History</string>
+    <string name="whats_new_feature_history_desc">Recently translated texts</string>
     <string name="whats_new_feature_backup">Backup &amp; Sync</string>
-    <string name="whats_new_feature_backup_desc">Sichere deine Custom Leets</string>
-    <string name="whats_new_feature_faster">Noch schneller</string>
-    <string name="whats_new_feature_faster_desc">Verbesserte Performance</string>
-    <string name="whats_new_feature_new_modes">Neue Modi</string>
-    <string name="whats_new_feature_new_modes_desc">Zusätzliche Leetspeak-Varianten</string>
-    <string name="whats_new_fallback_title">Neue Version</string>
-    <string name="whats_new_fallback_desc">Allgemeine Verbesserungen</string>
+    <string name="whats_new_feature_backup_desc">Backup your custom Leets</string>
+    <string name="whats_new_feature_faster">Even Faster</string>
+    <string name="whats_new_feature_faster_desc">Improved Performance</string>
+    <string name="whats_new_feature_new_modes">New Modes</string>
+    <string name="whats_new_feature_new_modes_desc">Additional Leetspeak Variants</string>
+    <string name="whats_new_fallback_title">New Version</string>
+    <string name="whats_new_fallback_desc">General Improvements</string>
     <string name="whats_new_performance">Performance</string>
-    <string name="whats_new_performance_desc">Bessere App-Geschwindigkeit</string>
+    <string name="whats_new_performance_desc">Better App Speed</string>
 
     <!-- About Dialog -->
     <string name="about_logo_description">Leetspeak Generator Logo</string>
