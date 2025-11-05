@@ -249,23 +249,7 @@
     <string name="bug_report_subject">Fehlerbericht - Leetspeak Generator v%1$s</string>
     <string name="bug_report_email">beigel.dev@gmail.com</string>
 
-    <!-- Review Settings Section -->
-    <string name="review_stats_title_full">Review-Statistiken</string>
-    <string name="review_stat_app_starts">App-Starts</string>
-    <string name="review_stat_app_starts_value">%1$d / 3</string>
-    <string name="review_stat_app_starts_suffix">App-Starts</string>
-    <string name="review_stats_requests">Review-Anfragen</string>
-    <string name="review_stats_remaining">Noch benötigt</string>
-    <string name="review_stats_successful">Bewertungen abgegeben</string>
-    <string name="review_manual_button_full">App bewerten</string>
-    <string name="review_hint_full">Die App fragt nach dem 3. Start nach einer Bewertung. Du kannst auch jederzeit manuell eine Bewertung abgeben.</string>
-    <string name="review_section_title">App Bewertung</string>
-    <string name="review_section_preview">Hilf uns mit deinem Feedback</string>
-    <string name="review_reset_dialog_title">Review-Daten zurücksetzen?</string>
-    <string name="review_reset_dialog_message">Alle Review-Statistiken werden gelöscht. Dies ist nur für Testing gedacht.</string>
-    <string name="review_reset_confirm">Zurücksetzen</string>
-    <string name="review_reset_cancel">Abbrechen</string>
-    <string name="review_reset_button">Review-Daten zurücksetzen (Debug)</string>
+
 
     <!-- Copy Behavior Settings -->
     <string name="copy_behavior_ask_clear">Löschen mit Rückfrage</string>

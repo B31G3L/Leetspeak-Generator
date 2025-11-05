@@ -249,23 +249,7 @@
     <string name="bug_report_subject">Informe de Error - Generador Leetspeak v%1$s</string>
     <string name="bug_report_email">beigel.dev@gmail.com</string>
 
-    <!-- Review Settings Section -->
-    <string name="review_stats_title_full">Estadísticas de reseñas</string>
-    <string name="review_stat_app_starts">Inicios de app</string>
-    <string name="review_stat_app_starts_value">%1$d / 3</string>
-    <string name="review_stat_app_starts_suffix">Inicios de app</string>
-    <string name="review_stats_requests">Solicitudes de reseña</string>
-    <string name="review_stats_remaining">Aún necesarios</string>
-    <string name="review_stats_successful">Valoraciones dadas</string>
-    <string name="review_manual_button_full">Valorar app</string>
-    <string name="review_hint_full">La app solicita una valoración después del 3er inicio. También puedes valorar manualmente en cualquier momento.</string>
-    <string name="review_section_title">Valoración de la app</string>
-    <string name="review_section_preview">Ayúdanos con tu opinión</string>
-    <string name="review_reset_dialog_title">¿Restablecer datos de reseñas?</string>
-    <string name="review_reset_dialog_message">Todas las estadísticas de reseñas se eliminarán. Esto está destinado solo para pruebas.</string>
-    <string name="review_reset_confirm">Restablecer</string>
-    <string name="review_reset_cancel">Cancelar</string>
-    <string name="review_reset_button">Restablecer datos de reseñas (Debug)</string>
+
 
     <!-- Copy Behavior Settings -->
     <string name="copy_behavior_ask_clear">Borrar con confirmación</string>

@@ -249,23 +249,6 @@
     <string name="bug_report_subject">Segnalazione Bug - Generatore Leetspeak v%1$s</string>
     <string name="bug_report_email">beigel.dev@gmail.com</string>
 
-    <!-- Review Settings Section -->
-    <string name="review_stats_title_full">Statistiche recensioni</string>
-    <string name="review_stat_app_starts">Avvii dell\'app</string>
-    <string name="review_stat_app_starts_value">%1$d / 3</string>
-    <string name="review_stat_app_starts_suffix">Avvii dell\'app</string>
-    <string name="review_stats_requests">Richieste di recensione</string>
-    <string name="review_stats_remaining">Ancora necessari</string>
-    <string name="review_stats_successful">Recensioni date</string>
-    <string name="review_manual_button_full">Valuta l\'app</string>
-    <string name="review_hint_full">L\'app richiede una recensione dopo il 3° avvio. Puoi anche valutarla manualmente in qualsiasi momento.</string>
-    <string name="review_section_title">Valutazione dell\'app</string>
-    <string name="review_section_preview">Aiutaci con il tuo feedback</string>
-    <string name="review_reset_dialog_title">Reimpostare i dati di recensione?</string>
-    <string name="review_reset_dialog_message">Tutte le statistiche di recensione saranno eliminate. Questo è destinato solo ai test.</string>
-    <string name="review_reset_confirm">Reimposta</string>
-    <string name="review_reset_cancel">Annulla</string>
-    <string name="review_reset_button">Reimposta dati recensione (Debug)</string>
 
     <!-- Copy Behavior Settings -->
     <string name="copy_behavior_ask_clear">Cancella con conferma</string>

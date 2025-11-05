@@ -249,23 +249,7 @@
     <string name="bug_report_subject">Rapport de Bug - Générateur Leetspeak v%1$s</string>
     <string name="bug_report_email">beigel.dev@gmail.com</string>
 
-    <!-- Review Settings Section -->
-    <string name="review_stats_title_full">Statistiques des évaluations</string>
-    <string name="review_stat_app_starts">Démarrages de l\'app</string>
-    <string name="review_stat_app_starts_value">%1$d / 3</string>
-    <string name="review_stat_app_starts_suffix">Démarrages de l\'app</string>
-    <string name="review_stats_requests">Demandes d\'évaluation</string>
-    <string name="review_stats_remaining">Encore nécessaire</string>
-    <string name="review_stats_successful">Évaluations données</string>
-    <string name="review_manual_button_full">Évaluer l\'app</string>
-    <string name="review_hint_full">L\'application demande une évaluation après le 3e démarrage. Vous pouvez également évaluer manuellement à tout moment.</string>
-    <string name="review_section_title">Évaluation de l\'app</string>
-    <string name="review_section_preview">Aidez-nous avec vos commentaires</string>
-    <string name="review_reset_dialog_title">Réinitialiser les données d\'évaluation ?</string>
-    <string name="review_reset_dialog_message">Toutes les statistiques d\'évaluation seront supprimées. Ceci est destiné aux tests uniquement.</string>
-    <string name="review_reset_confirm">Réinitialiser</string>
-    <string name="review_reset_cancel">Annuler</string>
-    <string name="review_reset_button">Réinitialiser les données d\'évaluation (Debug)</string>
+
 
     <!-- Copy Behavior Settings -->
     <string name="copy_behavior_ask_clear">Effacer avec confirmation</string>
