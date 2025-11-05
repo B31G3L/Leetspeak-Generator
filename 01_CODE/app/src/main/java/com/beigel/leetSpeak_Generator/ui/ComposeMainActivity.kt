@@ -60,7 +60,10 @@ class ComposeMainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        WindowCompat.setDecorFitsSystemWindows(window, false)
+        // ✅ Edge-to-Edge Setup VOR setContent
+        // Entferne die alte Zeile:
+        // WindowCompat.setDecorFitsSystemWindows(window, false)
+        // Das macht jetzt EdgeToEdgeHelper
 
         vibrator = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
             val vibratorManager = getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as android.os.VibratorManager
@@ -260,7 +263,9 @@ fun MainScreen(
     }
 
     Scaffold(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .fillMaxSize()
+            .windowInsetsPadding(WindowInsets.systemBars),
         topBar = {
             TopAppBar(
                 title = {
