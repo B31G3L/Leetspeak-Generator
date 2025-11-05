@@ -198,53 +198,49 @@
     <string name="settings_copy_ask_title">Ask before clearing</string>
     <string name="settings_copy_ask_desc">Shows a dialog before clearing the input</string>
 
-    <string name="review_title">App bewerten</string>
-    <string name="review_message">Gefällt dir die App? Hilf uns mit deiner Bewertung!</string>
-    <string name="review_button">Jetzt bewerten</string>
-    <string name="review_later">Später</string>
-    <string name="review_never">Nicht mehr fragen</string>
+    <string name="review_title">Rate App</string>
+    <string name="review_message">Do you like the app? Help us with your rating!</string>
+    <string name="review_button">Rate Now</string>
+    <string name="review_later">Later</string>
+    <string name="review_never">Don\'t ask again</string>
 
-    <string name="review_stats_title">Review-Statistiken</string>
-    <string name="review_stats_translations">Übersetzungen</string>
-    <string name="review_stats_requests">Review-Anfragen</string>
-    <string name="review_stats_remaining">Noch benötigt</string>
-    <string name="review_stats_successful">Bewertungen abgegeben</string>
+    <string name="review_stats_title">Review Statistics</string>
+    <string name="review_stats_translations">Translations</string>
+    <string name="review_stats_requests">Review Requests</string>
+    <string name="review_stats_remaining">Still needed</string>
+    <string name="review_stats_successful">Reviews submitted</string>
 
-    <string name="review_reset_dialog_title">Review-Daten zurücksetzen?</string>
-    <string name="review_reset_dialog_message">Alle Review-Statistiken werden gelöscht. Dies ist nur für Testing gedacht.</string>
-    <string name="review_reset_confirm">Zurücksetzen</string>
-    <string name="review_reset_cancel">Abbrechen</string>
+    <string name="review_reset_dialog_title">Reset review data?</string>
+    <string name="review_reset_dialog_message">All review statistics will be deleted. This is for testing purposes only.</string>
+    <string name="review_reset_confirm">Reset</string>
+    <string name="review_reset_cancel">Cancel</string>
 
-    <string name="review_hint">Die App fragt gelegentlich nach einer Bewertung. Du kannst auch jederzeit manuell eine Bewertung abgeben.</string>
-    <string name="review_success">Vielen Dank für deine Bewertung! ⭐</string>
-    <string name="review_error">Bewertung konnte nicht angezeigt werden</string>
+    <string name="review_hint">The app occasionally asks for a review. You can also submit a review manually at any time.</string>
+    <string name="review_success">Thank you for your review! ⭐</string>
+    <string name="review_error">Could not display review</string>
 
-    <string name="review_section_title">App Bewertung</string>
-    <string name="review_section_preview">Hilf uns mit deinem Feedback</string>
+    <string name="review_section_title">App Review</string>
+    <string name="review_section_preview">Help us with your feedback</string>
 
-    <!-- Placeholders for Input Fields -->
-    <string name="placeholder_leet_input">Leetspeak Text eingeben...</string>
+    <string name="placeholder_leet_input">Enter Leetspeak Text...</string>
     <string name="placeholder_leet_example_1">#3110 W0rl|) → Hello World</string>
     <string name="placeholder_leet_example_2">4|V|4Z1|V|6 → Amazing</string>
     <string name="placeholder_leet_example_3">L337 5P34K → Leet Speak</string>
-    <string name="placeholder_text_input">Hier deinen Text eingeben...</string>
-    <string name="placeholder_text_input_2">Schreibe etwas Cooles...</string>
-    <string name="placeholder_text_input_3">Verwandle Text in Leetspeak...</string>
+    <string name="placeholder_text_input">Enter your text here...</string>
+    <string name="placeholder_text_input_2">Write something cool...</string>
+    <string name="placeholder_text_input_3">Transform text into Leetspeak...</string>
     <string name="placeholder_text_example">Hello World → #3110 W0rl|)</string>
 
-    <!-- Copy & Input Actions -->
-    <string name="copied">Kopiert!</string>
-    <string name="copy_text">Text kopieren</string>
+    <string name="copied">Copied!</string>
+    <string name="copy_text">Copy text</string>
     <string name="clear">Clear</string>
     <string name="clipboard_label">Leetspeak Text</string>
 
-    <!-- Input/Output Labels -->
     <string name="input_plaintext">Input: Plaintext</string>
     <string name="output_plaintext">Output: Plaintext</string>
     <string name="input_prefix">Input: </string>
     <string name="output_prefix">Output: </string>
 
-    <!-- UI Badges & Labels -->
     <string name="reverse_badge">R</string>
     <string name="leet_detected_badge">L</string>
     <string name="menu">Menu</string>
@@ -253,10 +249,9 @@
     <string name="expand">Expand</string>
     <string name="collapse">Collapse</string>
 
-    <!-- Bug Report -->
-    <string name="bug_report_send_chooser">Bug Report senden</string>
-    <string name="no_email_app">Keine E-Mail-App gefunden. Bug Report wurde in Zwischenablage kopiert.</string>
-    <string name="bug_report_error_format">Fehler beim Erstellen des Bug Reports: %1$s</string>
+    <string name="bug_report_send_chooser">Send Bug Report</string>
+    <string name="no_email_app">No email app found. Bug report copied to clipboard.</string>
+    <string name="bug_report_error_format">Error creating bug report: %1$s</string>
     <string name="bug_report_header">=== BUG REPORT ===</string>
     <string name="bug_report_describe">Please describe the bug:</string>
     <string name="bug_report_question_1">1. What were you trying to do?</string>
@@ -274,19 +269,16 @@
     <string name="bug_report_email">beigel.dev@gmail.com</string>
 
 
-    <!-- Copy Behavior Settings -->
-    <string name="copy_behavior_ask_clear">Ask Before Deleting</string>
-    <string name="copy_behavior_auto_clear">Auto Delete</string>
-    <string name="copy_behavior_no_clear">Don\'t Delete</string>
-    <string name="copy_auto_clear_info">The input will be automatically deleted without asking</string>
+    <string name="copy_behavior_ask_clear">Ask Before Clearing</string>
+    <string name="copy_behavior_auto_clear">Auto Clear</string>
+    <string name="copy_behavior_no_clear">Don\'t Clear</string>
+    <string name="copy_auto_clear_info">The input will be automatically cleared without asking</string>
 
-    <!-- Template Picker Dialog -->
     <string name="template_picker_title">Select Template</string>
     <string name="ok">OK</string>
     <string name="cancel">Cancel</string>
     <string name="example_prefix">Example: </string>
 
-    <!-- What\'s New Dialog - Additional Features -->
     <string name="whats_new_feature_sharing">Sharing Features</string>
     <string name="whats_new_feature_sharing_desc">Share Leets more easily</string>
     <string name="whats_new_feature_history">History</string>
@@ -302,16 +294,13 @@
     <string name="whats_new_performance">Performance</string>
     <string name="whats_new_performance_desc">Better App Speed</string>
 
-    <!-- About Dialog -->
     <string name="about_logo_description">Leetspeak Generator Logo</string>
 
-    <!-- Error Handler Messages -->
     <string name="error_occurred">An error occurred</string>
     <string name="error_network">Network error occurred</string>
     <string name="error_loading_data">Error loading data</string>
     <string name="error_critical">A critical error has occurred</string>
 
-    <!-- Main ViewModel Messages -->
     <string name="error_set_custom_index">Failed to set custom leet index: %1$s</string>
     <string name="error_load_favorite">Failed to load favorite leet: %1$s</string>
     <string name="success_leet_created">Leet \'%1$s\' created successfully</string>
@@ -332,12 +321,10 @@
     <string name="debug_whatsnew_will_show">What\'s New Dialog will be shown on next start</string>
     <string name="debug_review_data_reset">Review data reset</string>
 
-    <!-- Leet Repository Messages -->
     <string name="success_leet_created_repo">Leet created successfully</string>
     <string name="success_leet_updated_repo">Leet updated successfully</string>
     <string name="success_leet_deleted_repo">Leet deleted successfully</string>
 
-    <!-- Template Types -->
     <string name="template_simple">Simple</string>
     <string name="template_simple_desc">Simple 1:1 substitutions</string>
     <string name="template_extended">Extended</string>
@@ -349,18 +336,15 @@
     <string name="template_symbols">Symbols</string>
     <string name="template_symbols_desc">Symbols only as substitutions</string>
 
-    <!-- Leet Option Names -->
     <string name="leet_option_simple_name">Simple Leet</string>
     <string name="leet_option_extended_name">Extended Leet</string>
     <string name="leet_option_custom_name">Custom</string>
 
-    <!-- URLs -->
     <string name="url_kofi">https://ko-fi.com/beigel</string>
     <string name="url_play_store">https://play.google.com/store/apps/details?id=com.beigel.leetSpeak_Generator</string>
 
-    <!-- UI Component Strings -->
     <string name="content_description_favorite">Favorite</string>
     <string name="leet_default_name">New Leet</string>
-    <string name="leet_fallback_name">Custom-Leet</string>
+    <string name="leet_fallback_name">Custom Leet</string>
 
 </resources>
