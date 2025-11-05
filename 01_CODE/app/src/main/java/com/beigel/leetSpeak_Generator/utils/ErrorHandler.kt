@@ -10,7 +10,7 @@ import android.widget.Toast
  */
 object ErrorHandler {
 
-    private const val TAG = "LeetGenerator"
+    internal const val TAG = "LeetGenerator"
 
     /**
      * Error severity levels with associated behavior

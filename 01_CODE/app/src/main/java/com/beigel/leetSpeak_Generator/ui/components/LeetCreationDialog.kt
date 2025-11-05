@@ -145,8 +145,11 @@ private fun LeetCreationHeader(
 private fun rememberLeetCreationDialogState(
     existingLeet: CustomLeet?
 ): LeetCreationDialogState {
+    val defaultName = stringResource(R.string.leet_default_name)
+    val fallbackName = stringResource(R.string.leet_fallback_name)
+
     return remember(existingLeet) {
-        LeetCreationDialogState(existingLeet).apply {
+        LeetCreationDialogState(existingLeet, defaultName, fallbackName).apply {
             if (existingLeet == null) {
                 applyTemplate()
             }
@@ -157,7 +160,11 @@ private fun rememberLeetCreationDialogState(
 /**
  * State-Klasse für Dialog-Verwaltung (ohne Icon)
  */
-class LeetCreationDialogState(existingLeet: CustomLeet?) {
+class LeetCreationDialogState(
+    existingLeet: CustomLeet?,
+    private val defaultName: String,
+    private val fallbackName: String
+) {
     val alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
     var baseName by mutableStateOf(
@@ -173,7 +180,6 @@ class LeetCreationDialogState(existingLeet: CustomLeet?) {
         )
     }
 
-    val defaultName = stringResource(R.string.leet_default_name)
     val displayName: String
         get() = if (baseName.isBlank()) defaultName else "$baseName-Leet"
 
@@ -200,7 +206,6 @@ class LeetCreationDialogState(existingLeet: CustomLeet?) {
             translations[char.toString()] = translationStates[index].value
         }
 
-        val fallbackName = stringResource(R.string.leet_fallback_name)
         val finalName = displayName.ifEmpty { fallbackName }
 
         if (existingLeet == null) {
