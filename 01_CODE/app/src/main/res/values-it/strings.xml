@@ -197,4 +197,105 @@
     <string name="settings_copy_clear_desc">Cancella automaticamente l\'input dopo la copia</string>
     <string name="settings_copy_ask_title">Chiedi prima di cancellare</string>
     <string name="settings_copy_ask_desc">Mostra un dialogo prima di cancellare l\'input</string>
+
+    <!-- Placeholders for Input Fields -->
+    <string name="placeholder_leet_input">Inserisci testo Leetspeak...</string>
+    <string name="placeholder_leet_example_1">#3110 W0rl|) → Hello World</string>
+    <string name="placeholder_leet_example_2">4|V|4Z1|V|6 → Amazing</string>
+    <string name="placeholder_leet_example_3">L337 5P34K → Leet Speak</string>
+    <string name="placeholder_text_input">Inserisci il tuo testo qui...</string>
+    <string name="placeholder_text_input_2">Scrivi qualcosa di bello...</string>
+    <string name="placeholder_text_input_3">Trasforma il testo in Leetspeak...</string>
+    <string name="placeholder_text_example">Hello World → #3110 W0rl|)</string>
+
+    <!-- Copy & Input Actions -->
+    <string name="copied">Copiato!</string>
+    <string name="copy_text">Copia testo</string>
+    <string name="clear">Cancella</string>
+    <string name="clipboard_label">Testo Leetspeak</string>
+
+    <!-- Input/Output Labels -->
+    <string name="input_plaintext">Input: Testo in chiaro</string>
+    <string name="output_plaintext">Output: Testo in chiaro</string>
+    <string name="input_prefix">Input: </string>
+    <string name="output_prefix">Output: </string>
+
+    <!-- UI Badges & Labels -->
+    <string name="reverse_badge">R</string>
+    <string name="leet_detected_badge">L</string>
+    <string name="menu">Menu</string>
+    <string name="about">Info</string>
+    <string name="selected">Selezionato</string>
+    <string name="expand">Espandi</string>
+    <string name="collapse">Comprimi</string>
+
+    <!-- Bug Report -->
+    <string name="bug_report_send_chooser">Invia segnalazione bug</string>
+    <string name="no_email_app">Nessuna app email trovata. Segnalazione copiata negli appunti.</string>
+    <string name="bug_report_error_format">Errore nella creazione della segnalazione bug: %1$s</string>
+    <string name="bug_report_header">=== SEGNALAZIONE BUG ===</string>
+    <string name="bug_report_describe">Per favore descrivi il bug:</string>
+    <string name="bug_report_question_1">1. Cosa stavi cercando di fare?</string>
+    <string name="bug_report_question_2">2. Cosa è successo invece?</string>
+    <string name="bug_report_question_3">3. Passaggi per riprodurre:</string>
+    <string name="bug_report_device_info">=== INFORMAZIONI DISPOSITIVO ===</string>
+    <string name="bug_report_app_version">Versione app: %1$s</string>
+    <string name="bug_report_android_version">Versione Android: %1$s (API %2$d)</string>
+    <string name="bug_report_device">Dispositivo: %1$s %2$s</string>
+    <string name="bug_report_brand">Marca: %1$s</string>
+    <string name="bug_report_language">Lingua dispositivo: %1$s</string>
+    <string name="bug_report_additional">=== INFORMAZIONI AGGIUNTIVE ===</string>
+    <string name="bug_report_additional_hint">Aggiungi ulteriori informazioni, screenshot o log qui.</string>
+    <string name="bug_report_subject">Segnalazione Bug - Generatore Leetspeak v%1$s</string>
+    <string name="bug_report_email">beigel.dev@gmail.com</string>
+
+    <!-- Review Settings Section -->
+    <string name="review_stats_title_full">Statistiche recensioni</string>
+    <string name="review_stat_app_starts">Avvii dell\'app</string>
+    <string name="review_stat_app_starts_value">%1$d / 3</string>
+    <string name="review_stat_app_starts_suffix">Avvii dell\'app</string>
+    <string name="review_stats_requests">Richieste di recensione</string>
+    <string name="review_stats_remaining">Ancora necessari</string>
+    <string name="review_stats_successful">Recensioni date</string>
+    <string name="review_manual_button_full">Valuta l\'app</string>
+    <string name="review_hint_full">L\'app richiede una recensione dopo il 3° avvio. Puoi anche valutarla manualmente in qualsiasi momento.</string>
+    <string name="review_section_title">Valutazione dell\'app</string>
+    <string name="review_section_preview">Aiutaci con il tuo feedback</string>
+    <string name="review_reset_dialog_title">Reimpostare i dati di recensione?</string>
+    <string name="review_reset_dialog_message">Tutte le statistiche di recensione saranno eliminate. Questo è destinato solo ai test.</string>
+    <string name="review_reset_confirm">Reimposta</string>
+    <string name="review_reset_cancel">Annulla</string>
+    <string name="review_reset_button">Reimposta dati recensione (Debug)</string>
+
+    <!-- Copy Behavior Settings -->
+    <string name="copy_behavior_ask_clear">Cancella con conferma</string>
+    <string name="copy_behavior_auto_clear">Cancella automaticamente</string>
+    <string name="copy_behavior_no_clear">Non cancellare</string>
+    <string name="copy_auto_clear_info">L\'input verrà cancellato automaticamente senza chiedere</string>
+
+    <!-- Template Picker Dialog -->
+    <string name="template_picker_title">Seleziona modello</string>
+    <string name="ok">OK</string>
+    <string name="cancel">Annulla</string>
+    <string name="example_prefix">Esempio: </string>
+
+    <!-- What\'s New Dialog - Additional Features -->
+    <string name="whats_new_feature_sharing">Funzioni di condivisione</string>
+    <string name="whats_new_feature_sharing_desc">Condividi Leet più facilmente</string>
+    <string name="whats_new_feature_history">Cronologia</string>
+    <string name="whats_new_feature_history_desc">Testi tradotti di recente</string>
+    <string name="whats_new_feature_backup">Backup &amp; Sincronizzazione</string>
+    <string name="whats_new_feature_backup_desc">Salva i tuoi Leet personalizzati</string>
+    <string name="whats_new_feature_faster">Ancora più veloce</string>
+    <string name="whats_new_feature_faster_desc">Prestazioni migliorate</string>
+    <string name="whats_new_feature_new_modes">Nuove modalità</string>
+    <string name="whats_new_feature_new_modes_desc">Varianti aggiuntive di Leetspeak</string>
+    <string name="whats_new_fallback_title">Nuova versione</string>
+    <string name="whats_new_fallback_desc">Miglioramenti generali</string>
+    <string name="whats_new_performance">Prestazioni</string>
+    <string name="whats_new_performance_desc">Velocità dell\'app migliorata</string>
+
+    <!-- About Dialog -->
+    <string name="about_logo_description">Logo del Generatore Leetspeak</string>
+
 </resources>

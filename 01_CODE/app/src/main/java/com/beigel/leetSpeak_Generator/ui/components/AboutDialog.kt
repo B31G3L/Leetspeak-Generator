@@ -170,7 +170,7 @@ private fun AppLogoHeader() {
                 Box(contentAlignment = Alignment.Center) {
                     Icon(
                         painter = painterResource(R.drawable.ic_custom_mode),
-                        contentDescription = "Leetspeak Generator Logo",
+                        contentDescription = stringResource(R.string.about_logo_description),
                         modifier = Modifier.size(40.dp),
                         tint = MaterialTheme.colorScheme.primary
                     )

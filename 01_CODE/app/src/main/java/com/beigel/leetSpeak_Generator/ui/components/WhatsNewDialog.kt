@@ -437,18 +437,18 @@ private fun getNewFeaturesForVersion(version: VersionInfo): List<FeatureItem> {
 
         // Version 1337.00_8374_5 (nächste Version - Beispiel) - OHNE Keyboard
         version.versionName.contains("1337.00_8374_5") -> listOf(
-            FeatureItem(Icons.Default.Share, "Sharing Features", "Teile Leets einfacher"),
-            FeatureItem(Icons.Default.History, "Verlauf", "Kürzlich übersetzte Texte"),
-            FeatureItem(Icons.Default.Backup, "Backup & Sync", "Sichere deine Custom Leets"),
-            FeatureItem(Icons.Default.Speed, "Noch schneller", "Verbesserte Performance"),
-            FeatureItem(Icons.Default.Extension, "Neue Modi", "Zusätzliche Leetspeak-Varianten")
+            FeatureItem(Icons.Default.Share, stringResource(R.string.whats_new_feature_sharing), stringResource(R.string.whats_new_feature_sharing_desc)),
+            FeatureItem(Icons.Default.History, stringResource(R.string.whats_new_feature_history), stringResource(R.string.whats_new_feature_history_desc)),
+            FeatureItem(Icons.Default.Backup, stringResource(R.string.whats_new_feature_backup), stringResource(R.string.whats_new_feature_backup_desc)),
+            FeatureItem(Icons.Default.Speed, stringResource(R.string.whats_new_feature_faster), stringResource(R.string.whats_new_feature_faster_desc)),
+            FeatureItem(Icons.Default.Extension, stringResource(R.string.whats_new_feature_new_modes), stringResource(R.string.whats_new_feature_new_modes_desc))
         )
 
         // Fallback für zukünftige Versionen
         else -> listOf(
-            FeatureItem(Icons.Default.NewReleases, "Neue Version", "Allgemeine Verbesserungen"),
+            FeatureItem(Icons.Default.NewReleases, stringResource(R.string.whats_new_fallback_title), stringResource(R.string.whats_new_fallback_desc)),
             FeatureItem(Icons.Default.BugReport, stringResource(R.string.feature_bugfixes_title), stringResource(R.string.feature_bugfixes_desc)),
-            FeatureItem(Icons.Default.Speed, "Performance", "Bessere App-Geschwindigkeit")
+            FeatureItem(Icons.Default.Speed, stringResource(R.string.whats_new_performance), stringResource(R.string.whats_new_performance_desc))
         )
     }
 }

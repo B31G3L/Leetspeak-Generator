@@ -6,8 +6,10 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.beigel.leetSpeak_Generator.R
 
 /**
  * Dialog für Template-Auswahl (Alternative zur Inline-Auswahl)
@@ -22,7 +24,7 @@ fun TemplatePickerDialog(
         onDismissRequest = onDismiss,
         title = {
             Text(
-                "Vorlage auswählen",
+                stringResource(R.string.template_picker_title),
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold
             )
@@ -40,12 +42,12 @@ fun TemplatePickerDialog(
         },
         confirmButton = {
             TextButton(onClick = onDismiss) {
-                Text("OK")
+                Text(stringResource(R.string.ok))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Abbrechen")
+                Text(stringResource(R.string.cancel))
             }
         }
     )
@@ -94,7 +96,7 @@ private fun TemplateOption(
             )
 
             Text(
-                text = "Beispiel: ${TemplateHelpers.getTemplatePreview(template)}",
+                text = stringResource(R.string.example_prefix) + TemplateHelpers.getTemplatePreview(template),
                 style = MaterialTheme.typography.bodySmall,
                 color = if (isSelected) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.secondary,
                 fontWeight = FontWeight.Medium
