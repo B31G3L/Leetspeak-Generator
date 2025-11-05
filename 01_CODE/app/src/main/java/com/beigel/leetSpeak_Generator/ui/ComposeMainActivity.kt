@@ -125,7 +125,7 @@ class ComposeMainActivity : AppCompatActivity() {
 
     private fun copyToClipboardWithFeedback(text: String) {
         val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-        val clip = ClipData.newPlainText("Leetspeak Text", text)
+        val clip = ClipData.newPlainText(getString(R.string.clipboard_label), text)
         clipboard.setPrimaryClip(clip)
 
         vibrator.vibrate(VibrationEffect.createOneShot(50, VibrationEffect.DEFAULT_AMPLITUDE))
@@ -133,47 +133,48 @@ class ComposeMainActivity : AppCompatActivity() {
 
     private fun sendBugReport() {
         try {
+            val versionName = getVersionName()
             val deviceInfo = buildString {
-                appendLine("=== BUG REPORT ===")
+                appendLine(getString(R.string.bug_report_header))
                 appendLine()
-                appendLine("Please describe the bug:")
-                appendLine("1. What were you trying to do?")
-                appendLine("2. What happened instead?")
-                appendLine("3. Steps to reproduce:")
+                appendLine(getString(R.string.bug_report_describe))
+                appendLine(getString(R.string.bug_report_question_1))
+                appendLine(getString(R.string.bug_report_question_2))
+                appendLine(getString(R.string.bug_report_question_3))
                 appendLine()
-                appendLine("=== DEVICE INFO ===")
-                appendLine("App Version: ${getVersionName()}")
-                appendLine("Android Version: ${Build.VERSION.RELEASE} (API ${Build.VERSION.SDK_INT})")
-                appendLine("Device: ${Build.MANUFACTURER} ${Build.MODEL}")
-                appendLine("Brand: ${Build.BRAND}")
-                appendLine("Device Language: ${java.util.Locale.getDefault().language}")
+                appendLine(getString(R.string.bug_report_device_info))
+                appendLine(getString(R.string.bug_report_app_version, versionName))
+                appendLine(getString(R.string.bug_report_android_version, Build.VERSION.RELEASE, Build.VERSION.SDK_INT))
+                appendLine(getString(R.string.bug_report_device, Build.MANUFACTURER, Build.MODEL))
+                appendLine(getString(R.string.bug_report_brand, Build.BRAND))
+                appendLine(getString(R.string.bug_report_language, java.util.Locale.getDefault().language))
                 appendLine()
-                appendLine("=== ADDITIONAL INFO ===")
-                appendLine("Add any additional information, screenshots, or logs here.")
+                appendLine(getString(R.string.bug_report_additional))
+                appendLine(getString(R.string.bug_report_additional_hint))
             }
 
             val intent = Intent(Intent.ACTION_SEND).apply {
                 type = "message/rfc822"
-                putExtra(Intent.EXTRA_EMAIL, arrayOf("beigel.dev@gmail.com"))
-                putExtra(Intent.EXTRA_SUBJECT, "Bug Report - Leetspeak Generator v${getVersionName()}")
+                putExtra(Intent.EXTRA_EMAIL, arrayOf(getString(R.string.bug_report_email)))
+                putExtra(Intent.EXTRA_SUBJECT, getString(R.string.bug_report_subject, versionName))
                 putExtra(Intent.EXTRA_TEXT, deviceInfo)
             }
 
-            val chooser = Intent.createChooser(intent, "Bug Report senden")
+            val chooser = Intent.createChooser(intent, getString(R.string.bug_report_send_chooser))
             if (intent.resolveActivity(packageManager) != null) {
                 startActivity(chooser)
             } else {
                 copyToClipboardWithFeedback(deviceInfo)
                 android.widget.Toast.makeText(
                     this,
-                    "Keine E-Mail-App gefunden. Bug Report wurde in Zwischenablage kopiert.",
+                    getString(R.string.no_email_app),
                     android.widget.Toast.LENGTH_LONG
                 ).show()
             }
         } catch (e: Exception) {
             android.widget.Toast.makeText(
                 this,
-                "Fehler beim Erstellen des Bug Reports: ${e.message}",
+                getString(R.string.bug_report_error_format, e.message),
                 android.widget.Toast.LENGTH_LONG
             ).show()
         }
@@ -247,15 +248,15 @@ fun MainScreen(
     val context = LocalContext.current
 
     val inputTitle = if (isReverseMode) {
-        "Input: $currentModeDisplayName"
+        stringResource(R.string.input_prefix) + currentModeDisplayName
     } else {
-        "Input: Plaintext"
+        stringResource(R.string.input_plaintext)
     }
 
     val outputTitle = if (isReverseMode) {
-        "Output: Plaintext"
+        stringResource(R.string.output_plaintext)
     } else {
-        "Output: $currentModeDisplayName"
+        stringResource(R.string.output_prefix) + currentModeDisplayName
     }
 
     Scaffold(
@@ -277,7 +278,7 @@ fun MainScreen(
                                 shape = androidx.compose.foundation.shape.CircleShape
                             ) {
                                 Text(
-                                    text = "R",
+                                    text = stringResource(R.string.reverse_badge),
                                     modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
                                     color = MaterialTheme.colorScheme.onTertiary,
                                     fontSize = 12.sp,
@@ -293,7 +294,7 @@ fun MainScreen(
                                 shape = androidx.compose.foundation.shape.CircleShape
                             ) {
                                 Text(
-                                    text = "L",
+                                    text = stringResource(R.string.leet_detected_badge),
                                     modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
                                     color = MaterialTheme.colorScheme.onSecondary,
                                     fontSize = 12.sp,
@@ -324,7 +325,7 @@ fun MainScreen(
                         IconButton(onClick = { showDropdownMenu = true }) {
                             Icon(
                                 imageVector = Icons.Default.MoreVert,
-                                contentDescription = "Menu",
+                                contentDescription = stringResource(R.string.menu),
                                 modifier = Modifier.size(24.dp)
                             )
                         }
@@ -366,7 +367,7 @@ fun MainScreen(
                                             contentDescription = null,
                                             modifier = Modifier.size(20.dp)
                                         )
-                                        Text("About")
+                                        Text(stringResource(R.string.about))
                                     }
                                 },
                                 onClick = {

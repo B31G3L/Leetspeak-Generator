@@ -10,8 +10,10 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.beigel.leetSpeak_Generator.R
 import com.beigel.leetSpeak_Generator.translation.LeetTranslator
 import com.beigel.leetSpeak_Generator.ui.components.text.*
 import kotlinx.coroutines.delay
@@ -194,14 +196,14 @@ private fun CopyButton(
                 if (feedback) {
                     Icon(
                         imageVector = Icons.Default.Check,
-                        contentDescription = "Kopiert!",
+                        contentDescription = stringResource(R.string.copied),
                         tint = tint,
                         modifier = Modifier.size(20.dp)
                     )
                 } else {
                     Icon(
                         imageVector = Icons.Default.ContentCopy,
-                        contentDescription = "Text kopieren",
+                        contentDescription = stringResource(R.string.copy_text),
                         tint = tint,
                         modifier = Modifier.size(20.dp)
                     )

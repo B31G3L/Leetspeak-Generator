@@ -10,8 +10,10 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.beigel.leetSpeak_Generator.R
 import com.beigel.leetSpeak_Generator.review.InAppReviewManager
 import kotlinx.coroutines.launch
 
@@ -32,11 +34,11 @@ fun ReviewSettingsSection(
     val scope = rememberCoroutineScope()
 
     CollapsibleSettingsSection(
-        title = "App Bewertung",
+        title = stringResource(R.string.review_section_title),
         icon = Icons.Default.Star,
         isExpanded = isExpanded,
         onExpandToggle = onExpandToggle,
-        preview = "Hilf uns mit deinem Feedback"
+        preview = stringResource(R.string.review_section_preview)
     ) {
         Column(
             verticalArrangement = Arrangement.spacedBy(12.dp)
@@ -51,31 +53,31 @@ fun ReviewSettingsSection(
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Text(
-                        text = "Review-Statistiken",
+                        text = stringResource(R.string.review_stats_title_full),
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.Bold
                     )
 
                     ReviewStatRow(
-                        label = "App-Starts",
+                        label = stringResource(R.string.review_stat_app_starts),
                         value = "${reviewStats.appStartCount} / 3"
                     )
 
                     ReviewStatRow(
-                        label = "Review-Anfragen",
+                        label = stringResource(R.string.review_stats_requests),
                         value = "${reviewStats.reviewPromptsShown} / 3"
                     )
 
                     if (reviewStats.startsUntilReview > 0) {
                         ReviewStatRow(
-                            label = "Noch benötigt",
-                            value = "${reviewStats.startsUntilReview} App-Starts"
+                            label = stringResource(R.string.review_stats_remaining),
+                            value = "${reviewStats.startsUntilReview} ${stringResource(R.string.review_stat_app_starts_suffix)}"
                         )
                     }
 
                     if (reviewStats.successfulReviews > 0) {
                         ReviewStatRow(
-                            label = "Bewertungen abgegeben",
+                            label = stringResource(R.string.review_stats_successful),
                             value = "${reviewStats.successfulReviews}x"
                         )
                     }
@@ -116,7 +118,7 @@ fun ReviewSettingsSection(
                     modifier = Modifier.size(16.dp)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
-                Text("App bewerten")
+                Text(stringResource(R.string.review_manual_button_full))
             }
 
             // Testing: Reset Button (nur in Debug-Builds)
@@ -135,14 +137,13 @@ fun ReviewSettingsSection(
                     modifier = Modifier.size(16.dp)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
-                Text("Review-Daten zurücksetzen (Debug)")
+                Text(stringResource(R.string.review_reset_button))
             }
             */
 
             // Hinweistext
             Text(
-                text = "Die App fragt nach dem 3. Start nach einer Bewertung. " +
-                        "Du kannst auch jederzeit manuell eine Bewertung abgeben.",
+                text = stringResource(R.string.review_hint_full),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -153,9 +154,9 @@ fun ReviewSettingsSection(
     if (showResetDialog) {
         AlertDialog(
             onDismissRequest = { showResetDialog = false },
-            title = { Text("Review-Daten zurücksetzen?") },
+            title = { Text(stringResource(R.string.review_reset_dialog_title)) },
             text = {
-                Text("Alle Review-Statistiken werden gelöscht. Dies ist nur für Testing gedacht.")
+                Text(stringResource(R.string.review_reset_dialog_message))
             },
             confirmButton = {
                 TextButton(
@@ -164,12 +165,12 @@ fun ReviewSettingsSection(
                         showResetDialog = false
                     }
                 ) {
-                    Text("Zurücksetzen")
+                    Text(stringResource(R.string.review_reset_confirm))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showResetDialog = false }) {
-                    Text("Abbrechen")
+                    Text(stringResource(R.string.review_reset_cancel))
                 }
             }
         )

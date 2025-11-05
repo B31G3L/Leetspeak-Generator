@@ -217,9 +217,9 @@ fun SettingsScreen(
                     isExpanded = copyBehaviorExpanded,
                     onExpandToggle = { copyBehaviorExpanded = !copyBehaviorExpanded },
                     preview = if (clearInputAfterCopy) {
-                        if (askBeforeClear) "Löschen mit Rückfrage" else "Automatisch löschen"
+                        if (askBeforeClear) stringResource(R.string.copy_behavior_ask_clear) else stringResource(R.string.copy_behavior_auto_clear)
                     } else {
-                        "Nicht löschen"
+                        stringResource(R.string.copy_behavior_no_clear)
                     }
                 ) {
                     CopyBehaviorSettings(
@@ -343,7 +343,7 @@ fun CollapsibleSettingsSection(
                 ) {
                     Icon(
                         imageVector = if (isExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
-                        contentDescription = if (isExpanded) "Collapse" else "Expand",
+                        contentDescription = if (isExpanded) stringResource(R.string.collapse) else stringResource(R.string.expand),
                         tint = MaterialTheme.colorScheme.primary
                     )
                 }
@@ -708,7 +708,7 @@ private fun ThemeColorCard(
             if (isSelected) {
                 Icon(
                     imageVector = Icons.Default.CheckCircle,
-                    contentDescription = "Selected",
+                    contentDescription = stringResource(R.string.selected),
                     tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(20.dp)
                 )
@@ -809,7 +809,7 @@ fun CopyBehaviorSettings(
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "Die Eingabe wird automatisch gelöscht, ohne zu fragen",
+                        text = stringResource(R.string.copy_auto_clear_info),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurface
                     )

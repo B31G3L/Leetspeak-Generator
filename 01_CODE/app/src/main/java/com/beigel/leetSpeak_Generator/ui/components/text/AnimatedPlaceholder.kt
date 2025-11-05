@@ -6,7 +6,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.TextUnit
+import com.beigel.leetSpeak_Generator.R
 import kotlinx.coroutines.delay
 
 /**
@@ -22,17 +24,17 @@ fun AnimatedPlaceholder(
 ) {
     val placeholders = customTexts ?: if (isReverseMode) {
         listOf(
-            "Leetspeak Text eingeben...",
-            "#3110 W0rl|) → Hello World",
-            "4|V|4Z1|V|6 → Amazing",
-            "L337 5P34K → Leet Speak"
+            stringResource(R.string.placeholder_leet_input),
+            stringResource(R.string.placeholder_leet_example_1),
+            stringResource(R.string.placeholder_leet_example_2),
+            stringResource(R.string.placeholder_leet_example_3)
         )
     } else {
         listOf(
-            "Hier deinen Text eingeben...",
-            "Schreibe etwas Cooles...",
-            "Verwandle Text in Leetspeak...",
-            "Hello World → #3110 W0rl|)"
+            stringResource(R.string.placeholder_text_input),
+            stringResource(R.string.placeholder_text_input_2),
+            stringResource(R.string.placeholder_text_input_3),
+            stringResource(R.string.placeholder_text_example)
         )
     }
 
