@@ -373,7 +373,7 @@ private fun SupportSection(
                 // Ko-Fi Button
                 Button(
                     onClick = {
-                        uriHandler.openUri("https://ko-fi.com/beigel")
+                        uriHandler.openUri(stringResource(R.string.url_kofi))
                     },
                     modifier = Modifier.weight(1f),
                     colors = ButtonDefaults.buttonColors(
@@ -396,7 +396,7 @@ private fun SupportSection(
                 // Play Store Bewertung
                 Button(
                     onClick = {
-                        uriHandler.openUri("https://play.google.com/store/apps/details?id=com.beigel.leetSpeak_Generator")
+                        uriHandler.openUri(stringResource(R.string.url_play_store))
                         onDismiss()
                     },
                     modifier = Modifier.weight(1f),

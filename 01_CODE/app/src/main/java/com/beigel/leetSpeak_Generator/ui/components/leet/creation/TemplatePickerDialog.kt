@@ -83,14 +83,14 @@ private fun TemplateOption(
 
         Column(modifier = Modifier.weight(1f)) {
             Text(
-                text = template.displayName,
+                text = stringResource(template.displayNameRes),
                 style = MaterialTheme.typography.bodyLarge,
                 fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
                 color = if (isSelected) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.onSurface
             )
 
             Text(
-                text = template.description,
+                text = stringResource(template.descriptionRes),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )

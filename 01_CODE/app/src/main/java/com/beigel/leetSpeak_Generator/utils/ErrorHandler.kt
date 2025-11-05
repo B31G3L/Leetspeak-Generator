@@ -83,14 +83,27 @@ object ErrorHandler {
      * Safe execution wrapper that catches exceptions
      */
     inline fun <T> safeExecute(
-        context: Context? = null,
-        errorMessage: String = "An error occurred",
+        context: Context,
+        errorMessage: String,
         severity: ErrorSeverity = ErrorSeverity.ERROR,
         operation: () -> T
     ): Result<T> = try {
         Result.Success(operation())
     } catch (e: Exception) {
-        context?.let { handleError(it, e, errorMessage, severity) }
+        handleError(context, e, errorMessage, severity)
+        Result.Error(e, errorMessage)
+    }
+
+    /**
+     * Safe execution wrapper without context (no toast shown)
+     */
+    inline fun <T> safeExecuteNoContext(
+        errorMessage: String,
+        operation: () -> T
+    ): Result<T> = try {
+        Result.Success(operation())
+    } catch (e: Exception) {
+        Log.e(TAG, "$errorMessage: ${e.message}", e)
         Result.Error(e, errorMessage)
     }
 
@@ -112,7 +125,7 @@ object ErrorHandler {
             handleError(
                 context,
                 exception,
-                "Netzwerkfehler aufgetreten",
+                context.getString(com.beigel.leetSpeak_Generator.R.string.error_network),
                 ErrorSeverity.WARNING
             )
         }
@@ -121,7 +134,7 @@ object ErrorHandler {
             handleError(
                 context,
                 exception,
-                "Fehler beim Laden der Daten",
+                context.getString(com.beigel.leetSpeak_Generator.R.string.error_loading_data),
                 ErrorSeverity.ERROR
             )
         }
@@ -130,7 +143,7 @@ object ErrorHandler {
             handleError(
                 context,
                 exception,
-                "Ein schwerwiegender Fehler ist aufgetreten",
+                context.getString(com.beigel.leetSpeak_Generator.R.string.error_critical),
                 ErrorSeverity.CRITICAL
             )
         }

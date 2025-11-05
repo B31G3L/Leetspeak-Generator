@@ -167,7 +167,7 @@ private fun CurrentTemplatePreview(
             Column {
                 // FIXED: String resource with formatting
                 Text(
-                    text = stringResource(R.string.leet_creation_current_template, selectedTemplate.displayName),
+                    text = stringResource(R.string.leet_creation_current_template, stringResource(selectedTemplate.displayNameRes)),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.tertiary,
                     fontWeight = FontWeight.Medium
@@ -243,7 +243,7 @@ private fun TemplateButton(
                 }
 
                 Text(
-                    text = template.displayName,
+                    text = stringResource(template.displayNameRes),
                     style = MaterialTheme.typography.labelMedium,
                     color = contentColor,
                     fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
@@ -285,7 +285,7 @@ private fun TemplateDetailsCard(
         ) {
             // FIXED: String resource with formatting
             Text(
-                text = stringResource(R.string.leet_creation_template_details, selectedTemplate.displayName),
+                text = stringResource(R.string.leet_creation_template_details, stringResource(selectedTemplate.displayNameRes)),
                 style = MaterialTheme.typography.titleSmall,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.tertiary
@@ -294,7 +294,7 @@ private fun TemplateDetailsCard(
             Spacer(modifier = Modifier.height(4.dp))
 
             Text(
-                text = selectedTemplate.description,
+                text = stringResource(selectedTemplate.descriptionRes),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )

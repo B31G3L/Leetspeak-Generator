@@ -1,8 +1,10 @@
 package com.beigel.leetSpeak_Generator.viewmodel
 
+import android.app.Application
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.beigel.leetSpeak_Generator.R
 import com.beigel.leetSpeak_Generator.data.CustomLeet
 import com.beigel.leetSpeak_Generator.data.LeetOption
 import com.beigel.leetSpeak_Generator.data.ThemePreferences
@@ -25,6 +27,7 @@ import com.beigel.leetSpeak_Generator.ui.theme.AppTheme
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
+    private val application: Application,
     private val translationManager: TranslationManagerUseCase,
     private val leetManager: LeetManagerUseCase,
     private val uiManager: UiManagerUseCase,
@@ -226,7 +229,7 @@ class MainViewModel @Inject constructor(
                                     }
                                     .onFailure { exception ->
                                         android.util.Log.e("MainViewModel", "❌ Failed to set custom leet index", exception)
-                                        uiManager.setError("Failed to set custom leet index: ${exception.message}")
+                                        uiManager.setError(application.getString(R.string.error_set_custom_index, exception.message ?: ""))
 
                                         uiManager.setTranslationMode(LeetTranslator.TranslationMode.SIMPLE)
                                         kotlinx.coroutines.delay(100)
@@ -237,7 +240,7 @@ class MainViewModel @Inject constructor(
                     }
                     .onFailure { exception ->
                         android.util.Log.e("MainViewModel", "❌ Failed to load favorite leet", exception)
-                        uiManager.setError("Failed to load favorite leet: ${exception.message}")
+                        uiManager.setError(application.getString(R.string.error_load_favorite, exception.message ?: ""))
 
                         uiManager.setTranslationMode(LeetTranslator.TranslationMode.SIMPLE)
                         kotlinx.coroutines.delay(100)
@@ -265,10 +268,10 @@ class MainViewModel @Inject constructor(
             leetManager.createLeet(name, iconImageVector, useExtendedDefaults, customTranslations)
                 .onSuccess { leet ->
                     uiManager.setTranslationMode(LeetTranslator.TranslationMode.CUSTOM)
-                    uiManager.setSuccess("Leet '${leet.name}' created successfully")
+                    uiManager.setSuccess(application.getString(R.string.success_leet_created, leet.name))
                 }
                 .onFailure { exception ->
-                    uiManager.setError("Failed to create leet: ${exception.message}")
+                    uiManager.setError(application.getString(R.string.error_create_leet, exception.message ?: ""))
                 }
         }
     }
@@ -315,7 +318,7 @@ class MainViewModel @Inject constructor(
 
             leetManager.changeMode(leetOption)
                 .onFailure { exception ->
-                    uiManager.setError("Failed to change mode: ${exception.message}")
+                    uiManager.setError(application.getString(R.string.error_change_mode, exception.message ?: ""))
                 }
         }
     }
@@ -324,11 +327,14 @@ class MainViewModel @Inject constructor(
         viewModelScope.launch {
             leetManager.toggleFavorite(leetOption)
                 .onSuccess { result ->
-                    val message = if (result.isNowFavorite) "Added to favorites" else "Removed from favorites"
+                    val message = if (result.isNowFavorite)
+                        application.getString(R.string.success_added_favorite)
+                    else
+                        application.getString(R.string.success_removed_favorite)
                     uiManager.setSuccess(message)
                 }
                 .onFailure { exception ->
-                    uiManager.setError("Failed to toggle favorite: ${exception.message}")
+                    uiManager.setError(application.getString(R.string.error_toggle_favorite, exception.message ?: ""))
                 }
         }
     }
@@ -339,10 +345,10 @@ class MainViewModel @Inject constructor(
 
             leetManager.updateLeet(index, leet)
                 .onSuccess {
-                    uiManager.setSuccess("Leet '${leet.name}' updated successfully")
+                    uiManager.setSuccess(application.getString(R.string.success_leet_updated, leet.name))
                 }
                 .onFailure { exception ->
-                    uiManager.setError("Failed to update leet: ${exception.message}")
+                    uiManager.setError(application.getString(R.string.error_update_leet, exception.message ?: ""))
                 }
         }
     }
@@ -354,9 +360,9 @@ class MainViewModel @Inject constructor(
             leetManager.deleteLeet(index)
                 .onSuccess { result ->
                     val message = when {
-                        result.wasLastLeet -> "Last leet deleted, switched to Simple mode"
-                        result.wasFavorite -> "Favorite leet deleted"
-                        else -> "Leet deleted successfully"
+                        result.wasLastLeet -> application.getString(R.string.info_switched_to_simple)
+                        result.wasFavorite -> application.getString(R.string.info_favorite_deleted)
+                        else -> application.getString(R.string.success_leet_deleted)
                     }
 
                     if (result.wasLastLeet) {
@@ -366,7 +372,7 @@ class MainViewModel @Inject constructor(
                     uiManager.setSuccess(message)
                 }
                 .onFailure { exception ->
-                    uiManager.setError("Failed to delete leet: ${exception.message}")
+                    uiManager.setError(application.getString(R.string.error_delete_leet, exception.message ?: ""))
                 }
         }
     }
@@ -384,7 +390,7 @@ class MainViewModel @Inject constructor(
     private fun copyToClipboard() {
         val text = outputText.value
         if (text.isNotEmpty()) {
-            uiManager.setSuccess("Copied to clipboard")
+            uiManager.setSuccess(application.getString(R.string.success_copied_to_clipboard))
 
             // Trigger clear input dialog/action
             if (clearInputAfterCopy.value) {
@@ -397,7 +403,7 @@ class MainViewModel @Inject constructor(
                 }
             }
         } else {
-            uiManager.setError("No text to copy")
+            uiManager.setError(application.getString(R.string.error_no_text_to_copy))
         }
     }
 
@@ -424,14 +430,14 @@ class MainViewModel @Inject constructor(
     private fun resetWhatsNewForTesting() {
         viewModelScope.launch {
             whatsNewPreferences.resetForTesting()
-            uiManager.setSuccess("What's New Dialog reset - wird beim nächsten Start angezeigt")
+            uiManager.setSuccess(application.getString(R.string.debug_whatsnew_reset_shown))
         }
     }
 
     private fun forceShowWhatsNew() {
         viewModelScope.launch {
             whatsNewPreferences.forceShowNextTime()
-            uiManager.setSuccess("What's New Dialog wird beim nächsten Start angezeigt")
+            uiManager.setSuccess(application.getString(R.string.debug_whatsnew_will_show))
         }
     }
 
@@ -459,7 +465,7 @@ class MainViewModel @Inject constructor(
     fun resetReviewForTesting() {
         viewModelScope.launch {
             inAppReviewManager.resetForTesting()
-            uiManager.setSuccess("Review-Daten zurückgesetzt")
+            uiManager.setSuccess(application.getString(R.string.debug_review_data_reset))
         }
     }
 

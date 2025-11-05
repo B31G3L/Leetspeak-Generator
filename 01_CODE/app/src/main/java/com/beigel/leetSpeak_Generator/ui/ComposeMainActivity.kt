@@ -183,7 +183,7 @@ class ComposeMainActivity : AppCompatActivity() {
     // NEU: Ko-Fi Link öffnen
     private fun openKofiLink() {
         try {
-            val kofiUrl = "https://ko-fi.com/beigel" // Deine Ko-Fi URL hier anpassen
+            val kofiUrl = getString(R.string.url_kofi)
             val intent = Intent(Intent.ACTION_VIEW, Uri.parse(kofiUrl))
             startActivity(intent)
 
