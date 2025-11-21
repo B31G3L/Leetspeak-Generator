@@ -47,6 +47,9 @@ class LeetManager(private val context: Context) {
     private val _currentLeetIndex = MutableStateFlow(0)
     private val _favoriteIndex = MutableStateFlow(FAV_NONE)
 
+    // CompletableDeferred to track when initial load is complete
+    private val _isLoaded = CompletableDeferred<Unit>()
+
     // Public flows for observing state changes
     val leets: StateFlow<List<CustomLeet>> = _leets.asStateFlow()
     val currentLeetIndex: StateFlow<Int> = _currentLeetIndex.asStateFlow()
@@ -100,8 +103,20 @@ class LeetManager(private val context: Context) {
                     _currentLeetIndex.value = 0
                     _favoriteIndex.value = FAV_NONE
                 }
+            } finally {
+                // Mark as loaded regardless of success or failure
+                _isLoaded.complete(Unit)
+                Log.d(TAG, "📦 LeetManager initialization complete")
             }
         }
+    }
+
+    /**
+     * Ensures that data has been loaded from SharedPreferences before proceeding
+     * This prevents race conditions when accessing favorite data
+     */
+    private suspend fun ensureLoaded() {
+        _isLoaded.await()
     }
 
     /**
@@ -281,9 +296,15 @@ class LeetManager(private val context: Context) {
      * Diese Funktion wird beim App-Start aufgerufen, um das favorisierte Leet
      * aus den SharedPreferences zu laden und automatisch auszuwählen.
      *
+     * WICHTIG: Diese Funktion wartet, bis die Daten aus SharedPreferences geladen wurden,
+     * um Race Conditions zu vermeiden.
+     *
      * @return FavoriteLeetInfo wenn ein Favorit gesetzt ist, null sonst
      */
-    fun getFavoriteLeetInfo(): FavoriteLeetInfo? {
+    suspend fun getFavoriteLeetInfo(): FavoriteLeetInfo? {
+        // Warte bis Daten aus SharedPreferences geladen wurden
+        ensureLoaded()
+
         return when (val favIndex = _favoriteIndex.value) {
             FAV_SIMPLE -> {
                 Log.d(TAG, "📋 Favorite loaded from preferences: Simple mode")
