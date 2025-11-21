@@ -47,6 +47,9 @@ class LeetManager(private val context: Context) {
     private val _currentLeetIndex = MutableStateFlow(0)
     private val _favoriteIndex = MutableStateFlow(FAV_NONE)
 
+    // CompletableDeferred to track when initial load is complete
+    private val _isLoaded = CompletableDeferred<Unit>()
+
     // Public flows for observing state changes
     val leets: StateFlow<List<CustomLeet>> = _leets.asStateFlow()
     val currentLeetIndex: StateFlow<Int> = _currentLeetIndex.asStateFlow()
@@ -100,8 +103,20 @@ class LeetManager(private val context: Context) {
                     _currentLeetIndex.value = 0
                     _favoriteIndex.value = FAV_NONE
                 }
+            } finally {
+                // Mark as loaded regardless of success or failure
+                _isLoaded.complete(Unit)
+                Log.d(TAG, "📦 LeetManager initialization complete")
             }
         }
+    }
+
+    /**
+     * Ensures that data has been loaded from SharedPreferences before proceeding
+     * This prevents race conditions when accessing favorite data
+     */
+    private suspend fun ensureLoaded() {
+        _isLoaded.await()
     }
 
     /**
@@ -227,6 +242,14 @@ class LeetManager(private val context: Context) {
 
     /**
      * Toggles favorite status for a mode
+     *
+     * Das als Favorit markierte Leet wird beim App-Neustart automatisch ausgewählt.
+     * Diese Persistenz erfolgt über SharedPreferences und wird im MainViewModel
+     * beim App-Start über initializeFavoriteLeet() wiederhergestellt.
+     *
+     * @param mode Der Leet-Modus (MODE_SIMPLE, MODE_EXTENDED, oder MODE_CUSTOM)
+     * @param customIndex Der Index des Custom Leets (nur relevant bei MODE_CUSTOM)
+     * @return Result mit Boolean-Wert: true wenn jetzt Favorit, false wenn nicht mehr Favorit
      */
     suspend fun toggleFavorite(mode: Int, customIndex: Int = 0): ErrorHandler.Result<Boolean> =
         ErrorHandler.safeExecuteSuspend(context = context, errorMessage = "Failed to toggle favorite") {
@@ -238,12 +261,16 @@ class LeetManager(private val context: Context) {
             }
 
             val isCurrentlyFavorite = _favoriteIndex.value == targetIndex
-            _favoriteIndex.value = if (isCurrentlyFavorite) FAV_NONE else targetIndex
+            val newFavoriteIndex = if (isCurrentlyFavorite) FAV_NONE else targetIndex
 
+            _favoriteIndex.value = newFavoriteIndex
+
+            // Speichert Favoriten persistent in SharedPreferences
             saveLeets()
 
             val newState = !isCurrentlyFavorite
             Log.d(TAG, "✅ Favorite toggled for mode $mode (index: $targetIndex): $newState")
+            Log.d(TAG, "💾 Favorite index saved to SharedPreferences: $newFavoriteIndex")
             newState
         }
 
@@ -264,30 +291,41 @@ class LeetManager(private val context: Context) {
     }
 
     /**
-     * Gets the favorite mode information
+     * Gets the favorite mode information from SharedPreferences
+     *
+     * Diese Funktion wird beim App-Start aufgerufen, um das favorisierte Leet
+     * aus den SharedPreferences zu laden und automatisch auszuwählen.
+     *
+     * WICHTIG: Diese Funktion wartet, bis die Daten aus SharedPreferences geladen wurden,
+     * um Race Conditions zu vermeiden.
+     *
+     * @return FavoriteLeetInfo wenn ein Favorit gesetzt ist, null sonst
      */
-    fun getFavoriteLeetInfo(): FavoriteLeetInfo? {
+    suspend fun getFavoriteLeetInfo(): FavoriteLeetInfo? {
+        // Warte bis Daten aus SharedPreferences geladen wurden
+        ensureLoaded()
+
         return when (val favIndex = _favoriteIndex.value) {
             FAV_SIMPLE -> {
-                Log.d(TAG, "📋 Favorite is Simple mode")
+                Log.d(TAG, "📋 Favorite loaded from preferences: Simple mode")
                 FavoriteLeetInfo(MODE_SIMPLE, -1, null)
             }
             FAV_EXTENDED -> {
-                Log.d(TAG, "📋 Favorite is Extended mode")
+                Log.d(TAG, "📋 Favorite loaded from preferences: Extended mode")
                 FavoriteLeetInfo(MODE_EXTENDED, -1, null)
             }
             FAV_NONE -> {
-                Log.d(TAG, "📋 No favorite set")
+                Log.d(TAG, "📋 No favorite set - will use default (Simple)")
                 null
             }
             else -> {
                 // Custom leet (index 0, 1, 2, ...)
                 val leet = _leets.value.getOrNull(favIndex)
                 if (leet != null) {
-                    Log.d(TAG, "📋 Favorite is Custom leet - index: $favIndex, name: ${leet.name}")
+                    Log.d(TAG, "📋 Favorite loaded from preferences: Custom leet '${leet.name}' (index: $favIndex)")
                     FavoriteLeetInfo(MODE_CUSTOM, favIndex, leet)
                 } else {
-                    Log.w(TAG, "⚠️ Favorite index $favIndex is invalid (no leet found)")
+                    Log.w(TAG, "⚠️ Favorite index $favIndex is invalid (no leet found) - will use default")
                     null
                 }
             }

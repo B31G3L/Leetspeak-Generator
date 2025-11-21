@@ -150,9 +150,13 @@ class LeetRepository @Inject constructor(
 
     /**
      * Loads the favorite mode asynchronously
+     *
+     * Diese Funktion wartet, bis die Daten aus SharedPreferences vollständig geladen wurden,
+     * bevor sie das Favorit-Leet zurückgibt. Dies verhindert Race Conditions beim App-Start.
      */
     suspend fun loadFavoriteLeet(): Result<FavoriteLeetResult> {
         return try {
+            // getFavoriteLeetInfo() ist jetzt suspend und wartet bis Daten geladen sind
             val favoriteInfo = leetManager.getFavoriteLeetInfo()
 
             val result = when {

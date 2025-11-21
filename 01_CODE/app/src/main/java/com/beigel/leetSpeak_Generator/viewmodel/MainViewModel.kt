@@ -180,56 +180,73 @@ class MainViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Lädt das favorisierte Leet beim App-Start und wählt es automatisch aus
+     *
+     * Diese Funktion stellt sicher, dass das vom Nutzer markierte Favorit-Leet
+     * nach einem App-Neustart automatisch aus SharedPreferences geladen und ausgewählt wird.
+     *
+     * WICHTIG: Die Funktion wartet automatisch, bis alle Daten aus SharedPreferences
+     * geladen wurden (verhindert Race Conditions).
+     */
     private fun initializeFavoriteLeet() {
         viewModelScope.launch {
             try {
-                android.util.Log.d("MainViewModel", "🔄 Starting favorite leet initialization...")
+                android.util.Log.d("MainViewModel", "🔄 Starting favorite leet initialization (waiting for data load)...")
 
+                // loadFavoriteLeet() wartet automatisch bis SharedPreferences geladen sind
                 leetManager.loadFavoriteLeet()
                     .onSuccess { result ->
-                        android.util.Log.d("MainViewModel", "✅ Favorite leet loaded: $result")
+                        android.util.Log.d("MainViewModel", "✅ Favorite leet loaded from SharedPreferences: $result")
 
                         when (result) {
                             is LeetRepository.FavoriteLeetResult.Simple -> {
+                                android.util.Log.d("MainViewModel", "📌 Auto-selecting favorite: Simple Leet")
                                 uiManager.setTranslationMode(LeetTranslator.TranslationMode.SIMPLE)
-                                android.util.Log.d("MainViewModel", "✅ Set mode to SIMPLE")
+                                android.util.Log.d("MainViewModel", "✅ Mode set to SIMPLE")
 
+                                // Kurze Verzögerung um sicherzustellen, dass State propagiert wurde
                                 kotlinx.coroutines.delay(100)
                                 _isInitialized.value = true
-                                android.util.Log.d("MainViewModel", "✅ Initialization complete (SIMPLE)")
+                                android.util.Log.d("MainViewModel", "✅ Initialization complete (SIMPLE) - Favorite auto-selected ✨")
                             }
 
                             is LeetRepository.FavoriteLeetResult.Extended -> {
+                                android.util.Log.d("MainViewModel", "📌 Auto-selecting favorite: Extended Leet")
                                 uiManager.setTranslationMode(LeetTranslator.TranslationMode.EXTENDED)
-                                android.util.Log.d("MainViewModel", "✅ Set mode to EXTENDED")
+                                android.util.Log.d("MainViewModel", "✅ Mode set to EXTENDED")
 
+                                // Kurze Verzögerung um sicherzustellen, dass State propagiert wurde
                                 kotlinx.coroutines.delay(100)
                                 _isInitialized.value = true
-                                android.util.Log.d("MainViewModel", "✅ Initialization complete (EXTENDED)")
+                                android.util.Log.d("MainViewModel", "✅ Initialization complete (EXTENDED) - Favorite auto-selected ✨")
                             }
 
                             is LeetRepository.FavoriteLeetResult.Custom -> {
-                                android.util.Log.d("MainViewModel", "🎯 Setting custom leet - index: ${result.customIndex}, name: ${result.leet.name}")
+                                android.util.Log.d("MainViewModel", "📌 Auto-selecting favorite: Custom Leet '${result.leet.name}' (index: ${result.customIndex})")
 
+                                // Erst den Index setzen, dann den Modus
                                 repository.setCurrentLeetIndex(result.customIndex)
                                     .onSuccess {
                                         android.util.Log.d("MainViewModel", "✅ Custom leet index set: ${result.customIndex}")
 
                                         viewModelScope.launch {
+                                            // Verzögerung um sicherzustellen, dass der Index propagiert wurde
                                             kotlinx.coroutines.delay(100)
 
                                             uiManager.setTranslationMode(LeetTranslator.TranslationMode.CUSTOM)
-                                            android.util.Log.d("MainViewModel", "✅ Set mode to CUSTOM")
+                                            android.util.Log.d("MainViewModel", "✅ Mode set to CUSTOM")
 
+                                            // Weitere Verzögerung für Custom Mode
                                             kotlinx.coroutines.delay(150)
 
                                             _isInitialized.value = true
-                                            android.util.Log.d("MainViewModel", "✅ Initialization complete (CUSTOM) - UI ready")
+                                            android.util.Log.d("MainViewModel", "✅ Initialization complete (CUSTOM) - Favorite '${result.leet.name}' auto-selected ✨")
                                         }
                                     }
                                     .onFailure { exception ->
                                         android.util.Log.e("MainViewModel", "❌ Failed to set custom leet index", exception)
-                                        uiManager.setError(application.getString(R.string.error_set_custom_index, exception.message ?: ""))
+                                        android.util.Log.w("MainViewModel", "⚠️ Falling back to SIMPLE mode")
 
                                         uiManager.setTranslationMode(LeetTranslator.TranslationMode.SIMPLE)
                                         kotlinx.coroutines.delay(100)
@@ -239,8 +256,8 @@ class MainViewModel @Inject constructor(
                         }
                     }
                     .onFailure { exception ->
-                        android.util.Log.e("MainViewModel", "❌ Failed to load favorite leet", exception)
-                        uiManager.setError(application.getString(R.string.error_load_favorite, exception.message ?: ""))
+                        android.util.Log.e("MainViewModel", "❌ Failed to load favorite leet from SharedPreferences", exception)
+                        android.util.Log.w("MainViewModel", "⚠️ Falling back to SIMPLE mode")
 
                         uiManager.setTranslationMode(LeetTranslator.TranslationMode.SIMPLE)
                         kotlinx.coroutines.delay(100)
@@ -248,6 +265,7 @@ class MainViewModel @Inject constructor(
                     }
             } catch (e: Exception) {
                 android.util.Log.e("MainViewModel", "❌ Exception during initialization", e)
+                android.util.Log.w("MainViewModel", "⚠️ Falling back to SIMPLE mode")
 
                 uiManager.setTranslationMode(LeetTranslator.TranslationMode.SIMPLE)
                 kotlinx.coroutines.delay(100)
