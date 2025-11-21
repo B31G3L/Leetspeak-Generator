@@ -28,8 +28,8 @@ android {
         applicationId "com.beigel.leetSpeak_Generator"
         minSdk 27
         targetSdk 35
-        versionCode 1501337011
-        versionName "1337.011"
+        versionCode 1501337012
+        versionName "1337.012"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
