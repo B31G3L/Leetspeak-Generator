@@ -425,18 +425,25 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    fun dismissClearInputDialog() {
-        _showClearInputDialog.value = false
-    }
 
-    fun confirmClearInput(dontAskAgain: Boolean) {
+    fun confirmClearInput(shouldClear: Boolean, dontAskAgain: Boolean) {
         viewModelScope.launch {
             if (dontAskAgain) {
+                // Speichere die Entscheidung
                 themePreferences.setAskBeforeClear(false)
+                themePreferences.setClearInputAfterCopy(shouldClear)
             }
-            uiManager.clearInput()
+
+            if (shouldClear) {
+                uiManager.clearInput()
+            }
+
             _showClearInputDialog.value = false
         }
+    }
+
+    fun dismissClearInputDialog() {
+        _showClearInputDialog.value = false
     }
 
     private fun markWhatsNewAsShown() {

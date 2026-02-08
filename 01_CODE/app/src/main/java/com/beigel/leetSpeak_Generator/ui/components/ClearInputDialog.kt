@@ -17,7 +17,7 @@ import com.beigel.leetSpeak_Generator.R
 @Composable
 fun ClearInputDialog(
     onDismiss: () -> Unit,
-    onConfirm: (dontAskAgain: Boolean) -> Unit,
+    onConfirm: (shouldClear: Boolean, dontAskAgain: Boolean) -> Unit,  // ✅ Neue Signatur
     isReverseMode: Boolean
 ) {
     var dontAskAgain by remember { mutableStateOf(false) }
@@ -92,15 +92,21 @@ fun ClearInputDialog(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
+                    // BEHALTEN Button
                     OutlinedButton(
-                        onClick = onDismiss,
+                        onClick = {
+                            onConfirm(false, dontAskAgain)  // ✅ shouldClear = false
+                        },
                         modifier = Modifier.weight(1f)
                     ) {
                         Text(stringResource(R.string.clear_input_dialog_keep))
                     }
 
+                    // LÖSCHEN Button
                     Button(
-                        onClick = { onConfirm(dontAskAgain) },
+                        onClick = {
+                            onConfirm(true, dontAskAgain)  // ✅ shouldClear = true
+                        },
                         modifier = Modifier.weight(1f),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = MaterialTheme.colorScheme.primary

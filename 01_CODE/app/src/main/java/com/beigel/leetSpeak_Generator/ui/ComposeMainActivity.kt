@@ -517,12 +517,12 @@ fun MainScreen(
             )
         }
 
-        // NEU: Clear Input Dialog - HIER KOMMT ES HIN!
+        // NEU: Clear Input Dialog - KORRIGIERT
         if (showClearInputDialog) {
             ClearInputDialog(
                 onDismiss = { viewModel.dismissClearInputDialog() },
-                onConfirm = { dontAskAgain ->
-                    viewModel.confirmClearInput(dontAskAgain)
+                onConfirm = { shouldClear, dontAskAgain ->  // ✅ Neue Signatur
+                    viewModel.confirmClearInput(shouldClear, dontAskAgain)
                 },
                 isReverseMode = isReverseMode
             )
