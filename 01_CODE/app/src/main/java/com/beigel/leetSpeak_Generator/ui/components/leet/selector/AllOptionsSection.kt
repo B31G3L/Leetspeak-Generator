@@ -4,16 +4,16 @@ import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.ui.res.stringResource
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
-import com.beigel.leetSpeak_Generator.R
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.beigel.leetSpeak_Generator.R
 import com.beigel.leetSpeak_Generator.data.LeetOption
 
 @Composable
@@ -22,46 +22,86 @@ fun AllOptionsSection(
     onOptionSelected: (LeetOption) -> Unit,
     onToggleFavorite: (LeetOption) -> Unit,
     onEditOption: (LeetOption) -> Unit,
+    onDeleteOption: (LeetOption) -> Unit,
     onShowTable: (LeetOption) -> Unit,
     @SuppressLint("ModifierParameter") modifier: Modifier = Modifier
 ) {
+    // State für den Bestätigungs-Dialog
+    var pendingDeleteOption by remember { mutableStateOf<LeetOption?>(null) }
+
     Column(modifier = modifier) {
-        DetailedListView(
-            leetOptions = leetOptions,
-            onOptionSelected = onOptionSelected,
-            onToggleFavorite = onToggleFavorite,
-            onEditOption = onEditOption,
-            onShowTable = onShowTable
+        Column(
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier
+                .heightIn(max = 400.dp)
+                .verticalScroll(rememberScrollState())
+        ) {
+            leetOptions.forEach { option ->
+                DetailedCard(
+                    option = option,
+                    onOptionSelected = onOptionSelected,
+                    onToggleFavorite = onToggleFavorite,
+                    onEditOption = onEditOption,
+                    onDeleteOption = { pendingDeleteOption = it },
+                    onShowTable = onShowTable
+                )
+            }
+        }
+    }
+
+    // Bestätigungs-Dialog
+    pendingDeleteOption?.let { option ->
+        DeleteConfirmationDialog(
+            leetName = option.name,
+            onConfirm = {
+                onDeleteOption(option)
+                pendingDeleteOption = null
+            },
+            onDismiss = { pendingDeleteOption = null }
         )
     }
 }
 
 @Composable
-private fun DetailedListView(
-    leetOptions: List<LeetOption>,
-    onOptionSelected: (LeetOption) -> Unit,
-    onToggleFavorite: (LeetOption) -> Unit,
-    onEditOption: (LeetOption) -> Unit,
-    onShowTable: (LeetOption) -> Unit
+private fun DeleteConfirmationDialog(
+    leetName: String,
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit
 ) {
-    // FIX 1: verticalScroll hinzugefügt, damit alle Einträge erreichbar sind.
-    // heightIn(max) bleibt als sinnvolle Begrenzung im BottomSheet erhalten.
-    Column(
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-        modifier = Modifier
-            .heightIn(max = 400.dp)
-            .verticalScroll(rememberScrollState())   // ← NEU
-    ) {
-        leetOptions.forEach { option ->
-            DetailedCard(
-                option = option,
-                onOptionSelected = onOptionSelected,
-                onToggleFavorite = onToggleFavorite,
-                onEditOption = onEditOption,
-                onShowTable = onShowTable
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        icon = {
+            Icon(
+                imageVector = Icons.Default.DeleteForever,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.error
             )
+        },
+        title = {
+            Text(
+                text = stringResource(R.string.delete_leet_dialog_title),
+                fontWeight = FontWeight.Bold
+            )
+        },
+        text = {
+            Text(stringResource(R.string.delete_leet_dialog_message, leetName))
+        },
+        confirmButton = {
+            Button(
+                onClick = onConfirm,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.error
+                )
+            ) {
+                Text(stringResource(R.string.delete_leet_dialog_confirm))
+            }
+        },
+        dismissButton = {
+            OutlinedButton(onClick = onDismiss) {
+                Text(stringResource(R.string.delete_leet_dialog_cancel))
+            }
         }
-    }
+    )
 }
 
 @Composable
@@ -70,6 +110,7 @@ private fun DetailedCard(
     onOptionSelected: (LeetOption) -> Unit,
     onToggleFavorite: (LeetOption) -> Unit,
     onEditOption: (LeetOption) -> Unit,
+    onDeleteOption: (LeetOption) -> Unit,
     onShowTable: (LeetOption) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -77,11 +118,10 @@ private fun DetailedCard(
         onClick = { onOptionSelected(option) },
         modifier = modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
-            containerColor = if (option.isSelected) {
+            containerColor = if (option.isSelected)
                 MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
-            } else {
+            else
                 MaterialTheme.colorScheme.surface
-            }
         ),
         border = if (option.isSelected) {
             CardDefaults.outlinedCardBorder().copy(
@@ -103,7 +143,6 @@ private fun DetailedCard(
                         style = MaterialTheme.typography.bodyLarge,
                         fontWeight = FontWeight.Medium
                     )
-
                     if (option.isFavorite) {
                         Spacer(modifier = Modifier.width(4.dp))
                         Icon(
@@ -113,7 +152,6 @@ private fun DetailedCard(
                             tint = MaterialTheme.colorScheme.secondary
                         )
                     }
-
                     if (option.isSelected) {
                         Spacer(modifier = Modifier.width(4.dp))
                         Icon(
@@ -130,6 +168,7 @@ private fun DetailedCard(
                 option = option,
                 onToggleFavorite = onToggleFavorite,
                 onEditOption = onEditOption,
+                onDeleteOption = onDeleteOption,
                 onShowTable = onShowTable
             )
         }
@@ -141,21 +180,25 @@ private fun ActionButtons(
     option: LeetOption,
     onToggleFavorite: (LeetOption) -> Unit,
     onEditOption: (LeetOption) -> Unit,
+    onDeleteOption: (LeetOption) -> Unit,
     onShowTable: (LeetOption) -> Unit
 ) {
     Row {
+        // Favorit-Button (alle Modi)
         IconButton(
             onClick = { onToggleFavorite(option) },
             modifier = Modifier.size(32.dp)
         ) {
             Icon(
-                imageVector = if (option.isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                imageVector = if (option.isFavorite) Icons.Default.Favorite
+                else Icons.Default.FavoriteBorder,
                 contentDescription = stringResource(R.string.leet_selector_toggle_favorite),
                 modifier = Modifier.size(16.dp),
                 tint = MaterialTheme.colorScheme.secondary
             )
         }
 
+        // Übersetzungstabelle (alle Modi)
         IconButton(
             onClick = { onShowTable(option) },
             modifier = Modifier.size(32.dp)
@@ -168,6 +211,7 @@ private fun ActionButtons(
             )
         }
 
+        // Bearbeiten + Löschen nur für Custom Leets
         if (option.isCustom) {
             IconButton(
                 onClick = { onEditOption(option) },
@@ -178,6 +222,19 @@ private fun ActionButtons(
                     contentDescription = stringResource(R.string.leet_selector_edit),
                     modifier = Modifier.size(16.dp),
                     tint = MaterialTheme.colorScheme.primary
+                )
+            }
+
+            // NEU: Löschen-Button
+            IconButton(
+                onClick = { onDeleteOption(option) },
+                modifier = Modifier.size(32.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Delete,
+                    contentDescription = stringResource(R.string.leet_selector_delete),
+                    modifier = Modifier.size(16.dp),
+                    tint = MaterialTheme.colorScheme.error
                 )
             }
         }

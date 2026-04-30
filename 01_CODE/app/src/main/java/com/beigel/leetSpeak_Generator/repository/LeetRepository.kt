@@ -14,174 +14,104 @@ import javax.inject.Singleton
 class LeetRepository @Inject constructor(
     private val context: Context
 ) {
-
     private val leetManager = LeetManager(context)
 
-    // Expose reactive streams from LeetManager
     val leets: StateFlow<List<CustomLeet>> = leetManager.leets
     val currentLeet: StateFlow<CustomLeet?> = leetManager.currentLeet
     val currentLeetIndex: StateFlow<Int> = leetManager.currentLeetIndex
     val hasLeets: StateFlow<Boolean> = leetManager.hasLeets
     val favoriteIndex: StateFlow<Int> = leetManager.favoriteIndex
 
-
     suspend fun createLeet(request: LeetCreationRequest): Result<LeetCreationResult> {
         return try {
             val leet = CustomLeet(request.name)
             leet.setTranslations(request.translations)
-
             when (val indexResult = leetManager.addLeet(leet)) {
-                is ErrorHandler.Result.Success -> {
-                    Result.success(
-                        LeetCreationResult(
-                            leet = leet,
-                            index = indexResult.data,
-                            success = true,
-                            message = context.getString(R.string.success_leet_created_repo)
-                        )
-                    )
-                }
-                is ErrorHandler.Result.Error -> {
-                    Result.failure(indexResult.exception)
-                }
+                is ErrorHandler.Result.Success -> Result.success(
+                    LeetCreationResult(leet, indexResult.data, true,
+                        context.getString(R.string.success_leet_created_repo))
+                )
+                is ErrorHandler.Result.Error -> Result.failure(indexResult.exception)
             }
-        } catch (e: Exception) {
-            Result.failure(e)
-        }
+        } catch (e: Exception) { Result.failure(e) }
     }
 
-    /**
-     * Updates an existing leet
-     */
     suspend fun updateLeet(index: Int, leet: CustomLeet): Result<LeetUpdateResult> {
         return try {
-            leetManager.updateLeet(index, leet).let { result ->
-                when (result) {
-                    is ErrorHandler.Result.Success -> {
-                        Result.success(
-                            LeetUpdateResult(
-                                leet = leet,
-                                index = index,
-                                success = true,
-                                message = context.getString(R.string.success_leet_updated_repo)
-                            )
-                        )
-                    }
-                    is ErrorHandler.Result.Error -> {
-                        Result.failure(result.exception)
-                    }
-                }
+            when (val result = leetManager.updateLeet(index, leet)) {
+                is ErrorHandler.Result.Success -> Result.success(
+                    LeetUpdateResult(leet, index, true,
+                        context.getString(R.string.success_leet_updated_repo))
+                )
+                is ErrorHandler.Result.Error -> Result.failure(result.exception)
             }
-        } catch (e: Exception) {
-            Result.failure(e)
-        }
+        } catch (e: Exception) { Result.failure(e) }
     }
 
-    /**
-     * Deletes a leet at the given index
-     */
     suspend fun deleteLeet(index: Int): Result<LeetDeletionResult> {
         return try {
-            leetManager.deleteLeet(index).let { result ->
-                when (result) {
-                    is ErrorHandler.Result.Success -> {
-                        Result.success(
-                            LeetDeletionResult(
-                                deletedLeet = result.data.deletedLeet,
-                                wasFavorite = result.data.wasFavorite,
-                                wasLastLeet = result.data.wasLastLeet,
-                                success = true,
-                                message = context.getString(R.string.success_leet_deleted_repo)
-                            )
-                        )
-                    }
-                    is ErrorHandler.Result.Error -> {
-                        Result.failure(result.exception)
-                    }
-                }
+            when (val result = leetManager.deleteLeet(index)) {
+                is ErrorHandler.Result.Success -> Result.success(
+                    LeetDeletionResult(
+                        result.data.deletedLeet, result.data.wasFavorite,
+                        result.data.wasLastLeet, true,
+                        context.getString(R.string.success_leet_deleted_repo)
+                    )
+                )
+                is ErrorHandler.Result.Error -> Result.failure(result.exception)
             }
-        } catch (e: Exception) {
-            Result.failure(e)
-        }
+        } catch (e: Exception) { Result.failure(e) }
     }
 
-    /**
-     * Sets the current leet index
-     */
+
+    suspend fun insertLeetAt(index: Int, leet: CustomLeet): Result<Unit> {
+        return try {
+            when (val result = leetManager.insertLeetAt(index, leet)) {
+                is ErrorHandler.Result.Success -> Result.success(Unit)
+                is ErrorHandler.Result.Error -> Result.failure(result.exception)
+            }
+        } catch (e: Exception) { Result.failure(e) }
+    }
+
     suspend fun setCurrentLeetIndex(index: Int): Result<Unit> {
         return try {
             when (val result = leetManager.setCurrentLeetIndex(index)) {
                 is ErrorHandler.Result.Success -> Result.success(Unit)
                 is ErrorHandler.Result.Error -> Result.failure(result.exception)
             }
-        } catch (e: Exception) {
-            Result.failure(e)
-        }
+        } catch (e: Exception) { Result.failure(e) }
     }
 
-    /**
-     * Toggles favorite status for a mode
-     */
     suspend fun toggleFavorite(mode: Int, customIndex: Int = 0): Result<FavoriteToggleResult> {
         return try {
             val wasAlreadyFavorite = leetManager.isFavorite(mode, customIndex)
-            leetManager.toggleFavorite(mode, customIndex).let { result ->
-                when (result) {
-                    is ErrorHandler.Result.Success -> {
-                        Result.success(
-                            FavoriteToggleResult(
-                                mode = mode,
-                                customIndex = customIndex,
-                                wasAlreadyFavorite = wasAlreadyFavorite,
-                                isNowFavorite = result.data,
-                                success = true
-                            )
-                        )
-                    }
-                    is ErrorHandler.Result.Error -> {
-                        Result.failure(result.exception)
-                    }
-                }
+            when (val result = leetManager.toggleFavorite(mode, customIndex)) {
+                is ErrorHandler.Result.Success -> Result.success(
+                    FavoriteToggleResult(mode, customIndex, wasAlreadyFavorite, result.data, true)
+                )
+                is ErrorHandler.Result.Error -> Result.failure(result.exception)
             }
-        } catch (e: Exception) {
-            Result.failure(e)
-        }
+        } catch (e: Exception) { Result.failure(e) }
     }
 
-    /**
-     * Loads the favorite mode asynchronously
-     *
-     * Diese Funktion wartet, bis die Daten aus SharedPreferences vollständig geladen wurden,
-     * bevor sie das Favorit-Leet zurückgibt. Dies verhindert Race Conditions beim App-Start.
-     */
     suspend fun loadFavoriteLeet(): Result<FavoriteLeetResult> {
         return try {
-            // getFavoriteLeetInfo() ist jetzt suspend und wartet bis Daten geladen sind
             val favoriteInfo = leetManager.getFavoriteLeetInfo()
-
             val result = when {
                 favoriteInfo == null -> FavoriteLeetResult.simple()
                 favoriteInfo.mode == LeetManager.MODE_SIMPLE -> FavoriteLeetResult.simple()
                 favoriteInfo.mode == LeetManager.MODE_EXTENDED -> FavoriteLeetResult.extended()
                 favoriteInfo.mode == LeetManager.MODE_CUSTOM -> {
-                    if (favoriteInfo.customLeet != null) {
+                    if (favoriteInfo.customLeet != null)
                         FavoriteLeetResult.custom(favoriteInfo.customIndex, favoriteInfo.customLeet)
-                    } else {
-                        FavoriteLeetResult.simple() // Fallback
-                    }
+                    else FavoriteLeetResult.simple()
                 }
-                else -> FavoriteLeetResult.simple() // Fallback für unbekannte Modi
+                else -> FavoriteLeetResult.simple()
             }
-
             Result.success(result)
-        } catch (e: Exception) {
-            Result.failure(e)
-        }
+        } catch (e: Exception) { Result.failure(e) }
     }
 
-    /**
-     * Creates a leet with simple defaults (ohne Icon-Parameter)
-     */
     suspend fun createLeetWithSimpleDefaults(name: String): Result<CustomLeet> {
         return try {
             val leet = CustomLeet.createWithSimpleDefaults(name)
@@ -189,14 +119,9 @@ class LeetRepository @Inject constructor(
                 is ErrorHandler.Result.Success -> Result.success(leet)
                 is ErrorHandler.Result.Error -> Result.failure(result.exception)
             }
-        } catch (e: Exception) {
-            Result.failure(e)
-        }
+        } catch (e: Exception) { Result.failure(e) }
     }
 
-    /**
-     * Creates a leet with extended defaults (ohne Icon-Parameter)
-     */
     suspend fun createLeetWithExtendedDefaults(name: String): Result<CustomLeet> {
         return try {
             val leet = CustomLeet.createWithExtendedDefaults(name)
@@ -204,9 +129,7 @@ class LeetRepository @Inject constructor(
                 is ErrorHandler.Result.Success -> Result.success(leet)
                 is ErrorHandler.Result.Error -> Result.failure(result.exception)
             }
-        } catch (e: Exception) {
-            Result.failure(e)
-        }
+        } catch (e: Exception) { Result.failure(e) }
     }
 
     suspend fun addCustomLeet(customLeet: CustomLeet): Result<CustomLeet> {
@@ -215,141 +138,45 @@ class LeetRepository @Inject constructor(
                 is ErrorHandler.Result.Success -> Result.success(customLeet)
                 is ErrorHandler.Result.Error -> Result.failure(result.exception)
             }
-        } catch (e: Exception) {
-            Result.failure(e)
-        }
+        } catch (e: Exception) { Result.failure(e) }
     }
 
-    /**
-     * Gets leet options WITHOUT selection logic - handled in MainViewModel
-     */
-    fun getLeetOptions(): Flow<List<LeetOption>> = combine(
-        leets,
-        favoriteIndex
-    ) { leets, favoriteIndex ->
+    fun getLeetOptions(): Flow<List<LeetOption>> = combine(leets, favoriteIndex) { leets, favIdx ->
         buildList {
-            // Add Simple Leet
-            add(LeetOption.createSimple(
-                context = context,
-                isSelected = false,
-                isFavorite = favoriteIndex == LeetManager.FAV_SIMPLE
-            ))
-
-            // Add Extended Leet
-            add(LeetOption.createExtended(
-                context = context,
-                isSelected = false,
-                isFavorite = favoriteIndex == LeetManager.FAV_EXTENDED
-            ))
-
-            // Add Custom Leets
+            add(LeetOption.createSimple(context, isSelected = false,
+                isFavorite = favIdx == LeetManager.FAV_SIMPLE))
+            add(LeetOption.createExtended(context, isSelected = false,
+                isFavorite = favIdx == LeetManager.FAV_EXTENDED))
             leets.forEachIndexed { index, leet ->
-                add(LeetOption.createCustom(
-                    context = context,
-                    leet = leet,
-                    customIndex = index,
-                    isSelected = false,
-                    isFavorite = favoriteIndex == index
-                ))
+                add(LeetOption.createCustom(context, leet, index, isSelected = false,
+                    isFavorite = favIdx == index))
             }
         }
     }
 
-    /**
-     * Gets only favorite leet options
-     */
     fun getFavoriteLeetOptions(): Flow<List<LeetOption>> =
-        getLeetOptions().map { options ->
-            options.filter { it.isFavorite }
-        }
+        getLeetOptions().map { options -> options.filter { it.isFavorite } }
 
-    /**
-     * Checks if a mode is favorite
-     */
     fun isFavorite(mode: Int, customIndex: Int = 0): Boolean =
         leetManager.isFavorite(mode, customIndex)
 
-    /**
-     * Gets the current leet synchronously
-     */
     fun getCurrentLeet(): CustomLeet? = currentLeet.value
-
-    /**
-     * Gets the current leet index synchronously
-     */
     fun getCurrentLeetIndex(): Int = currentLeetIndex.value
-
-    /**
-     * Checks if leets exist
-     */
     fun hasLeets(): Boolean = hasLeets.value
-
-    /**
-     * Gets all leets synchronously
-     */
     fun getLeets(): List<CustomLeet> = leets.value
+    fun cleanup() = leetManager.cleanup()
 
-    /**
-     * Cleanup resources
-     */
-    fun cleanup() {
-        leetManager.cleanup()
-    }
+    data class LeetCreationRequest(val name: String, val translations: Map<String, String>)
+    data class LeetCreationResult(val leet: CustomLeet, val index: Int, val success: Boolean, val message: String)
+    data class LeetUpdateResult(val leet: CustomLeet, val index: Int, val success: Boolean, val message: String)
+    data class LeetDeletionResult(val deletedLeet: CustomLeet, val wasFavorite: Boolean, val wasLastLeet: Boolean, val success: Boolean, val message: String)
+    data class FavoriteToggleResult(val mode: Int, val customIndex: Int, val wasAlreadyFavorite: Boolean, val isNowFavorite: Boolean, val success: Boolean)
 
-    /**
-     * Data class for leet creation request (ohne Icon)
-     */
-    data class LeetCreationRequest(
-        val name: String,
-        val translations: Map<String, String>
-    )
-
-    /**
-     * Result classes for operations
-     */
-    data class LeetCreationResult(
-        val leet: CustomLeet,
-        val index: Int,
-        val success: Boolean,
-        val message: String
-    )
-
-    data class LeetUpdateResult(
-        val leet: CustomLeet,
-        val index: Int,
-        val success: Boolean,
-        val message: String
-    )
-
-    data class LeetDeletionResult(
-        val deletedLeet: CustomLeet,
-        val wasFavorite: Boolean,
-        val wasLastLeet: Boolean,
-        val success: Boolean,
-        val message: String
-    )
-
-    data class FavoriteToggleResult(
-        val mode: Int,
-        val customIndex: Int,
-        val wasAlreadyFavorite: Boolean,
-        val isNowFavorite: Boolean,
-        val success: Boolean
-    )
-
-    /**
-     * Favorite leet result sealed class
-     */
     sealed class FavoriteLeetResult {
         abstract val mode: Int
-
         data class Simple(override val mode: Int = LeetManager.MODE_SIMPLE) : FavoriteLeetResult()
         data class Extended(override val mode: Int = LeetManager.MODE_EXTENDED) : FavoriteLeetResult()
-        data class Custom(
-            override val mode: Int = LeetManager.MODE_CUSTOM,
-            val customIndex: Int,
-            val leet: CustomLeet
-        ) : FavoriteLeetResult()
+        data class Custom(override val mode: Int = LeetManager.MODE_CUSTOM, val customIndex: Int, val leet: CustomLeet) : FavoriteLeetResult()
 
         companion object {
             fun simple() = Simple()

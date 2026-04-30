@@ -347,4 +347,14 @@
     <string name="leet_default_name">Nouveau Leet</string>
     <string name="leet_fallback_name">Leet Personnalisé</string>
 
+    <string name="undo">Annuler</string>
+    <string name="leet_deleted_snackbar">Leet supprimé</string>
+    <string name="success_leet_restored">\'%1$s\' restauré</string>
+    <string name="error_undo_delete">Échec de l\'annulation : %1$s</string>
+    <string name="leet_selector_delete">Supprimer</string>
+    <string name="delete_leet_dialog_title">Supprimer le Leet ?</string>
+    <string name="delete_leet_dialog_message">\'%1$s\' sera supprimé définitivement.</string>
+    <string name="delete_leet_dialog_confirm">Supprimer</string>
+    <string name="delete_leet_dialog_cancel">Annuler</string>
+
 </resources>

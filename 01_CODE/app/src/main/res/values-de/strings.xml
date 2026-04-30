@@ -347,4 +347,15 @@
     <string name="leet_default_name">Neues Leet</string>
     <string name="leet_fallback_name">Benutzerdefiniertes Leet</string>
 
+    <string name="undo">Rückgängig</string>
+    <string name="leet_deleted_snackbar">Leet gelöscht</string>
+    <string name="success_leet_restored">\'%1$s\' wiederhergestellt</string>
+    <string name="error_undo_delete">Rückgängig fehlgeschlagen: %1$s</string>
+    <string name="leet_selector_delete">Löschen</string>
+    <string name="delete_leet_dialog_title">Leet löschen?</string>
+    <string name="delete_leet_dialog_message">\'%1$s\' wird unwiderruflich gelöscht.</string>
+    <string name="delete_leet_dialog_confirm">Löschen</string>
+    <string name="delete_leet_dialog_cancel">Abbrechen</string>
+
+
 </resources>

@@ -214,6 +214,7 @@ class ComposeMainActivity : AppCompatActivity() {
     }
 }
 
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(
@@ -225,22 +226,19 @@ fun MainScreen(
 ) {
     var showDropdownMenu by remember { mutableStateOf(false) }
 
-    // Bestehende State Variables...
     val inputText by viewModel.inputText.collectAsStateWithLifecycle()
     val outputText by viewModel.outputText.collectAsStateWithLifecycle()
     val currentModeDisplayName by viewModel.currentModeDisplayName.collectAsStateWithLifecycle()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val isReverseMode by viewModel.isReverseMode.collectAsStateWithLifecycle()
     val isInputLikelyLeetspeak by viewModel.isInputLikelyLeetspeak.collectAsStateWithLifecycle()
-
-    // What's New State
     val shouldShowWhatsNew by viewModel.shouldShowWhatsNew.collectAsStateWithLifecycle()
     val isFirstLaunch by viewModel.isFirstLaunch.collectAsStateWithLifecycle()
-
-    // NEU: Clear Input Dialog State
     val showClearInputDialog by viewModel.showClearInputDialog.collectAsStateWithLifecycle()
 
-    // Bestehende lokale State Variables...
+    // NEU: Undo-State beobachten
+    val pendingDelete by viewModel.pendingDelete.collectAsStateWithLifecycle()
+
     val density = LocalDensity.current
     val keyboardHeight = WindowInsets.ime.getBottom(density)
     val isKeyboardVisible = keyboardHeight > 100
@@ -250,12 +248,38 @@ fun MainScreen(
     var showAboutDialog by remember { mutableStateOf(false) }
     val context = LocalContext.current
 
+    // NEU: SnackbarHostState für Undo-Snackbar
+    val snackbarHostState = remember { SnackbarHostState() }
+    val undoLabel = stringResource(R.string.undo)
+    val leetDeletedMessage = stringResource(R.string.leet_deleted_snackbar)
+
+    // NEU: Snackbar anzeigen wenn pendingDelete gesetzt wird
+    LaunchedEffect(pendingDelete) {
+        val pending = pendingDelete ?: return@LaunchedEffect
+
+        val result = snackbarHostState.showSnackbar(
+            message = leetDeletedMessage,
+            actionLabel = undoLabel,
+            duration = SnackbarDuration.Short
+        )
+
+        when (result) {
+            SnackbarResult.ActionPerformed -> {
+                // User hat "Rückgängig" getippt
+                viewModel.handleIntent(MainIntent.UndoDeleteLeet)
+            }
+            SnackbarResult.Dismissed -> {
+                // Snackbar lief ab ohne Aktion – pendingDelete leeren
+                viewModel.clearPendingDelete()
+            }
+        }
+    }
+
     val inputTitle = if (isReverseMode) {
         stringResource(R.string.input_prefix) + currentModeDisplayName
     } else {
         stringResource(R.string.input_plaintext)
     }
-
     val outputTitle = if (isReverseMode) {
         stringResource(R.string.output_plaintext)
     } else {
@@ -266,6 +290,8 @@ fun MainScreen(
         modifier = Modifier
             .fillMaxSize()
             .windowInsetsPadding(WindowInsets.systemBars),
+        // NEU: SnackbarHost einbinden
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         topBar = {
             TopAppBar(
                 title = {
@@ -275,7 +301,6 @@ fun MainScreen(
                             fontWeight = FontWeight.Bold,
                             style = MaterialTheme.typography.headlineSmall.copy(fontSize = 22.sp)
                         )
-
                         if (isReverseMode) {
                             Spacer(modifier = Modifier.width(8.dp))
                             Surface(
@@ -291,7 +316,6 @@ fun MainScreen(
                                 )
                             }
                         }
-
                         if (!isReverseMode && isInputLikelyLeetspeak) {
                             Spacer(modifier = Modifier.width(8.dp))
                             Surface(
@@ -313,9 +337,7 @@ fun MainScreen(
                     containerColor = MaterialTheme.colorScheme.background,
                     titleContentColor = MaterialTheme.colorScheme.onBackground
                 ),
-                // Ersetze den actions Block in der TopBar mit diesem Code:
                 actions = {
-                    // Ko-Fi Support Button (bleibt separat)
                     IconButton(onClick = onKofiSupport) {
                         Icon(
                             imageVector = Icons.Default.LocalCafe,
@@ -324,8 +346,6 @@ fun MainScreen(
                             tint = MaterialTheme.colorScheme.secondary
                         )
                     }
-
-                    // Dropdown Menu Button
                     Box {
                         IconButton(onClick = { showDropdownMenu = true }) {
                             Icon(
@@ -334,72 +354,39 @@ fun MainScreen(
                                 modifier = Modifier.size(24.dp)
                             )
                         }
-
                         DropdownMenu(
                             expanded = showDropdownMenu,
                             onDismissRequest = { showDropdownMenu = false }
                         ) {
-                            // Bug Report Option
                             DropdownMenuItem(
                                 text = {
-                                    Row(
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.Default.BugReport,
-                                            contentDescription = null,
-                                            modifier = Modifier.size(20.dp)
-                                        )
+                                    Row(verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                                        Icon(Icons.Default.BugReport, null, modifier = Modifier.size(20.dp))
                                         Text(stringResource(R.string.bug_report))
                                     }
                                 },
-                                onClick = {
-                                    showDropdownMenu = false
-                                    onBugReport()
-                                }
+                                onClick = { showDropdownMenu = false; onBugReport() }
                             )
-
-                            // About/Info Option
                             DropdownMenuItem(
                                 text = {
-                                    Row(
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.Default.Info,
-                                            contentDescription = null,
-                                            modifier = Modifier.size(20.dp)
-                                        )
+                                    Row(verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                                        Icon(Icons.Default.Info, null, modifier = Modifier.size(20.dp))
                                         Text(stringResource(R.string.about))
                                     }
                                 },
-                                onClick = {
-                                    showDropdownMenu = false
-                                    showAboutDialog = true
-                                }
+                                onClick = { showDropdownMenu = false; showAboutDialog = true }
                             )
-
-                            // Settings Option
                             DropdownMenuItem(
                                 text = {
-                                    Row(
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.Default.Settings,
-                                            contentDescription = null,
-                                            modifier = Modifier.size(20.dp)
-                                        )
+                                    Row(verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                                        Icon(Icons.Default.Settings, null, modifier = Modifier.size(20.dp))
                                         Text(stringResource(R.string.settings))
                                     }
                                 },
-                                onClick = {
-                                    showDropdownMenu = false
-                                    onOpenSettings()
-                                }
+                                onClick = { showDropdownMenu = false; onOpenSettings() }
                             )
                         }
                     }
@@ -412,11 +399,7 @@ fun MainScreen(
                 contentColor = MaterialTheme.colorScheme.onBackground,
                 tonalElevation = 0.dp,
                 modifier = Modifier.then(
-                    if (isKeyboardVisible) {
-                        Modifier.offset(y = 56.dp)
-                    } else {
-                        Modifier
-                    }
+                    if (isKeyboardVisible) Modifier.offset(y = 56.dp) else Modifier
                 )
             ) {
                 Row(
@@ -429,12 +412,9 @@ fun MainScreen(
                     EnhancedAnimatedArrows(
                         isReverseMode = isReverseMode,
                         isInputLikelyLeetspeak = isInputLikelyLeetspeak,
-                        onToggleReverse = {
-                            viewModel.handleIntent(MainIntent.ToggleReverseMode)
-                        },
+                        onToggleReverse = { viewModel.handleIntent(MainIntent.ToggleReverseMode) },
                         modifier = Modifier.weight(1f)
                     )
-
                     ModeSelectorButton(
                         currentMode = currentModeDisplayName,
                         onLeetSelectorClick = { showBottomSheet = true },
@@ -444,7 +424,6 @@ fun MainScreen(
             }
         }
     ) { paddingValues ->
-
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -454,74 +433,51 @@ fun MainScreen(
                 .padding(8.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-
             InputCard(
                 inputText = inputText,
-                onInputChange = {
-                    viewModel.updateInputText(it)
-                },
-                onClearText = {
-                    viewModel.clearInput()
-                },
+                onInputChange = { viewModel.updateInputText(it) },
+                onClearText = { viewModel.clearInput() },
                 showHeader = true,
                 isReverseMode = isReverseMode,
                 title = inputTitle,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f)
+                modifier = Modifier.fillMaxWidth().weight(1f)
             )
-
             if (hasOutput) {
                 OutputCard(
                     outputText = outputText,
                     currentMode = outputTitle,
                     onCopyClick = {
-                        // Zuerst in Clipboard kopieren
                         onCopyToClipboard(outputText)
-                        // DANN ViewModel-Intent triggern für Löschlogik
                         viewModel.handleIntent(MainIntent.CopyToClipboard)
-                    },                    showHeader = true,
+                    },
+                    showHeader = true,
                     isReverseMode = isReverseMode,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f)
+                    modifier = Modifier.fillMaxWidth().weight(1f)
                 )
             }
         }
 
-        // Bestehende Dialoge...
         if (showBottomSheet) {
             LeetSelectorBottomSheet(
                 viewModel = viewModel,
                 onDismiss = { showBottomSheet = false }
             )
         }
-
         if (showAboutDialog) {
-            AboutDialog(
-                onDismiss = { showAboutDialog = false }
-            )
+            AboutDialog(onDismiss = { showAboutDialog = false })
         }
-
-        // What's New Dialog
         if (shouldShowWhatsNew) {
             WhatsNewDialog(
                 currentVersion = viewModel.currentVersionInfo,
                 isFirstLaunch = isFirstLaunch,
-                onDismiss = {
-                    viewModel.handleIntent(MainIntent.DismissWhatsNew)
-                },
-                onMarkAsShown = {
-                    viewModel.handleIntent(MainIntent.MarkWhatsNewAsShown)
-                }
+                onDismiss = { viewModel.handleIntent(MainIntent.DismissWhatsNew) },
+                onMarkAsShown = { viewModel.handleIntent(MainIntent.MarkWhatsNewAsShown) }
             )
         }
-
-        // NEU: Clear Input Dialog - KORRIGIERT
         if (showClearInputDialog) {
             ClearInputDialog(
                 onDismiss = { viewModel.dismissClearInputDialog() },
-                onConfirm = { shouldClear, dontAskAgain ->  // ✅ Neue Signatur
+                onConfirm = { shouldClear, dontAskAgain ->
                     viewModel.confirmClearInput(shouldClear, dontAskAgain)
                 },
                 isReverseMode = isReverseMode

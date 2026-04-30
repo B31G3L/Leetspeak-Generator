@@ -347,4 +347,14 @@
     <string name="leet_default_name">Nuevo Leet</string>
     <string name="leet_fallback_name">Leet Personalizado</string>
 
+    <string name="undo">Deshacer</string>
+    <string name="leet_deleted_snackbar">Leet eliminado</string>
+    <string name="success_leet_restored">\'%1$s\' restaurado</string>
+    <string name="error_undo_delete">Error al deshacer: %1$s</string>
+    <string name="leet_selector_delete">Eliminar</string>
+    <string name="delete_leet_dialog_title">¿Eliminar Leet?</string>
+    <string name="delete_leet_dialog_message">\'%1$s\' se eliminará permanentemente.</string>
+    <string name="delete_leet_dialog_confirm">Eliminar</string>
+    <string name="delete_leet_dialog_cancel">Cancelar</string>
+
 </resources>

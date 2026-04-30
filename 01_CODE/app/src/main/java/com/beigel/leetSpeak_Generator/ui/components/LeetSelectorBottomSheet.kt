@@ -12,7 +12,6 @@ import com.beigel.leetSpeak_Generator.presentation.intent.MainIntent
 import com.beigel.leetSpeak_Generator.ui.components.leet.selector.*
 import com.beigel.leetSpeak_Generator.viewmodel.MainViewModel
 
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LeetSelectorBottomSheet(
@@ -21,7 +20,6 @@ fun LeetSelectorBottomSheet(
     modifier: Modifier = Modifier
 ) {
     val leetOptions by viewModel.leetOptions.collectAsStateWithLifecycle()
-    val favoriteLeetOptions by viewModel.favoriteLeetOptions.collectAsStateWithLifecycle()
 
     var showLeetCreationDialog by remember { mutableStateOf(false) }
     var showLeetEditDialog by remember { mutableStateOf(false) }
@@ -44,38 +42,42 @@ fun LeetSelectorBottomSheet(
         },
         windowInsets = WindowInsets(0)
     ) {
-        // Content
-        LazyBottomSheetContent(
-            leetOptions = leetOptions,
-            favoriteLeetOptions = favoriteLeetOptions,
-            onCreateNew = { showLeetCreationDialog = true },
-            onOptionSelected = { option ->
-                viewModel.handleIntent(MainIntent.ChangeMode(option))
-                onDismiss()
-            },
-            onToggleFavorite = { option ->
-                viewModel.handleIntent(MainIntent.ToggleFavorite(option))
-            },
-            onEditOption = { option ->
-                currentEditOption = option
-                showLeetEditDialog = true
-            },
-            onShowTable = { option ->
-                currentTableOption = option
-                showTranslationTableDialog = true
-            }
-        )
-    }
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            LeetSelectorHeader(onCreateNew = { showLeetCreationDialog = true })
 
-    // Clear states when dialogs close
-    LaunchedEffect(showLeetCreationDialog) {
-        if (!showLeetCreationDialog) {
-            currentEditOption = null
-            currentTableOption = null
+            AllOptionsSection(
+                leetOptions = leetOptions,
+                onOptionSelected = { option ->
+                    viewModel.handleIntent(MainIntent.ChangeMode(option))
+                    onDismiss()
+                },
+                onToggleFavorite = { option ->
+                    viewModel.handleIntent(MainIntent.ToggleFavorite(option))
+                },
+                onEditOption = { option ->
+                    currentEditOption = option
+                    showLeetEditDialog = true
+                },
+                // NEU: Löschen direkt als Intent weiterleiten
+                onDeleteOption = { option ->
+                    viewModel.handleIntent(MainIntent.DeleteLeet(option.customIndex))
+                    onDismiss() // Bottom Sheet schließen damit Snackbar sichtbar ist
+                },
+                onShowTable = { option ->
+                    currentTableOption = option
+                    showTranslationTableDialog = true
+                }
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
         }
     }
 
-    // Dialog Handling
     if (showLeetCreationDialog) {
         LeetCreationDialog(
             viewModel = viewModel,
@@ -91,7 +93,6 @@ fun LeetSelectorBottomSheet(
             if (option.isCustom) {
                 val leets by viewModel.leets.collectAsStateWithLifecycle()
                 val leet = leets.getOrNull(option.customIndex)
-
                 if (leet != null) {
                     LeetCreationDialog(
                         viewModel = viewModel,
@@ -118,43 +119,5 @@ fun LeetSelectorBottomSheet(
                 }
             )
         }
-    }
-}
-
-/**
- * Content-Komponente
- */
-@Composable
-private fun LazyBottomSheetContent(
-    leetOptions: List<LeetOption>,
-    favoriteLeetOptions: List<LeetOption>,
-    onCreateNew: () -> Unit,
-    onOptionSelected: (LeetOption) -> Unit,
-    onToggleFavorite: (LeetOption) -> Unit,
-    onEditOption: (LeetOption) -> Unit,
-    onShowTable: (LeetOption) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        // Header
-        LeetSelectorHeader(onCreateNew = onCreateNew)
-
-
-        // Alle Optionen Section
-        AllOptionsSection(
-            leetOptions = leetOptions,
-            onOptionSelected = onOptionSelected,
-            onToggleFavorite = onToggleFavorite,
-            onEditOption = onEditOption,
-            onShowTable = onShowTable,
-        )
-
-        // Bottom spacer
-        Spacer(modifier = Modifier.height(16.dp))
     }
 }
