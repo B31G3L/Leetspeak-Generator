@@ -3,7 +3,6 @@ package com.beigel.leetSpeak_Generator.ui.components
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -23,7 +22,6 @@ import com.beigel.leetSpeak_Generator.ui.components.leet.creation.TranslationTab
 import com.beigel.leetSpeak_Generator.ui.components.leet.creation.TemplateHelpers
 import com.beigel.leetSpeak_Generator.viewmodel.MainViewModel
 
-
 @Composable
 fun LeetCreationDialog(
     viewModel: MainViewModel,
@@ -31,7 +29,6 @@ fun LeetCreationDialog(
     existingLeet: CustomLeet? = null,
     leetIndex: Int = -1,
 ) {
-    // State Management
     val dialogState = rememberLeetCreationDialogState(existingLeet)
 
     Dialog(
@@ -43,7 +40,6 @@ fun LeetCreationDialog(
             color = MaterialTheme.colorScheme.background
         ) {
             Column(modifier = Modifier.fillMaxSize()) {
-                // Header Toolbar
                 LeetCreationHeader(
                     isNewLeet = existingLeet == null,
                     canSave = dialogState.baseName.isNotBlank(),
@@ -58,7 +54,6 @@ fun LeetCreationDialog(
                     }
                 )
 
-                // Scrollable Content
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
@@ -66,14 +61,12 @@ fun LeetCreationDialog(
                         .padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    // Leet Info Card (nur Name)
                     LeetInfoCard(
                         baseName = dialogState.baseName,
                         onBaseNameChange = { dialogState.baseName = it },
                         displayName = dialogState.displayName
                     )
 
-                    // Template Selection Card
                     TemplateSelectionCard(
                         selectedTemplate = dialogState.selectedTemplate,
                         onTemplateSelected = { template ->
@@ -82,7 +75,6 @@ fun LeetCreationDialog(
                         }
                     )
 
-                    // Translation Table Card
                     TranslationTableCard(
                         alphabet = dialogState.alphabet,
                         translationStates = dialogState.translationStates
@@ -93,9 +85,6 @@ fun LeetCreationDialog(
     }
 }
 
-/**
- * Header mit Toolbar-Style für Dialog
- */
 @Composable
 private fun LeetCreationHeader(
     isNewLeet: Boolean,
@@ -121,45 +110,28 @@ private fun LeetCreationHeader(
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.weight(1f)
             )
-
             TextButton(onClick = onDismiss) {
                 Text(stringResource(R.string.leet_creation_cancel))
             }
-
             Spacer(modifier = Modifier.width(8.dp))
-
-            Button(
-                onClick = onSave,
-                enabled = canSave
-            ) {
+            Button(onClick = onSave, enabled = canSave) {
                 Text(stringResource(R.string.leet_creation_save))
             }
         }
     }
 }
 
-/**
- * State Management für Leet Creation Dialog
- */
 @Composable
-private fun rememberLeetCreationDialogState(
-    existingLeet: CustomLeet?
-): LeetCreationDialogState {
+private fun rememberLeetCreationDialogState(existingLeet: CustomLeet?): LeetCreationDialogState {
     val defaultName = stringResource(R.string.leet_default_name)
     val fallbackName = stringResource(R.string.leet_fallback_name)
-
     return remember(existingLeet) {
         LeetCreationDialogState(existingLeet, defaultName, fallbackName).apply {
-            if (existingLeet == null) {
-                applyTemplate()
-            }
+            if (existingLeet == null) applyTemplate()
         }
     }
 }
 
-/**
- * State-Klasse für Dialog-Verwaltung (ohne Icon)
- */
 class LeetCreationDialogState(
     existingLeet: CustomLeet?,
     private val defaultName: String,
@@ -167,17 +139,11 @@ class LeetCreationDialogState(
 ) {
     val alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
-    var baseName by mutableStateOf(
-        existingLeet?.name?.removeSuffix("-Leet") ?: ""
-    )
-
+    var baseName by mutableStateOf(existingLeet?.name?.removeSuffix("-Leet") ?: "")
     var selectedTemplate by mutableStateOf(TemplateType.SIMPLE)
 
-    // Translation states für alle Buchstaben
     val translationStates = alphabet.map { char ->
-        mutableStateOf(
-            existingLeet?.getTranslation(char.toString()) ?: char.toString()
-        )
+        mutableStateOf(existingLeet?.getTranslation(char.toString()) ?: char.toString())
     }
 
     val displayName: String
@@ -188,7 +154,6 @@ class LeetCreationDialogState(
             val originalChar = alphabet[translationStates.indexOf(state)]
             state.value != originalChar.toString()
         }
-
         if (!hasUserChanges || selectedTemplate != TemplateType.CUSTOM) {
             TemplateHelpers.applyTemplate(selectedTemplate, translationStates, alphabet)
         }
@@ -200,35 +165,24 @@ class LeetCreationDialogState(
         leetIndex: Int,
         onDismiss: () -> Unit
     ) {
-        // Übersetzungen sammeln
         val translations = mutableMapOf<String, String>()
         alphabet.forEachIndexed { index, char ->
             translations[char.toString()] = translationStates[index].value
         }
-
         val finalName = displayName.ifEmpty { fallbackName }
 
         if (existingLeet == null) {
-            // Neues Leet erstellen
             viewModel.handleIntent(
                 MainIntent.CreateLeet(
                     name = finalName,
-                    icon = androidx.compose.material.icons.Icons.Default.Settings, // Dummy - wird ignoriert
                     useExtendedDefaults = selectedTemplate == TemplateType.EXTENDED,
                     customTranslations = translations
                 )
             )
         } else {
-            // Bestehendes Leet aktualisieren
-            val updatedLeet = CustomLeet(name = finalName).apply {
-                setTranslations(translations)
-            }
-
-            viewModel.handleIntent(
-                MainIntent.UpdateLeet(leetIndex, updatedLeet)
-            )
+            val updatedLeet = CustomLeet(name = finalName).apply { setTranslations(translations) }
+            viewModel.handleIntent(MainIntent.UpdateLeet(leetIndex, updatedLeet))
         }
-
         onDismiss()
     }
 }

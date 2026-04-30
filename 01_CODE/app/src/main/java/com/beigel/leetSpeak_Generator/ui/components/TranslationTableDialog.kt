@@ -16,8 +16,8 @@ import androidx.compose.ui.window.DialogProperties
 import com.beigel.leetSpeak_Generator.R
 import com.beigel.leetSpeak_Generator.data.LeetOption
 import com.beigel.leetSpeak_Generator.manager.LeetManager
+import com.beigel.leetSpeak_Generator.translation.LeetTranslator
 import com.beigel.leetSpeak_Generator.viewmodel.MainViewModel
-
 
 @Composable
 fun TranslationTableDialog(
@@ -48,14 +48,10 @@ fun TranslationTableDialog(
                     .fillMaxSize()
                     .verticalScroll(rememberScrollState())
             ) {
-                // Header
                 TranslationTableHeader(
-                    // FIXED: String resource with formatting
                     title = stringResource(R.string.translation_table_dialog_title, leetOption.name),
                     onDismiss = onDismiss
                 )
-
-                // Table Content
                 TranslationTableContent(
                     alphabet = alphabet,
                     leetOption = leetOption,
@@ -66,15 +62,8 @@ fun TranslationTableDialog(
     }
 }
 
-/**
- * Header mit Schließen-Button
- * FIXED: Hardcodierte Strings durch String-Ressourcen ersetzt
- */
 @Composable
-private fun TranslationTableHeader(
-    title: String,
-    onDismiss: () -> Unit
-) {
+private fun TranslationTableHeader(title: String, onDismiss: () -> Unit) {
     Surface(
         color = MaterialTheme.colorScheme.secondary,
         modifier = Modifier.fillMaxWidth()
@@ -93,14 +82,12 @@ private fun TranslationTableHeader(
                 color = MaterialTheme.colorScheme.onSecondary,
                 modifier = Modifier.weight(1f)
             )
-
             TextButton(
                 onClick = onDismiss,
                 colors = ButtonDefaults.textButtonColors(
                     contentColor = MaterialTheme.colorScheme.onSecondary
                 )
             ) {
-                // FIXED: String resource
                 Text(
                     text = stringResource(R.string.translation_table_close),
                     fontWeight = FontWeight.Medium
@@ -110,9 +97,6 @@ private fun TranslationTableHeader(
     }
 }
 
-/**
- * Vollständige Tabelle ohne Scrollen
- */
 @Composable
 private fun TranslationTableContent(
     alphabet: String,
@@ -124,29 +108,22 @@ private fun TranslationTableContent(
             .fillMaxWidth()
             .padding(16.dp)
     ) {
-        // Column Headers
         TranslationTableColumnHeaders()
-
         Spacer(modifier = Modifier.height(8.dp))
 
-        // Table Rows - Alle 13 Zeilen ohne Scrollen
         repeat(13) { rowIndex ->
             TranslationTableRow(
                 leftChar = alphabet[rowIndex],
-                leftTranslation = getTranslatedCharForOption(alphabet[rowIndex], leetOption, viewModel),
+                leftTranslation = getTranslationFor(alphabet[rowIndex], leetOption, viewModel),
                 rightChar = if (rowIndex + 13 < alphabet.length) alphabet[rowIndex + 13] else null,
                 rightTranslation = if (rowIndex + 13 < alphabet.length)
-                    getTranslatedCharForOption(alphabet[rowIndex + 13], leetOption, viewModel) else null,
+                    getTranslationFor(alphabet[rowIndex + 13], leetOption, viewModel) else null,
                 isEvenRow = rowIndex % 2 == 0
             )
         }
     }
 }
 
-/**
- * Column Headers
- * FIXED: Hardcodierte Strings durch String-Ressourcen ersetzt
- */
 @Composable
 private fun TranslationTableColumnHeaders() {
     Surface(
@@ -158,49 +135,25 @@ private fun TranslationTableColumnHeaders() {
                 .fillMaxWidth()
                 .padding(vertical = 8.dp, horizontal = 12.dp)
         ) {
-            // FIXED: String resource
-            Text(
-                text = stringResource(R.string.translation_table_plain),
-                style = MaterialTheme.typography.labelLarge,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.weight(1f),
-                textAlign = TextAlign.Center
-            )
-            // FIXED: String resource
-            Text(
-                text = stringResource(R.string.translation_table_leet),
-                style = MaterialTheme.typography.labelLarge,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.secondary,
-                modifier = Modifier.weight(1f),
-                textAlign = TextAlign.Center
-            )
-            // FIXED: String resource
-            Text(
-                text = stringResource(R.string.translation_table_plain),
-                style = MaterialTheme.typography.labelLarge,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.weight(1f),
-                textAlign = TextAlign.Center
-            )
-            // FIXED: String resource
-            Text(
-                text = stringResource(R.string.translation_table_leet),
-                style = MaterialTheme.typography.labelLarge,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.secondary,
-                modifier = Modifier.weight(1f),
-                textAlign = TextAlign.Center
-            )
+            listOf(
+                Pair(stringResource(R.string.translation_table_plain), MaterialTheme.colorScheme.onSurfaceVariant),
+                Pair(stringResource(R.string.translation_table_leet), MaterialTheme.colorScheme.secondary),
+                Pair(stringResource(R.string.translation_table_plain), MaterialTheme.colorScheme.onSurfaceVariant),
+                Pair(stringResource(R.string.translation_table_leet), MaterialTheme.colorScheme.secondary),
+            ).forEach { (label, color) ->
+                Text(
+                    text = label,
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = color,
+                    modifier = Modifier.weight(1f),
+                    textAlign = TextAlign.Center
+                )
+            }
         }
     }
 }
 
-/**
- * Table Row mit alternierender Hintergrundfarbe
- */
 @Composable
 private fun TranslationTableRow(
     leftChar: Char,
@@ -210,11 +163,8 @@ private fun TranslationTableRow(
     isEvenRow: Boolean
 ) {
     Surface(
-        color = if (isEvenRow) {
-            MaterialTheme.colorScheme.surface
-        } else {
-            MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
-        },
+        color = if (isEvenRow) MaterialTheme.colorScheme.surface
+        else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
         modifier = Modifier.fillMaxWidth()
     ) {
         Row(
@@ -223,7 +173,6 @@ private fun TranslationTableRow(
                 .padding(vertical = 6.dp, horizontal = 12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Left side (A-M)
             Text(
                 text = leftChar.toString(),
                 modifier = Modifier.weight(1f),
@@ -232,7 +181,6 @@ private fun TranslationTableRow(
                 fontWeight = FontWeight.Medium,
                 color = MaterialTheme.colorScheme.onSurface
             )
-
             Text(
                 text = leftTranslation,
                 modifier = Modifier.weight(1f),
@@ -242,7 +190,6 @@ private fun TranslationTableRow(
                 fontWeight = FontWeight.Bold
             )
 
-            // Right side (N-Z)
             if (rightChar != null && rightTranslation != null) {
                 Text(
                     text = rightChar.toString(),
@@ -252,7 +199,6 @@ private fun TranslationTableRow(
                     fontWeight = FontWeight.Medium,
                     color = MaterialTheme.colorScheme.onSurface
                 )
-
                 Text(
                     text = rightTranslation,
                     modifier = Modifier.weight(1f),
@@ -268,35 +214,23 @@ private fun TranslationTableRow(
     }
 }
 
-private fun getTranslatedCharForOption(char: Char, leetOption: LeetOption, viewModel: MainViewModel): String {
+private fun getTranslationFor(
+    char: Char,
+    leetOption: LeetOption,
+    viewModel: MainViewModel
+): String {
     return when (leetOption.mode) {
-        LeetManager.MODE_SIMPLE -> {
-            when (char) {
-                'A' -> "4"; 'B' -> "8"; 'C' -> "C"; 'D' -> "D"; 'E' -> "3"
-                'F' -> "F"; 'G' -> "6"; 'H' -> "#"; 'I' -> "1"; 'J' -> "J"
-                'K' -> "K"; 'L' -> "L"; 'M' -> "M"; 'N' -> "N"; 'O' -> "0"
-                'P' -> "P"; 'Q' -> "Q"; 'R' -> "R"; 'S' -> "5"; 'T' -> "7"
-                'U' -> "U"; 'V' -> "V"; 'W' -> "W"; 'X' -> "X"; 'Y' -> "Y"
-                'Z' -> "2"
-                else -> char.toString()
-            }
-        }
-        LeetManager.MODE_EXTENDED -> {
-            when (char) {
-                'A' -> "4"; 'B' -> "8"; 'C' -> "("; 'D' -> "|)"; 'E' -> "3"
-                'F' -> "|="; 'G' -> "6"; 'H' -> "#"; 'I' -> "!"; 'J' -> "_|"
-                'K' -> "|<"; 'L' -> "1"; 'M' -> "/\\/\\"; 'N' -> "|\\|"; 'O' -> "0"
-                'P' -> "9"; 'Q' -> "0_"; 'R' -> "2"; 'S' -> "5"; 'T' -> "7"
-                'U' -> "|_|"; 'V' -> "\\/"; 'W' -> "\\/\\/"; 'X' -> "><"; 'Y' -> "`/"
-                'Z' -> "Z"
-                else -> char.toString()
-            }
-        }
+        LeetManager.MODE_SIMPLE ->
+            LeetTranslator.translateChar(char, LeetTranslator.TranslationMode.SIMPLE)
+
+        LeetManager.MODE_EXTENDED ->
+            LeetTranslator.translateChar(char, LeetTranslator.TranslationMode.EXTENDED)
+
         LeetManager.MODE_CUSTOM -> {
-            val leets = viewModel.leets.value
-            val leet = leets.getOrNull(leetOption.customIndex)
+            val leet = viewModel.leets.value.getOrNull(leetOption.customIndex)
             leet?.getTranslation(char.toString()) ?: char.toString()
         }
+
         else -> char.toString()
     }
 }

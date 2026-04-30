@@ -2,9 +2,10 @@ package com.beigel.leetSpeak_Generator.ui.components.leet.selector
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.ui.res.stringResource
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import com.beigel.leetSpeak_Generator.R
@@ -12,8 +13,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.beigel.leetSpeak_Generator.data.LeetOption
 
@@ -27,19 +26,15 @@ fun AllOptionsSection(
     @SuppressLint("ModifierParameter") modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier) {
-
-            DetailedListView(
-                leetOptions = leetOptions,
-                onOptionSelected = onOptionSelected,
-                onToggleFavorite = onToggleFavorite,
-                onEditOption = onEditOption,
-                onShowTable = onShowTable
-            )
-
+        DetailedListView(
+            leetOptions = leetOptions,
+            onOptionSelected = onOptionSelected,
+            onToggleFavorite = onToggleFavorite,
+            onEditOption = onEditOption,
+            onShowTable = onShowTable
+        )
     }
 }
-
-
 
 @Composable
 private fun DetailedListView(
@@ -49,9 +44,13 @@ private fun DetailedListView(
     onEditOption: (LeetOption) -> Unit,
     onShowTable: (LeetOption) -> Unit
 ) {
+    // FIX 1: verticalScroll hinzugefügt, damit alle Einträge erreichbar sind.
+    // heightIn(max) bleibt als sinnvolle Begrenzung im BottomSheet erhalten.
     Column(
         verticalArrangement = Arrangement.spacedBy(8.dp),
-        modifier = Modifier.heightIn(max = 400.dp)
+        modifier = Modifier
+            .heightIn(max = 400.dp)
+            .verticalScroll(rememberScrollState())   // ← NEU
     ) {
         leetOptions.forEach { option ->
             DetailedCard(
@@ -64,7 +63,6 @@ private fun DetailedListView(
         }
     }
 }
-
 
 @Composable
 private fun DetailedCard(
@@ -98,7 +96,6 @@ private fun DetailedCard(
                 .padding(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Kein Icon mehr
             Column(modifier = Modifier.weight(1f)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(

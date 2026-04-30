@@ -24,7 +24,6 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 import com.beigel.leetSpeak_Generator.ui.theme.AppTheme
 
-
 @HiltViewModel
 class MainViewModel @Inject constructor(
     private val application: Application,
@@ -60,8 +59,10 @@ class MainViewModel @Inject constructor(
         .stateIn(viewModelScope, SharingStarted.Eagerly, false)
 
     val currentVersionInfo: VersionInfo = whatsNewPreferences.getCurrentVersionInfo()
+
     val appTheme: StateFlow<AppTheme> = themePreferences.appTheme
         .stateIn(viewModelScope, SharingStarted.Eagerly, AppTheme.PLANIT)
+
     val isFirstLaunch: StateFlow<Boolean> = whatsNewPreferences.isFirstLaunch
         .stateIn(viewModelScope, SharingStarted.Eagerly, false)
 
@@ -72,7 +73,6 @@ class MainViewModel @Inject constructor(
     val askBeforeClear: StateFlow<Boolean> = themePreferences.askBeforeClear
         .stateIn(viewModelScope, SharingStarted.Eagerly, true)
 
-    // FIXED: Leet Options with proper initialization
     private val _isInitialized = MutableStateFlow(false)
 
     val leetOptions: StateFlow<List<LeetOption>> = combine(
@@ -82,7 +82,6 @@ class MainViewModel @Inject constructor(
         _isInitialized
     ) { options, currentTranslationMode, currentLeetIndex, isInitialized ->
         if (!isInitialized) return@combine emptyList()
-
         options.map { option ->
             val isSelected = when (option.mode) {
                 LeetManager.MODE_SIMPLE -> currentTranslationMode == LeetTranslator.TranslationMode.SIMPLE
@@ -101,7 +100,6 @@ class MainViewModel @Inject constructor(
         _isInitialized
     ) { options, currentTranslationMode, currentLeetIndex, isInitialized ->
         if (!isInitialized) return@combine emptyList()
-
         options.map { option ->
             val isSelected = when (option.mode) {
                 LeetManager.MODE_SIMPLE -> currentTranslationMode == LeetTranslator.TranslationMode.SIMPLE
@@ -128,19 +126,21 @@ class MainViewModel @Inject constructor(
         inputText, currentMode, currentLeet
     ) { input, mode, leet ->
         translationManager.analyzeTranslation(input, mode, leet)
-    }.stateIn(viewModelScope, SharingStarted.Lazily,
-        translationManager.analyzeTranslation("", currentMode.value, null))
+    }.stateIn(
+        viewModelScope,
+        SharingStarted.Lazily,
+        translationManager.analyzeTranslation("", currentMode.value, null)
+    )
 
     val currentModeDisplayName: StateFlow<String> = combine(
         currentMode, currentLeet, isReverseMode
-    ) { mode, leet, reverse ->
+    ) { _, leet, _ ->
         uiManager.generateModeDisplayName(leet)
     }.stateIn(viewModelScope, SharingStarted.Lazily, "Simple Leet")
 
     val shouldShowOutput: StateFlow<Boolean> = outputText.map { it.isNotEmpty() }
         .stateIn(viewModelScope, SharingStarted.Lazily, false)
 
-    // NEU: Review Stats State
     val reviewStats: StateFlow<InAppReviewManager.ReviewStats> =
         inAppReviewManager.getReviewStats()
             .stateIn(
@@ -149,141 +149,84 @@ class MainViewModel @Inject constructor(
                 InAppReviewManager.ReviewStats(0, 0, 0, 0)
             )
 
-    // NEU: StateFlow für Review-Request
     private val _shouldRequestReview = MutableStateFlow(false)
     val shouldRequestReview: StateFlow<Boolean> = _shouldRequestReview.asStateFlow()
 
-    // Add this StateFlow
     private val _showClearInputDialog = MutableStateFlow(false)
     val showClearInputDialog: StateFlow<Boolean> = _showClearInputDialog.asStateFlow()
 
     init {
         initializeFavoriteLeet()
-        trackAppStart() // NEU: App-Start tracken
+        trackAppStart()
     }
 
-    /**
-     * NEU: Trackt den App-Start und prüft Review-Bedingungen
-     */
     private fun trackAppStart() {
         viewModelScope.launch {
-            // App-Start zählen
             inAppReviewManager.incrementAppStartCount()
-
-            // Prüfe ob Review angezeigt werden sollte
             if (inAppReviewManager.shouldShowReview()) {
-                android.util.Log.d("MainViewModel", "✅ Review conditions met - triggering review request")
                 _shouldRequestReview.value = true
-            } else {
-                android.util.Log.d("MainViewModel", "ℹ️ Review conditions not met yet")
             }
         }
     }
 
-    /**
-     * Lädt das favorisierte Leet beim App-Start und wählt es automatisch aus
-     *
-     * Diese Funktion stellt sicher, dass das vom Nutzer markierte Favorit-Leet
-     * nach einem App-Neustart automatisch aus SharedPreferences geladen und ausgewählt wird.
-     *
-     * WICHTIG: Die Funktion wartet automatisch, bis alle Daten aus SharedPreferences
-     * geladen wurden (verhindert Race Conditions).
-     */
     private fun initializeFavoriteLeet() {
         viewModelScope.launch {
             try {
-                android.util.Log.d("MainViewModel", "🔄 Starting favorite leet initialization (waiting for data load)...")
+                android.util.Log.d("MainViewModel", "🔄 Initialisierung startet...")
 
-                // loadFavoriteLeet() wartet automatisch bis SharedPreferences geladen sind
                 leetManager.loadFavoriteLeet()
                     .onSuccess { result ->
-                        android.util.Log.d("MainViewModel", "✅ Favorite leet loaded from SharedPreferences: $result")
-
                         when (result) {
                             is LeetRepository.FavoriteLeetResult.Simple -> {
-                                android.util.Log.d("MainViewModel", "📌 Auto-selecting favorite: Simple Leet")
                                 uiManager.setTranslationMode(LeetTranslator.TranslationMode.SIMPLE)
-                                android.util.Log.d("MainViewModel", "✅ Mode set to SIMPLE")
-
-                                // Kurze Verzögerung um sicherzustellen, dass State propagiert wurde
-                                kotlinx.coroutines.delay(100)
-                                _isInitialized.value = true
-                                android.util.Log.d("MainViewModel", "✅ Initialization complete (SIMPLE) - Favorite auto-selected ✨")
+                                android.util.Log.d("MainViewModel", "✅ Favorit: Simple Leet")
                             }
 
                             is LeetRepository.FavoriteLeetResult.Extended -> {
-                                android.util.Log.d("MainViewModel", "📌 Auto-selecting favorite: Extended Leet")
                                 uiManager.setTranslationMode(LeetTranslator.TranslationMode.EXTENDED)
-                                android.util.Log.d("MainViewModel", "✅ Mode set to EXTENDED")
-
-                                // Kurze Verzögerung um sicherzustellen, dass State propagiert wurde
-                                kotlinx.coroutines.delay(100)
-                                _isInitialized.value = true
-                                android.util.Log.d("MainViewModel", "✅ Initialization complete (EXTENDED) - Favorite auto-selected ✨")
+                                android.util.Log.d("MainViewModel", "✅ Favorit: Extended Leet")
                             }
 
                             is LeetRepository.FavoriteLeetResult.Custom -> {
-                                android.util.Log.d("MainViewModel", "📌 Auto-selecting favorite: Custom Leet '${result.leet.name}' (index: ${result.customIndex})")
-
-                                // Erst den Index setzen, dann den Modus
+                                // Index zuerst setzen, dann Modus – beides in dieser Coroutine,
+                                // dadurch keine Race Condition mehr.
                                 repository.setCurrentLeetIndex(result.customIndex)
                                     .onSuccess {
-                                        android.util.Log.d("MainViewModel", "✅ Custom leet index set: ${result.customIndex}")
-
-                                        viewModelScope.launch {
-                                            // Verzögerung um sicherzustellen, dass der Index propagiert wurde
-                                            kotlinx.coroutines.delay(100)
-
-                                            uiManager.setTranslationMode(LeetTranslator.TranslationMode.CUSTOM)
-                                            android.util.Log.d("MainViewModel", "✅ Mode set to CUSTOM")
-
-                                            // Weitere Verzögerung für Custom Mode
-                                            kotlinx.coroutines.delay(150)
-
-                                            _isInitialized.value = true
-                                            android.util.Log.d("MainViewModel", "✅ Initialization complete (CUSTOM) - Favorite '${result.leet.name}' auto-selected ✨")
-                                        }
+                                        uiManager.setTranslationMode(LeetTranslator.TranslationMode.CUSTOM)
+                                        android.util.Log.d("MainViewModel", "✅ Favorit: '${result.leet.name}'")
                                     }
-                                    .onFailure { exception ->
-                                        android.util.Log.e("MainViewModel", "❌ Failed to set custom leet index", exception)
-                                        android.util.Log.w("MainViewModel", "⚠️ Falling back to SIMPLE mode")
-
+                                    .onFailure { e ->
+                                        android.util.Log.e("MainViewModel", "❌ Custom-Index Fehler", e)
                                         uiManager.setTranslationMode(LeetTranslator.TranslationMode.SIMPLE)
-                                        kotlinx.coroutines.delay(100)
-                                        _isInitialized.value = true
                                     }
                             }
                         }
                     }
-                    .onFailure { exception ->
-                        android.util.Log.e("MainViewModel", "❌ Failed to load favorite leet from SharedPreferences", exception)
-                        android.util.Log.w("MainViewModel", "⚠️ Falling back to SIMPLE mode")
-
+                    .onFailure { e ->
+                        android.util.Log.e("MainViewModel", "❌ Favorit laden fehlgeschlagen", e)
                         uiManager.setTranslationMode(LeetTranslator.TranslationMode.SIMPLE)
-                        kotlinx.coroutines.delay(100)
-                        _isInitialized.value = true
                     }
-            } catch (e: Exception) {
-                android.util.Log.e("MainViewModel", "❌ Exception during initialization", e)
-                android.util.Log.w("MainViewModel", "⚠️ Falling back to SIMPLE mode")
 
+            } catch (e: Exception) {
+                android.util.Log.e("MainViewModel", "❌ Initialisierungsfehler", e)
                 uiManager.setTranslationMode(LeetTranslator.TranslationMode.SIMPLE)
-                kotlinx.coroutines.delay(100)
+            } finally {
+                // _isInitialized wird IMMER gesetzt, auch bei Fehler –
+                // damit die UI nicht dauerhaft leer bleibt.
                 _isInitialized.value = true
+                android.util.Log.d("MainViewModel", "✅ Initialisierung abgeschlossen")
             }
         }
     }
 
     private fun createLeet(
         name: String,
-        iconImageVector: ImageVector,
         useExtendedDefaults: Boolean,
         customTranslations: Map<String, String>? = null
     ) {
         viewModelScope.launch {
             uiManager.setLoading(true)
-
-            leetManager.createLeet(name, iconImageVector, useExtendedDefaults, customTranslations)
+            leetManager.createLeet(name, useExtendedDefaults, customTranslations)
                 .onSuccess { leet ->
                     uiManager.setTranslationMode(LeetTranslator.TranslationMode.CUSTOM)
                     uiManager.setSuccess(application.getString(R.string.success_leet_created, leet.name))
@@ -301,7 +244,6 @@ class MainViewModel @Inject constructor(
             is MainIntent.ToggleFavorite -> toggleFavorite(intent.leetOption)
             is MainIntent.CreateLeet -> createLeet(
                 intent.name,
-                intent.icon,
                 intent.useExtendedDefaults,
                 intent.customTranslations
             )
@@ -333,7 +275,6 @@ class MainViewModel @Inject constructor(
                     }
                 }
             }
-
             leetManager.changeMode(leetOption)
                 .onFailure { exception ->
                     uiManager.setError(application.getString(R.string.error_change_mode, exception.message ?: ""))
@@ -360,7 +301,6 @@ class MainViewModel @Inject constructor(
     private fun updateLeet(index: Int, leet: CustomLeet) {
         viewModelScope.launch {
             uiManager.setLoading(true)
-
             leetManager.updateLeet(index, leet)
                 .onSuccess {
                     uiManager.setSuccess(application.getString(R.string.success_leet_updated, leet.name))
@@ -374,7 +314,6 @@ class MainViewModel @Inject constructor(
     private fun deleteLeet(index: Int) {
         viewModelScope.launch {
             uiManager.setLoading(true)
-
             leetManager.deleteLeet(index)
                 .onSuccess { result ->
                     val message = when {
@@ -382,11 +321,9 @@ class MainViewModel @Inject constructor(
                         result.wasFavorite -> application.getString(R.string.info_favorite_deleted)
                         else -> application.getString(R.string.success_leet_deleted)
                     }
-
                     if (result.wasLastLeet) {
                         uiManager.setTranslationMode(LeetTranslator.TranslationMode.SIMPLE)
                     }
-
                     uiManager.setSuccess(message)
                 }
                 .onFailure { exception ->
@@ -397,9 +334,7 @@ class MainViewModel @Inject constructor(
 
     private fun toggleReverseMode() {
         val currentOutputBeforeToggle = outputText.value
-
         uiManager.toggleReverseMode()
-
         if (currentOutputBeforeToggle.isNotEmpty()) {
             uiManager.updateInputText(currentOutputBeforeToggle)
         }
@@ -409,14 +344,10 @@ class MainViewModel @Inject constructor(
         val text = outputText.value
         if (text.isNotEmpty()) {
             uiManager.setSuccess(application.getString(R.string.success_copied_to_clipboard))
-
-            // Trigger clear input dialog/action
             if (clearInputAfterCopy.value) {
                 if (askBeforeClear.value) {
-                    // Show dialog - handled in UI
                     _showClearInputDialog.value = true
                 } else {
-                    // Clear automatically
                     uiManager.clearInput()
                 }
             }
@@ -425,19 +356,15 @@ class MainViewModel @Inject constructor(
         }
     }
 
-
     fun confirmClearInput(shouldClear: Boolean, dontAskAgain: Boolean) {
         viewModelScope.launch {
             if (dontAskAgain) {
-                // Speichere die Entscheidung
                 themePreferences.setAskBeforeClear(false)
                 themePreferences.setClearInputAfterCopy(shouldClear)
             }
-
             if (shouldClear) {
                 uiManager.clearInput()
             }
-
             _showClearInputDialog.value = false
         }
     }
@@ -447,9 +374,7 @@ class MainViewModel @Inject constructor(
     }
 
     private fun markWhatsNewAsShown() {
-        viewModelScope.launch {
-            whatsNewPreferences.markCurrentVersionAsShown()
-        }
+        viewModelScope.launch { whatsNewPreferences.markCurrentVersionAsShown() }
     }
 
     private fun resetWhatsNewForTesting() {
@@ -473,20 +398,16 @@ class MainViewModel @Inject constructor(
             LeetManager.MODE_CUSTOM -> LeetTranslator.TranslationMode.CUSTOM
             else -> LeetTranslator.TranslationMode.SIMPLE
         }
-
         val leet = if (leetOption.isCustom && leetOption.customIndex >= 0) {
             leets.value.getOrNull(leetOption.customIndex)
         } else null
-
         return translationManager.generatePreview(mode, leet, sampleText)
     }
 
-    // NEU: Review wurde angezeigt/abgelehnt
     fun onReviewHandled() {
         _shouldRequestReview.value = false
     }
 
-    // NEU: Review Reset für Testing
     fun resetReviewForTesting() {
         viewModelScope.launch {
             inAppReviewManager.resetForTesting()
@@ -494,10 +415,7 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    fun updateInputText(text: String) {
-        uiManager.updateInputText(text)
-    }
-
+    fun updateInputText(text: String) = uiManager.updateInputText(text)
     fun clearInput() = uiManager.clearInput()
 
     override fun onCleared() {

@@ -12,13 +12,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 
-/**
- * Hilt Module für Dependency Injection
- * Stellt alle benötigten Dependencies zur Verfügung
- * UPDATED: WhatsNewPreferences & InAppReviewManager hinzugefügt
- */
-
-@Module(includes = [DomainModule::class])
+@Module
 @InstallIn(SingletonComponent::class)
 object AppModule {
 
@@ -26,31 +20,23 @@ object AppModule {
     @Singleton
     fun provideProfileRepository(
         @ApplicationContext context: Context
-    ): LeetRepository {
-        return LeetRepository(context)
-    }
+    ): LeetRepository = LeetRepository(context)
 
     @Provides
     @Singleton
     fun provideThemePreferences(
         @ApplicationContext context: Context
-    ): ThemePreferences {
-        return ThemePreferences(context)
-    }
+    ): ThemePreferences = ThemePreferences(context)
 
     @Provides
     @Singleton
     fun provideWhatsNewPreferences(
         @ApplicationContext context: Context
-    ): WhatsNewPreferences {
-        return WhatsNewPreferences(context)
-    }
+    ): WhatsNewPreferences = WhatsNewPreferences(context)
 
     @Provides
     @Singleton
     fun provideInAppReviewManager(
         @ApplicationContext context: Context
-    ): InAppReviewManager {
-        return InAppReviewManager(context)
-    }
+    ): InAppReviewManager = InAppReviewManager(context)
 }

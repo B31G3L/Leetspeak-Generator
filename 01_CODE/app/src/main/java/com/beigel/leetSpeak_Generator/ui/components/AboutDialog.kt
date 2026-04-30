@@ -16,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.platform.UriHandler
 import androidx.compose.ui.res.painterResource
@@ -25,22 +26,16 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import com.beigel.leetSpeak_Generator.BuildConfig
 import com.beigel.leetSpeak_Generator.R
 
-/**
- * Überarbeitete About Dialog mit persönlichem Touch und Support-Integration
- */
 @Composable
-fun AboutDialog(
-    onDismiss: () -> Unit
-) {
+fun AboutDialog(onDismiss: () -> Unit) {
     val uriHandler = LocalUriHandler.current
 
     Dialog(
         onDismissRequest = onDismiss,
-        properties = DialogProperties(
-            usePlatformDefaultWidth = false
-        )
+        properties = DialogProperties(usePlatformDefaultWidth = false)
     ) {
         Surface(
             modifier = Modifier
@@ -56,30 +51,15 @@ fun AboutDialog(
                     .padding(24.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // ✅ App Logo & Header
                 AppLogoHeader()
-
                 Spacer(modifier = Modifier.height(24.dp))
-
-                // ✅ Persönliche Story
                 PersonalStorySection()
-
                 Spacer(modifier = Modifier.height(20.dp))
-
-                // ✅ App Features Kompakt
                 FeaturesOverviewSection()
-
                 Spacer(modifier = Modifier.height(20.dp))
-
-                // ✅ Support Section
-                SupportSection(
-                    uriHandler = uriHandler,
-                    onDismiss = onDismiss
-                )
-
+                SupportSection(uriHandler = uriHandler, onDismiss = onDismiss)
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // ✅ Schließen Button
                 OutlinedButton(
                     onClick = onDismiss,
                     modifier = Modifier.fillMaxWidth(),
@@ -90,7 +70,6 @@ fun AboutDialog(
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                // Copyright
                 Text(
                     text = stringResource(R.string.about_dialog_copyright),
                     style = MaterialTheme.typography.bodySmall,
@@ -103,48 +82,32 @@ fun AboutDialog(
     }
 }
 
-/**
- * App Logo mit Animation
- */
 @Composable
 private fun AppLogoHeader() {
     val infiniteTransition = rememberInfiniteTransition(label = "logo_animation")
 
-    // Sanfte Rotation
     val rotation by infiniteTransition.animateFloat(
-        initialValue = 0f,
-        targetValue = 360f,
+        initialValue = 0f, targetValue = 360f,
         animationSpec = infiniteRepeatable(
             animation = tween(20000, easing = LinearEasing),
             repeatMode = RepeatMode.Restart
-        ),
-        label = "logo_rotation"
+        ), label = "logo_rotation"
     )
 
-    // Sanftes Pulsieren
     val scale by infiniteTransition.animateFloat(
-        initialValue = 0.95f,
-        targetValue = 1.05f,
+        initialValue = 0.95f, targetValue = 1.05f,
         animationSpec = infiniteRepeatable(
             animation = tween(3000, easing = FastOutSlowInEasing),
             repeatMode = RepeatMode.Reverse
-        ),
-        label = "logo_pulse"
+        ), label = "logo_pulse"
     )
 
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        // Logo Container
-        Box(
-            modifier = Modifier.size(120.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            // Gradient Hintergrund
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Box(modifier = Modifier.size(120.dp), contentAlignment = Alignment.Center) {
             Box(
                 modifier = Modifier
                     .size(100.dp)
-                    .graphicsLayer(rotationZ = rotation * 0.5f) // Langsamere Rotation für Hintergrund
+                    .graphicsLayer(rotationZ = rotation * 0.5f)
                     .background(
                         brush = Brush.sweepGradient(
                             colors = listOf(
@@ -157,8 +120,6 @@ private fun AppLogoHeader() {
                         shape = CircleShape
                     )
             )
-
-            // App Logo
             Surface(
                 modifier = Modifier
                     .size(80.dp)
@@ -180,7 +141,6 @@ private fun AppLogoHeader() {
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // App Name
         Text(
             text = stringResource(R.string.about_dialog_title),
             style = MaterialTheme.typography.headlineMedium,
@@ -191,13 +151,12 @@ private fun AppLogoHeader() {
 
         Spacer(modifier = Modifier.height(4.dp))
 
-        // Version Badge
         Surface(
             color = MaterialTheme.colorScheme.primaryContainer,
             shape = RoundedCornerShape(16.dp)
         ) {
             Text(
-                text = stringResource(R.string.about_dialog_version),
+                text = "Version ${BuildConfig.VERSION_NAME}",
                 style = MaterialTheme.typography.labelLarge,
                 color = MaterialTheme.colorScheme.onPrimaryContainer,
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
@@ -207,9 +166,6 @@ private fun AppLogoHeader() {
     }
 }
 
-/**
- * Persönliche Geschichte des Entwicklers
- */
 @Composable
 private fun PersonalStorySection() {
     Card(
@@ -222,17 +178,13 @@ private fun PersonalStorySection() {
             modifier = Modifier.padding(20.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Entwickler Icon
             Icon(
                 imageVector = Icons.Default.Person,
                 contentDescription = null,
                 modifier = Modifier.size(32.dp),
                 tint = MaterialTheme.colorScheme.primary
             )
-
             Spacer(modifier = Modifier.height(12.dp))
-
-            // Persönliche Nachricht
             Text(
                 text = stringResource(R.string.about_personal_story),
                 style = MaterialTheme.typography.bodyLarge,
@@ -240,10 +192,7 @@ private fun PersonalStorySection() {
                 textAlign = TextAlign.Center,
                 lineHeight = MaterialTheme.typography.bodyLarge.lineHeight * 1.2f
             )
-
             Spacer(modifier = Modifier.height(12.dp))
-
-            // Kostenlos-Versprechen mit Icon
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center
@@ -266,9 +215,6 @@ private fun PersonalStorySection() {
     }
 }
 
-/**
- * Kompakte Features Übersicht
- */
 @Composable
 private fun FeaturesOverviewSection() {
     Card(
@@ -277,9 +223,7 @@ private fun FeaturesOverviewSection() {
         ),
         shape = RoundedCornerShape(16.dp)
     ) {
-        Column(
-            modifier = Modifier.padding(16.dp)
-        ) {
+        Column(modifier = Modifier.padding(16.dp)) {
             Text(
                 text = stringResource(R.string.about_features_title),
                 style = MaterialTheme.typography.titleMedium,
@@ -301,15 +245,9 @@ private fun FeaturesOverviewSection() {
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     rowFeatures.forEach { (feature, icon) ->
-                        FeatureChip(
-                            text = feature,
-                            icon = icon,
-                            modifier = Modifier.weight(1f)
-                        )
+                        FeatureChip(text = feature, icon = icon, modifier = Modifier.weight(1f))
                     }
-                    if (rowFeatures.size == 1) {
-                        Spacer(modifier = Modifier.weight(1f))
-                    }
+                    if (rowFeatures.size == 1) Spacer(modifier = Modifier.weight(1f))
                 }
                 Spacer(modifier = Modifier.height(8.dp))
             }
@@ -317,15 +255,8 @@ private fun FeaturesOverviewSection() {
     }
 }
 
-/**
- * Support Section mit Ko-Fi und Bewertung
- */
 @Composable
-private fun SupportSection(
-    uriHandler: UriHandler,
-    onDismiss: () -> Unit
-) {
-    // Get string resources in composable context
+private fun SupportSection(uriHandler: UriHandler, onDismiss: () -> Unit) {
     val kofiUrl = stringResource(R.string.url_kofi)
     val playStoreUrl = stringResource(R.string.url_play_store)
 
@@ -339,10 +270,7 @@ private fun SupportSection(
             modifier = Modifier.padding(20.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Support Header
-            Row(
-                verticalAlignment = Alignment.CenterVertically
-            ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
                     imageVector = Icons.Default.Favorite,
                     contentDescription = null,
@@ -357,28 +285,21 @@ private fun SupportSection(
                     color = MaterialTheme.colorScheme.secondary
                 )
             }
-
             Spacer(modifier = Modifier.height(12.dp))
-
             Text(
                 text = stringResource(R.string.about_support_message),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurface,
                 textAlign = TextAlign.Center
             )
-
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Support Buttons
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                // Ko-Fi Button
                 Button(
-                    onClick = {
-                        uriHandler.openUri(kofiUrl)
-                    },
+                    onClick = { uriHandler.openUri(kofiUrl) },
                     modifier = Modifier.weight(1f),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.tertiary
@@ -397,12 +318,8 @@ private fun SupportSection(
                     )
                 }
 
-                // Play Store Bewertung
                 Button(
-                    onClick = {
-                        uriHandler.openUri(playStoreUrl)
-                        onDismiss()
-                    },
+                    onClick = { uriHandler.openUri(playStoreUrl); onDismiss() },
                     modifier = Modifier.weight(1f),
                     shape = RoundedCornerShape(12.dp)
                 ) {
@@ -420,8 +337,6 @@ private fun SupportSection(
             }
 
             Spacer(modifier = Modifier.height(12.dp))
-
-            // Dankeschön Message
             Surface(
                 color = MaterialTheme.colorScheme.surface.copy(alpha = 0.7f),
                 shape = RoundedCornerShape(12.dp)
@@ -438,15 +353,8 @@ private fun SupportSection(
     }
 }
 
-/**
- * Feature Chip Component
- */
 @Composable
-private fun FeatureChip(
-    text: String,
-    icon: ImageVector,
-    modifier: Modifier = Modifier
-) {
+private fun FeatureChip(text: String, icon: ImageVector, modifier: Modifier = Modifier) {
     Surface(
         modifier = modifier,
         color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),

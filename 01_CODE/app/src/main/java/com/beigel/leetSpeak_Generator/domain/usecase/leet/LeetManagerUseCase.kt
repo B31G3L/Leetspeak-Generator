@@ -1,6 +1,5 @@
 package com.beigel.leetSpeak_Generator.domain.usecase.leet
 
-import androidx.compose.ui.graphics.vector.ImageVector
 import com.beigel.leetSpeak_Generator.data.CustomLeet
 import com.beigel.leetSpeak_Generator.data.LeetOption
 import com.beigel.leetSpeak_Generator.repository.LeetRepository
@@ -8,10 +7,6 @@ import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 import javax.inject.Singleton
 
-/**
- * Kombinierter Use Case für alle Leet-Management Operationen
- * FIXED: Erweitert um customTranslations Support
- */
 @Singleton
 class LeetManagerUseCase @Inject constructor(
     private val getLeetOptionsUseCase: GetLeetOptionsUseCase,
@@ -23,76 +18,37 @@ class LeetManagerUseCase @Inject constructor(
     private val loadFavoriteLeetUseCase: LoadFavoriteLeetUseCase,
     private val setCurrentLeetIndexUseCase: SetCurrentLeetIndexUseCase
 ) {
+    fun getLeetOptions(): Flow<List<LeetOption>> = getLeetOptionsUseCase()
 
-    /**
-     * Lädt alle verfügbaren Leet-Optionen
-     */
-    fun getLeetOptions(): Flow<List<LeetOption>> {
-        return getLeetOptionsUseCase()
-    }
+    fun getFavoriteLeetOptions(): Flow<List<LeetOption>> = getFavoriteLeetOptionsUseCase()
 
-    /**
-     * Lädt nur die favorisierten Leet-Optionen
-     */
-    fun getFavoriteLeetOptions(): Flow<List<LeetOption>> {
-        return getFavoriteLeetOptionsUseCase()
-    }
-
-    /**
-     * FIXED: Erstellt ein neues Leet mit optionalen individuellen Übersetzungen
-     */
     suspend fun createLeet(
         name: String,
-        iconResId: ImageVector,
         useExtendedDefaults: Boolean = false,
-        customTranslations: Map<String, String>? = null // NEU: Individuelle Übersetzungen
-    ): Result<CustomLeet> {
-        return createLeetUseCase(name, iconResId, useExtendedDefaults, customTranslations)
-    }
+        customTranslations: Map<String, String>? = null
+    ): Result<CustomLeet> = createLeetUseCase(name, useExtendedDefaults, customTranslations)
 
-    /**
-     * Aktualisiert ein bestehendes Leet
-     */
     suspend fun updateLeet(
         index: Int,
         leet: CustomLeet
-    ): Result<LeetRepository.LeetUpdateResult> {
-        return updateLeetUseCase(index, leet)
-    }
+    ): Result<LeetRepository.LeetUpdateResult> = updateLeetUseCase(index, leet)
 
-    /**
-     * Löscht ein Leet
-     */
     suspend fun deleteLeet(
         index: Int
-    ): Result<LeetRepository.LeetDeletionResult> {
-        return deleteLeetUseCase(index)
-    }
+    ): Result<LeetRepository.LeetDeletionResult> = deleteLeetUseCase(index)
 
-    /**
-     * Schaltet Favoriten-Status um
-     */
     suspend fun toggleFavorite(
         leetOption: LeetOption
-    ): Result<LeetRepository.FavoriteToggleResult> {
-        return toggleFavoriteUseCase(leetOption.mode, leetOption.customIndex)
-    }
+    ): Result<LeetRepository.FavoriteToggleResult> =
+        toggleFavoriteUseCase(leetOption.mode, leetOption.customIndex)
 
-    /**
-     * Lädt das Favoriten-Leet beim App-Start
-     */
-    suspend fun loadFavoriteLeet(): Result<LeetRepository.FavoriteLeetResult> {
-        return loadFavoriteLeetUseCase()
-    }
+    suspend fun loadFavoriteLeet(): Result<LeetRepository.FavoriteLeetResult> =
+        loadFavoriteLeetUseCase()
 
-    /**
-     * Ändert den aktuellen Leet-Modus
-     */
-    suspend fun changeMode(leetOption: LeetOption): Result<Unit> {
-        return if (leetOption.isCustom && leetOption.customIndex >= 0) {
+    suspend fun changeMode(leetOption: LeetOption): Result<Unit> =
+        if (leetOption.isCustom && leetOption.customIndex >= 0) {
             setCurrentLeetIndexUseCase(leetOption.customIndex)
         } else {
-            Result.success(Unit) // Für Built-in Modi ist kein Index nötig
+            Result.success(Unit)
         }
-    }
 }
