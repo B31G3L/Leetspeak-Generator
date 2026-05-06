@@ -407,5 +407,8 @@
     <string name="about_planned_deeplink">Deeplink support – leetspeak://translate?text=hello</string>
     <string name="about_planned_share">Share button – directly from output without copy</string>
     <string name="about_planned_history">History – save and reuse recent translations</string>
+    <string name="reorder_mode_enable">Enable reorder mode</string>
+    <string name="reorder_mode_disable">Disable reorder mode</string>
+    <string name="reorder_mode_hint">Hold and drag the handle to reorder</string>
 
 </resources>

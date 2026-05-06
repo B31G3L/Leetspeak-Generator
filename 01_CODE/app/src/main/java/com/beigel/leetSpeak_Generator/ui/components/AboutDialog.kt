@@ -16,7 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.foundation.Image
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.platform.UriHandler
 import androidx.compose.ui.res.painterResource
@@ -86,67 +86,34 @@ fun AboutDialog(onDismiss: () -> Unit) {
 private fun AppLogoHeader() {
     val infiniteTransition = rememberInfiniteTransition(label = "logo_animation")
 
-    val rotation by infiniteTransition.animateFloat(
-        initialValue = 0f, targetValue = 360f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(20000, easing = LinearEasing),
-            repeatMode = RepeatMode.Restart
-        ), label = "logo_rotation"
-    )
-
     val scale by infiniteTransition.animateFloat(
-        initialValue = 0.95f, targetValue = 1.05f,
+        initialValue = 0.95f,
+        targetValue  = 1.05f,
         animationSpec = infiniteRepeatable(
-            animation = tween(3000, easing = FastOutSlowInEasing),
+            animation  = tween(3000, easing = FastOutSlowInEasing),
             repeatMode = RepeatMode.Reverse
-        ), label = "logo_pulse"
+        ),
+        label = "logo_pulse"
     )
 
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Box(modifier = Modifier.size(120.dp), contentAlignment = Alignment.Center) {
-            Box(
-                modifier = Modifier
-                    .size(100.dp)
-                    .graphicsLayer(rotationZ = rotation * 0.5f)
-                    .background(
-                        brush = Brush.sweepGradient(
-                            colors = listOf(
-                                MaterialTheme.colorScheme.primary,
-                                MaterialTheme.colorScheme.secondary,
-                                MaterialTheme.colorScheme.tertiary,
-                                MaterialTheme.colorScheme.primary
-                            )
-                        ),
-                        shape = CircleShape
-                    )
-            )
-            Surface(
-                modifier = Modifier
-                    .size(80.dp)
-                    .graphicsLayer(scaleX = scale, scaleY = scale),
-                color = MaterialTheme.colorScheme.surface,
-                shape = CircleShape,
-                shadowElevation = 8.dp
-            ) {
-                Box(contentAlignment = Alignment.Center) {
-                    Icon(
-                        painter = painterResource(R.drawable.ic_custom_mode),
-                        contentDescription = stringResource(R.string.about_logo_description),
-                        modifier = Modifier.size(40.dp),
-                        tint = MaterialTheme.colorScheme.primary
-                    )
-                }
-            }
-        }
+        // Nur das Logo – kein Kreis drumherum
+        Image(
+            painter            = painterResource(R.mipmap.ic_launcher_foreground),
+            contentDescription = stringResource(R.string.about_logo_description),
+            modifier           = Modifier
+                .size(160.dp)
+                .graphicsLayer(scaleX = scale, scaleY = scale)
+        )
 
         Spacer(modifier = Modifier.height(16.dp))
 
         Text(
-            text = stringResource(R.string.about_dialog_title),
-            style = MaterialTheme.typography.headlineMedium,
+            text       = stringResource(R.string.about_dialog_title),
+            style      = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.ExtraBold,
-            color = MaterialTheme.colorScheme.onSurface,
-            textAlign = TextAlign.Center
+            color      = MaterialTheme.colorScheme.onSurface,
+            textAlign  = TextAlign.Center
         )
 
         Spacer(modifier = Modifier.height(4.dp))
@@ -156,10 +123,10 @@ private fun AppLogoHeader() {
             shape = RoundedCornerShape(16.dp)
         ) {
             Text(
-                text = "Version ${BuildConfig.VERSION_NAME}",
-                style = MaterialTheme.typography.labelLarge,
-                color = MaterialTheme.colorScheme.onPrimaryContainer,
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                text       = "Version ${BuildConfig.VERSION_NAME}",
+                style      = MaterialTheme.typography.labelLarge,
+                color      = MaterialTheme.colorScheme.onPrimaryContainer,
+                modifier   = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                 fontWeight = FontWeight.Bold
             )
         }

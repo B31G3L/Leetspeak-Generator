@@ -198,7 +198,7 @@ private fun InputCardHeader(
             if (showMicButton) {
                 IconButton(
                     onClick  = onMicClick,
-                    modifier = Modifier.size(28.dp)
+                    modifier = Modifier.size(40.dp)  // größerer Button
                 ) {
                     Icon(
                         imageVector = if (isListening) Icons.Default.MicOff
@@ -207,7 +207,7 @@ private fun InputCardHeader(
                             if (isListening) R.string.speech_input_stop
                             else R.string.speech_input_start
                         ),
-                        modifier = Modifier.size(16.dp),
+                        modifier = Modifier.size(24.dp),  // größeres Icon
                         tint     = if (isListening) MaterialTheme.colorScheme.error
                         else MaterialTheme.colorScheme.onSurfaceVariant
                     )

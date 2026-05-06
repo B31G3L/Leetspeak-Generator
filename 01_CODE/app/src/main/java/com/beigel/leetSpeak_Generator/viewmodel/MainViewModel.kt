@@ -31,18 +31,17 @@ class MainViewModel @Inject constructor(
     private val uiManager: UiManagerUseCase,
     private val repository: LeetRepository,
     private val themePreferences: ThemePreferences,
-    private val inAppReviewManager: InAppReviewManager,
-    private val onboardingPreferences: OnboardingPreferences
-
+    private val onboardingPreferences: OnboardingPreferences,
+    private val inAppReviewManager: InAppReviewManager
 ) : ViewModel() {
 
-    val inputText = uiManager.inputText
+    val inputText     = uiManager.inputText
     val isReverseMode = uiManager.isReverseMode
-    val currentMode = uiManager.currentMode
-    val uiState = uiManager.uiState
-    val leets = repository.leets
-    val currentLeet = repository.currentLeet
-    val hasLeets = repository.hasLeets
+    val currentMode   = uiManager.currentMode
+    val uiState       = uiManager.uiState
+    val leets         = repository.leets
+    val currentLeet   = repository.currentLeet
+    val hasLeets      = repository.hasLeets
 
     val defaultViewExpanded: StateFlow<Boolean> = themePreferences.defaultViewExpanded
         .stateIn(viewModelScope, SharingStarted.Eagerly, false)
@@ -62,24 +61,21 @@ class MainViewModel @Inject constructor(
     val hapticFeedbackEnabled: StateFlow<Boolean> = themePreferences.hapticFeedbackEnabled
         .stateIn(viewModelScope, SharingStarted.Eagerly, true)
 
-    private val _isInitialized = MutableStateFlow(false)
+    // Onboarding
     val isOnboardingCompleted: StateFlow<Boolean> = onboardingPreferences.isOnboardingCompleted
-        .stateIn(viewModelScope, SharingStarted.Eagerly, true) // true = kein Flackern beim Start
+        .stateIn(viewModelScope, SharingStarted.Eagerly, true)
 
-    fun completeOnboarding() {
-        viewModelScope.launch {
-            onboardingPreferences.setOnboardingCompleted()
-        }
-    }
+    private val _isInitialized = MutableStateFlow(false)
+
     val leetOptions: StateFlow<List<LeetOption>> = combine(
         leetManager.getLeetOptions(), currentMode, repository.currentLeetIndex, _isInitialized
     ) { options, currentTranslationMode, currentLeetIndex, isInitialized ->
         if (!isInitialized) return@combine emptyList()
         options.map { option ->
             option.copy(isSelected = when (option.mode) {
-                LeetManager.MODE_SIMPLE -> currentTranslationMode == LeetTranslator.TranslationMode.SIMPLE
+                LeetManager.MODE_SIMPLE   -> currentTranslationMode == LeetTranslator.TranslationMode.SIMPLE
                 LeetManager.MODE_EXTENDED -> currentTranslationMode == LeetTranslator.TranslationMode.EXTENDED
-                LeetManager.MODE_CUSTOM -> currentTranslationMode == LeetTranslator.TranslationMode.CUSTOM
+                LeetManager.MODE_CUSTOM   -> currentTranslationMode == LeetTranslator.TranslationMode.CUSTOM
                         && option.customIndex == currentLeetIndex
                 else -> false
             })
@@ -92,9 +88,9 @@ class MainViewModel @Inject constructor(
         if (!isInitialized) return@combine emptyList()
         options.map { option ->
             option.copy(isSelected = when (option.mode) {
-                LeetManager.MODE_SIMPLE -> currentTranslationMode == LeetTranslator.TranslationMode.SIMPLE
+                LeetManager.MODE_SIMPLE   -> currentTranslationMode == LeetTranslator.TranslationMode.SIMPLE
                 LeetManager.MODE_EXTENDED -> currentTranslationMode == LeetTranslator.TranslationMode.EXTENDED
-                LeetManager.MODE_CUSTOM -> currentTranslationMode == LeetTranslator.TranslationMode.CUSTOM
+                LeetManager.MODE_CUSTOM   -> currentTranslationMode == LeetTranslator.TranslationMode.CUSTOM
                         && option.customIndex == currentLeetIndex
                 else -> false
             })
@@ -113,8 +109,10 @@ class MainViewModel @Inject constructor(
 
     val translationStats = combine(inputText, currentMode, currentLeet) { input, mode, leet ->
         translationManager.analyzeTranslation(input, mode, leet)
-    }.stateIn(viewModelScope, SharingStarted.Lazily,
-        translationManager.analyzeTranslation("", currentMode.value, null))
+    }.stateIn(
+        viewModelScope, SharingStarted.Lazily,
+        translationManager.analyzeTranslation("", currentMode.value, null)
+    )
 
     val currentModeDisplayName: StateFlow<String> = combine(
         currentMode, currentLeet, isReverseMode
@@ -127,8 +125,10 @@ class MainViewModel @Inject constructor(
 
     val reviewStats: StateFlow<InAppReviewManager.ReviewStats> =
         inAppReviewManager.getReviewStats()
-            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000),
-                InAppReviewManager.ReviewStats(0, 0, 0, 0))
+            .stateIn(
+                viewModelScope, SharingStarted.WhileSubscribed(5000),
+                InAppReviewManager.ReviewStats(0, 0, 0, 0)
+            )
 
     private val _shouldRequestReview = MutableStateFlow(false)
     val shouldRequestReview: StateFlow<Boolean> = _shouldRequestReview.asStateFlow()
@@ -136,10 +136,6 @@ class MainViewModel @Inject constructor(
     private val _showClearInputDialog = MutableStateFlow(false)
     val showClearInputDialog: StateFlow<Boolean> = _showClearInputDialog.asStateFlow()
 
-    /**
-     * NEU: Hält den zuletzt gelöschten Leet für Undo bereit.
-     * Wird nach Undo oder Snackbar-Timeout auf null gesetzt.
-     */
     private val _pendingDelete = MutableStateFlow<PendingDelete?>(null)
     val pendingDelete: StateFlow<PendingDelete?> = _pendingDelete.asStateFlow()
 
@@ -191,20 +187,20 @@ class MainViewModel @Inject constructor(
 
     fun handleIntent(intent: MainIntent) {
         when (intent) {
-            is MainIntent.UpdateInput -> uiManager.updateInputText(intent.text)
-            is MainIntent.ChangeMode -> changeMode(intent.leetOption)
-            is MainIntent.ToggleFavorite -> toggleFavorite(intent.leetOption)
-            is MainIntent.CreateLeet -> createLeet(intent.name, intent.useExtendedDefaults, intent.customTranslations)
-            is MainIntent.UpdateLeet -> updateLeet(intent.index, intent.leet)
-            is MainIntent.DeleteLeet -> deleteLeet(intent.index)
-            is MainIntent.UndoDeleteLeet -> undoDeleteLeet()
-            is MainIntent.CopyToClipboard -> copyToClipboard()
-            is MainIntent.ClearInput -> uiManager.clearInput()
-            is MainIntent.ClearError -> uiManager.clearError()
-            is MainIntent.ClearSuccess -> uiManager.clearSuccess()
+            is MainIntent.UpdateInput      -> uiManager.updateInputText(intent.text)
+            is MainIntent.ChangeMode       -> changeMode(intent.leetOption)
+            is MainIntent.ToggleFavorite   -> toggleFavorite(intent.leetOption)
+            is MainIntent.CreateLeet       -> createLeet(intent.name, intent.useExtendedDefaults, intent.customTranslations)
+            is MainIntent.UpdateLeet       -> updateLeet(intent.index, intent.leet)
+            is MainIntent.DeleteLeet       -> deleteLeet(intent.index)
+            is MainIntent.ReorderOptions   -> reorderOptions(intent.fromIdentifier, intent.toIdentifier)
+            is MainIntent.UndoDeleteLeet   -> undoDeleteLeet()
+            is MainIntent.CopyToClipboard  -> copyToClipboard()
+            is MainIntent.ClearInput       -> uiManager.clearInput()
+            is MainIntent.ClearError       -> uiManager.clearError()
+            is MainIntent.ClearSuccess     -> uiManager.clearSuccess()
             is MainIntent.ToggleReverseMode -> toggleReverseMode()
-            is MainIntent.ReorderLeets -> reorderLeets(intent.from, intent.to)
-
+            is MainIntent.CycleCaseMode    -> { }
         }
     }
 
@@ -229,11 +225,11 @@ class MainViewModel @Inject constructor(
     private fun changeMode(leetOption: LeetOption) {
         viewModelScope.launch {
             when (leetOption.mode) {
-                LeetManager.MODE_SIMPLE ->
+                LeetManager.MODE_SIMPLE   ->
                     uiManager.setTranslationMode(LeetTranslator.TranslationMode.SIMPLE)
                 LeetManager.MODE_EXTENDED ->
                     uiManager.setTranslationMode(LeetTranslator.TranslationMode.EXTENDED)
-                LeetManager.MODE_CUSTOM -> {
+                LeetManager.MODE_CUSTOM   -> {
                     uiManager.setTranslationMode(LeetTranslator.TranslationMode.CUSTOM)
                     if (leetOption.customIndex >= 0)
                         repository.setCurrentLeetIndex(leetOption.customIndex)
@@ -271,10 +267,6 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    /**
-     * NEU: Löscht den Leet und speichert ihn für mögliches Undo.
-     * Die Snackbar-Anzeige wird über pendingDelete in der UI getriggert.
-     */
     private fun deleteLeet(index: Int) {
         viewModelScope.launch {
             val wasActive = currentMode.value == LeetTranslator.TranslationMode.CUSTOM
@@ -284,7 +276,7 @@ class MainViewModel @Inject constructor(
             leetManager.deleteLeet(index)
                 .onSuccess { result ->
                     _pendingDelete.value = PendingDelete(
-                        leet = result.deletedLeet,
+                        leet  = result.deletedLeet,
                         index = index
                     )
 
@@ -294,9 +286,9 @@ class MainViewModel @Inject constructor(
 
                     val message = when {
                         result.wasLastLeet -> application.getString(R.string.info_switched_to_simple)
-                        wasActive -> application.getString(R.string.info_active_leet_deleted)  // NEU
+                        wasActive          -> application.getString(R.string.info_active_leet_deleted)
                         result.wasFavorite -> application.getString(R.string.info_favorite_deleted)
-                        else -> application.getString(R.string.success_leet_deleted)
+                        else               -> application.getString(R.string.success_leet_deleted)
                     }
                     uiManager.setSuccess(message)
                 }
@@ -308,9 +300,17 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    /**
-     * NEU: Stellt den zuletzt gelöschten Leet wieder her.
-     */
+    private fun reorderOptions(fromIdentifier: Int, toIdentifier: Int) {
+        viewModelScope.launch {
+            repository.reorderOptions(fromIdentifier, toIdentifier)
+                .onFailure { exception ->
+                    uiManager.setError(
+                        application.getString(R.string.error_reorder_leets, exception.message ?: "")
+                    )
+                }
+        }
+    }
+
     private fun undoDeleteLeet() {
         val pending = _pendingDelete.value ?: return
         viewModelScope.launch {
@@ -330,10 +330,6 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    /**
-     * NEU: Wird aufgerufen wenn die Snackbar ohne Undo-Klick verschwindet.
-     * Löscht den pendingDelete-State.
-     */
     fun clearPendingDelete() {
         _pendingDelete.value = null
     }
@@ -372,15 +368,15 @@ class MainViewModel @Inject constructor(
 
     fun dismissClearInputDialog() { _showClearInputDialog.value = false }
 
-
-
-
+    fun completeOnboarding() {
+        viewModelScope.launch { onboardingPreferences.setOnboardingCompleted() }
+    }
 
     fun generatePreview(leetOption: LeetOption, sampleText: String = "Hello"): String {
         val mode = when (leetOption.mode) {
-            LeetManager.MODE_SIMPLE -> LeetTranslator.TranslationMode.SIMPLE
+            LeetManager.MODE_SIMPLE   -> LeetTranslator.TranslationMode.SIMPLE
             LeetManager.MODE_EXTENDED -> LeetTranslator.TranslationMode.EXTENDED
-            else -> LeetTranslator.TranslationMode.CUSTOM
+            else                      -> LeetTranslator.TranslationMode.CUSTOM
         }
         val leet = if (leetOption.isCustom && leetOption.customIndex >= 0)
             leets.value.getOrNull(leetOption.customIndex) else null
@@ -397,21 +393,10 @@ class MainViewModel @Inject constructor(
     }
 
     fun updateInputText(text: String) = uiManager.updateInputText(text)
-    fun clearInput() = uiManager.clearInput()
+    fun clearInput()                  = uiManager.clearInput()
 
     override fun onCleared() {
         super.onCleared()
         repository.cleanup()
-    }
-
-    private fun reorderLeets(from: Int, to: Int) {
-        viewModelScope.launch {
-            repository.reorderLeets(from, to)
-                .onFailure { exception ->
-                    uiManager.setError(
-                        application.getString(R.string.error_reorder_leets, exception.message ?: "")
-                    )
-                }
-        }
     }
 }

@@ -1,9 +1,9 @@
 package com.beigel.leetSpeak_Generator.ui.components.leet.selector
 
 import android.annotation.SuppressLint
+import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.spring
-import androidx.compose.animation.core.Spring
 import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -25,53 +25,69 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import com.beigel.leetSpeak_Generator.R
 import com.beigel.leetSpeak_Generator.data.LeetOption
+import com.beigel.leetSpeak_Generator.manager.LeetManager
 
 @Composable
 fun AllOptionsSection(
     leetOptions: List<LeetOption>,
+    onCreateNew: () -> Unit,
     onOptionSelected: (LeetOption) -> Unit,
     onToggleFavorite: (LeetOption) -> Unit,
     onEditOption: (LeetOption) -> Unit,
     onDeleteOption: (LeetOption) -> Unit,
     onShowTable: (LeetOption) -> Unit,
-    onReorder: (from: Int, to: Int) -> Unit,
+    onReorder: (fromIdentifier: Int, toIdentifier: Int) -> Unit,
     @SuppressLint("ModifierParameter") modifier: Modifier = Modifier
 ) {
     var pendingDeleteOption by remember { mutableStateOf<LeetOption?>(null) }
-
-    val customOptions = leetOptions.filter { it.isCustom }
-    val fixedOptions  = leetOptions.filter { !it.isCustom }
-
-    var draggingIndex by remember { mutableStateOf<Int?>(null) }
-    var dragOffsetY   by remember { mutableStateOf(0f) }
-    val itemHeightPx  = remember { mutableStateOf(0) }
-
-    val density = LocalDensity.current
+    var isReorderMode       by remember { mutableStateOf(false) }
+    var draggingIndex       by remember { mutableStateOf<Int?>(null) }
+    var dragOffsetY         by remember { mutableStateOf(0f) }
+    val itemHeightPx        = remember { mutableStateOf(0) }
+    val density             = LocalDensity.current
 
     Column(modifier = modifier) {
+
+        // Header mit Reorder-Toggle und Neu-Button
+        LeetSelectorHeader(
+            onCreateNew     = onCreateNew,
+            isReorderMode   = isReorderMode,
+            onToggleReorder = {
+                isReorderMode = !isReorderMode
+                if (!isReorderMode) {
+                    draggingIndex = null
+                    dragOffsetY   = 0f
+                }
+            }
+        )
+
+        // Hinweis wenn Reorder-Modus aktiv
+        if (isReorderMode) {
+            Surface(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 8.dp),
+                color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f),
+                shape = MaterialTheme.shapes.small
+            ) {
+                Text(
+                    text     = stringResource(R.string.reorder_mode_hint),
+                    style    = MaterialTheme.typography.bodySmall,
+                    color    = MaterialTheme.colorScheme.onPrimaryContainer,
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+                )
+            }
+        }
+
         Column(
             verticalArrangement = Arrangement.spacedBy(8.dp),
             modifier            = Modifier
                 .heightIn(max = 400.dp)
                 .verticalScroll(rememberScrollState())
         ) {
-            // Fixe Optionen – kein Drag
-            fixedOptions.forEach { option ->
-                DetailedCard(
-                    option           = option,
-                    onOptionSelected = onOptionSelected,
-                    onToggleFavorite = onToggleFavorite,
-                    onEditOption     = onEditOption,
-                    onDeleteOption   = { pendingDeleteOption = it },
-                    onShowTable      = onShowTable
-                )
-            }
-
-            // Custom Leets – mit Drag Handle
-            customOptions.forEachIndexed { index, option ->
+            leetOptions.forEachIndexed { index, option ->
                 val isDragging = draggingIndex == index
-
-                val offsetDp = if (isDragging) {
+                val offsetDp   = if (isDragging) {
                     with(density) { dragOffsetY.toDp() }
                 } else 0.dp
 
@@ -82,43 +98,52 @@ fun AllOptionsSection(
                         .onSizeChanged { size -> itemHeightPx.value = size.height }
                 ) {
                     DetailedCard(
-                        option             = option,
-                        onOptionSelected   = onOptionSelected,
-                        onToggleFavorite   = onToggleFavorite,
-                        onEditOption       = onEditOption,
-                        onDeleteOption     = { pendingDeleteOption = it },
-                        onShowTable        = onShowTable,
-                        isDragging         = isDragging,
-                        dragHandleModifier = Modifier.pointerInput(index) {
-                            detectDragGesturesAfterLongPress(
-                                onDragStart = {
-                                    draggingIndex = index
-                                    dragOffsetY   = 0f
-                                },
-                                onDrag = { _, dragAmount ->
-                                    dragOffsetY += dragAmount.y
-                                    val itemH = itemHeightPx.value.toFloat()
-                                    if (itemH > 0) {
-                                        val shift       = (dragOffsetY / itemH).toInt()
-                                        val targetIndex = (index + shift)
-                                            .coerceIn(0, customOptions.size - 1)
-                                        if (targetIndex != index) {
-                                            onReorder(index, targetIndex)
-                                            draggingIndex = targetIndex
-                                            dragOffsetY  -= shift * itemH
+                        option           = option,
+                        onOptionSelected = { if (!isReorderMode) onOptionSelected(it) },
+                        onToggleFavorite = onToggleFavorite,
+                        onEditOption     = onEditOption,
+                        onDeleteOption   = { pendingDeleteOption = it },
+                        onShowTable      = onShowTable,
+                        isDragging       = isDragging,
+                        isReorderMode    = isReorderMode,
+                        dragHandleModifier = if (isReorderMode) {
+                            Modifier.pointerInput(index) {
+                                detectDragGesturesAfterLongPress(
+                                    onDragStart = {
+                                        draggingIndex = index
+                                        dragOffsetY   = 0f
+                                    },
+                                    onDrag = { _, dragAmount ->
+                                        dragOffsetY += dragAmount.y
+                                        val itemH = itemHeightPx.value.toFloat()
+                                        if (itemH > 0) {
+                                            val shift       = (dragOffsetY / itemH).toInt()
+                                            val targetIndex = (index + shift)
+                                                .coerceIn(0, leetOptions.size - 1)
+                                            if (targetIndex != index) {
+                                                val fromOption = leetOptions.getOrNull(index)
+                                                val toOption   = leetOptions.getOrNull(targetIndex)
+                                                if (fromOption != null && toOption != null) {
+                                                    onReorder(
+                                                        optionToIdentifier(fromOption),
+                                                        optionToIdentifier(toOption)
+                                                    )
+                                                }
+                                                draggingIndex = targetIndex
+                                                dragOffsetY  -= shift * itemH
+                                            }
                                         }
-                                    }
-                                },
-                                onDragEnd    = { draggingIndex = null; dragOffsetY = 0f },
-                                onDragCancel = { draggingIndex = null; dragOffsetY = 0f }
-                            )
-                        }
+                                    },
+                                    onDragEnd    = { draggingIndex = null; dragOffsetY = 0f },
+                                    onDragCancel = { draggingIndex = null; dragOffsetY = 0f }
+                                )
+                            }
+                        } else Modifier
                     )
                 }
             }
 
-            // Empty State wenn keine Custom Leets vorhanden
-            if (customOptions.isEmpty()) {
+            if (leetOptions.none { it.isCustom }) {
                 EmptyCustomLeetsHint()
             }
         }
@@ -134,6 +159,13 @@ fun AllOptionsSection(
             onDismiss = { pendingDeleteOption = null }
         )
     }
+}
+
+private fun optionToIdentifier(option: LeetOption): Int = when {
+    option.isCustom                          -> option.customIndex
+    option.mode == LeetManager.MODE_SIMPLE   -> LeetManager.FAV_SIMPLE
+    option.mode == LeetManager.MODE_EXTENDED -> LeetManager.FAV_EXTENDED
+    else                                     -> LeetManager.FAV_SIMPLE
 }
 
 @Composable
@@ -224,6 +256,7 @@ private fun DetailedCard(
     onDeleteOption: (LeetOption) -> Unit,
     onShowTable: (LeetOption) -> Unit,
     isDragging: Boolean = false,
+    isReorderMode: Boolean = false,
     dragHandleModifier: Modifier = Modifier,
     modifier: Modifier = Modifier
 ) {
@@ -248,10 +281,11 @@ private fun DetailedCard(
             .fillMaxWidth()
             .semantics { contentDescription = cardDesc },
         colors    = CardDefaults.cardColors(
-            containerColor = if (option.isSelected)
-                MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
-            else
-                MaterialTheme.colorScheme.surface
+            containerColor = when {
+                isDragging        -> MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.8f)
+                option.isSelected -> MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
+                else              -> MaterialTheme.colorScheme.surface
+            }
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = elevation),
         border    = if (option.isSelected) {
@@ -267,14 +301,15 @@ private fun DetailedCard(
                 .padding(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            if (option.isCustom) {
+            // Drag Handle – nur im Reorder-Modus sichtbar
+            if (isReorderMode) {
                 Icon(
                     imageVector        = Icons.Default.DragHandle,
                     contentDescription = stringResource(R.string.drag_handle),
                     modifier           = Modifier
                         .size(20.dp)
                         .then(dragHandleModifier),
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                    tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.8f)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
             }
@@ -307,13 +342,16 @@ private fun DetailedCard(
                 }
             }
 
-            ActionButtons(
-                option           = option,
-                onToggleFavorite = onToggleFavorite,
-                onEditOption     = onEditOption,
-                onDeleteOption   = onDeleteOption,
-                onShowTable      = onShowTable
-            )
+            // Aktions-Buttons nur wenn NICHT im Reorder-Modus
+            if (!isReorderMode) {
+                ActionButtons(
+                    option           = option,
+                    onToggleFavorite = onToggleFavorite,
+                    onEditOption     = onEditOption,
+                    onDeleteOption   = onDeleteOption,
+                    onShowTable      = onShowTable
+                )
+            }
         }
     }
 }

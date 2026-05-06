@@ -14,15 +14,14 @@ sealed class MainIntent {
     ) : MainIntent()
     data class UpdateLeet(val index: Int, val leet: CustomLeet) : MainIntent()
     data class DeleteLeet(val index: Int) : MainIntent()
-    object UndoDeleteLeet : MainIntent()   // NEU
+    data class ReorderOptions(val fromIdentifier: Int, val toIdentifier: Int) : MainIntent()
+    object UndoDeleteLeet : MainIntent()
     object CopyToClipboard : MainIntent()
     object ClearInput : MainIntent()
     object ClearError : MainIntent()
     object ClearSuccess : MainIntent()
     object ToggleReverseMode : MainIntent()
-
-    data class ReorderLeets(val from: Int, val to: Int) : MainIntent()
-
+    object CycleCaseMode : MainIntent()
 }
 
 data class MainUiState(
@@ -30,8 +29,7 @@ data class MainUiState(
     val errorMessage: String? = null,
     val successMessage: String? = null,
     val selectedLeetOption: LeetOption? = null,
-    val showBottomSheet: Boolean = false,
-    val showWhatsNew: Boolean = false
+    val showBottomSheet: Boolean = false
 )
 
 data class PendingDelete(

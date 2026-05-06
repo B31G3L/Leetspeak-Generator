@@ -404,5 +404,7 @@
     <string name="about_planned_deeplink">Deeplink-Support – leetspeak://translate?text=hello</string>
     <string name="about_planned_share">Share-Button – direkt beim Output, ohne Umweg über Copy</string>
     <string name="about_planned_history">Verlauf – letzte Übersetzungen speichern und wiederverwenden</string>
-
+    <string name="reorder_mode_enable">Sortiermodus aktivieren</string>
+    <string name="reorder_mode_disable">Sortiermodus deaktivieren</string>
+    <string name="reorder_mode_hint">Handle gedrückt halten und ziehen zum Umsortieren</string>
 </resources>

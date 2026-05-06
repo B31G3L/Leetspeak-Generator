@@ -24,6 +24,7 @@ import kotlinx.coroutines.delay
 fun OutputCard(
     outputText: String,
     currentMode: String,
+    animationKey: LeetTranslator.TranslationMode,
     onCopyClick: () -> Unit,
     modifier: Modifier = Modifier,
     showHeader: Boolean = true,
@@ -53,7 +54,6 @@ fun OutputCard(
     else
         MaterialTheme.colorScheme.secondary
 
-    // Accessibility: TextField-Beschreibung
     val textFieldDesc = stringResource(R.string.a11y_output_field, currentMode)
 
     AnimatedVisibility(
@@ -89,9 +89,9 @@ fun OutputCard(
                     Spacer(modifier = Modifier.height(8.dp))
                 }
 
-                // AnimatedContent für Moduswechsel-Animation
+                // AnimatedContent reagiert NUR auf Moduswechsel, nicht auf Texteingabe
                 AnimatedContent(
-                    targetState    = outputText,
+                    targetState    = animationKey,
                     transitionSpec = {
                         (fadeIn(animationSpec = tween(200)) +
                                 slideInHorizontally(
@@ -105,16 +105,14 @@ fun OutputCard(
                                         ))
                     },
                     label = "output_mode_transition"
-                ) { text ->
+                ) { _ ->
                     SelectionContainer {
                         AdaptiveTextField(
-                            value         = text,
+                            value         = outputText,
                             onValueChange = { },
                             modifier      = Modifier
                                 .fillMaxSize()
-                                .semantics {
-                                    contentDescription = textFieldDesc
-                                },
+                                .semantics { contentDescription = textFieldDesc },
                             readOnly = true,
                             colors   = OutlinedTextFieldDefaults.colors(
                                 focusedBorderColor      = borderColor,

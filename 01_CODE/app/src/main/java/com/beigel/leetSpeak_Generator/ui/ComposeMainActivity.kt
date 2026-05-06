@@ -48,6 +48,7 @@ import com.beigel.leetSpeak_Generator.ui.components.input.InputCard
 import com.beigel.leetSpeak_Generator.ui.onboarding.OnboardingScreen
 import com.beigel.leetSpeak_Generator.ui.settings.SettingsActivity
 import com.beigel.leetSpeak_Generator.ui.components.output.OutputCard
+import com.beigel.leetSpeak_Generator.translation.LeetTranslator
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -62,7 +63,7 @@ class ComposeMainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        vibrator = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
+        vibrator = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             val vibratorManager = getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as android.os.VibratorManager
             vibratorManager.defaultVibrator
         } else {
@@ -71,8 +72,8 @@ class ComposeMainActivity : AppCompatActivity() {
         }
 
         setContent {
-            val themeMode by viewModel.themeMode.collectAsStateWithLifecycle()
-            val appTheme  by viewModel.appTheme.collectAsStateWithLifecycle()
+            val themeMode             by viewModel.themeMode.collectAsStateWithLifecycle()
+            val appTheme              by viewModel.appTheme.collectAsStateWithLifecycle()
             val isOnboardingCompleted by viewModel.isOnboardingCompleted.collectAsStateWithLifecycle()
 
             val isDarkTheme = when (themeMode) {
@@ -96,12 +97,10 @@ class ComposeMainActivity : AppCompatActivity() {
                         viewModel         = viewModel,
                         onCopyToClipboard = { text -> copyToClipboardWithFeedback(text) },
                         onOpenSettings    = {
-                            startActivity(
-                                Intent(this@ComposeMainActivity, SettingsActivity::class.java)
-                            )
+                            startActivity(Intent(this@ComposeMainActivity, SettingsActivity::class.java))
                         },
-                        onFeedback        = { sendFeedback() },
                         onBugReport   = { sendBugReport() },
+                        onFeedback    = { sendFeedback() },
                         onKofiSupport = { openKofiLink() }
                     )
 
@@ -116,41 +115,7 @@ class ComposeMainActivity : AppCompatActivity() {
             }
         }
     }
-    private fun sendFeedback() {
-        try {
-            val versionName = getVersionName()
-            val body = buildString {
-                appendLine(getString(R.string.feedback_header))
-                appendLine()
-                appendLine(getString(R.string.feedback_describe))
-                appendLine(getString(R.string.feedback_placeholder))
-            }
 
-            val intent = Intent(Intent.ACTION_SEND).apply {
-                type = "message/rfc822"
-                putExtra(Intent.EXTRA_EMAIL, arrayOf(getString(R.string.bug_report_email)))
-                putExtra(Intent.EXTRA_SUBJECT, getString(R.string.feedback_subject, versionName))
-                putExtra(Intent.EXTRA_TEXT, body)
-            }
-
-            val chooser = Intent.createChooser(intent, getString(R.string.feedback_send))
-            if (intent.resolveActivity(packageManager) != null) {
-                startActivity(chooser)
-            } else {
-                android.widget.Toast.makeText(
-                    this,
-                    getString(R.string.no_email_app),
-                    android.widget.Toast.LENGTH_LONG
-                ).show()
-            }
-        } catch (e: Exception) {
-            android.widget.Toast.makeText(
-                this,
-                getString(R.string.bug_report_error_format, e.message),
-                android.widget.Toast.LENGTH_LONG
-            ).show()
-        }
-    }
     private fun copyToClipboardWithFeedback(text: String) {
         val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
         val clip = ClipData.newPlainText(getString(R.string.clipboard_label), text)
@@ -195,18 +160,38 @@ class ComposeMainActivity : AppCompatActivity() {
                 startActivity(chooser)
             } else {
                 copyToClipboardWithFeedback(deviceInfo)
-                android.widget.Toast.makeText(
-                    this,
-                    getString(R.string.no_email_app),
-                    android.widget.Toast.LENGTH_LONG
-                ).show()
+                android.widget.Toast.makeText(this, getString(R.string.no_email_app), android.widget.Toast.LENGTH_LONG).show()
             }
         } catch (e: Exception) {
-            android.widget.Toast.makeText(
-                this,
-                getString(R.string.bug_report_error_format, e.message),
-                android.widget.Toast.LENGTH_LONG
-            ).show()
+            android.widget.Toast.makeText(this, getString(R.string.bug_report_error_format, e.message), android.widget.Toast.LENGTH_LONG).show()
+        }
+    }
+
+    private fun sendFeedback() {
+        try {
+            val versionName = getVersionName()
+            val body = buildString {
+                appendLine(getString(R.string.feedback_header))
+                appendLine()
+                appendLine(getString(R.string.feedback_describe))
+                appendLine(getString(R.string.feedback_placeholder))
+            }
+
+            val intent = Intent(Intent.ACTION_SEND).apply {
+                type = "message/rfc822"
+                putExtra(Intent.EXTRA_EMAIL, arrayOf(getString(R.string.bug_report_email)))
+                putExtra(Intent.EXTRA_SUBJECT, getString(R.string.feedback_subject, versionName))
+                putExtra(Intent.EXTRA_TEXT, body)
+            }
+
+            val chooser = Intent.createChooser(intent, getString(R.string.feedback_send))
+            if (intent.resolveActivity(packageManager) != null) {
+                startActivity(chooser)
+            } else {
+                android.widget.Toast.makeText(this, getString(R.string.no_email_app), android.widget.Toast.LENGTH_LONG).show()
+            }
+        } catch (e: Exception) {
+            android.widget.Toast.makeText(this, getString(R.string.bug_report_error_format, e.message), android.widget.Toast.LENGTH_LONG).show()
         }
     }
 
@@ -215,17 +200,9 @@ class ComposeMainActivity : AppCompatActivity() {
             val kofiUrl = getString(R.string.url_kofi)
             val intent  = Intent(Intent.ACTION_VIEW, Uri.parse(kofiUrl))
             startActivity(intent)
-            android.widget.Toast.makeText(
-                this,
-                getString(R.string.kofi_toast_thanks),
-                android.widget.Toast.LENGTH_SHORT
-            ).show()
+            android.widget.Toast.makeText(this, getString(R.string.kofi_toast_thanks), android.widget.Toast.LENGTH_SHORT).show()
         } catch (e: Exception) {
-            android.widget.Toast.makeText(
-                this,
-                getString(R.string.kofi_toast_error),
-                android.widget.Toast.LENGTH_SHORT
-            ).show()
+            android.widget.Toast.makeText(this, getString(R.string.kofi_toast_error), android.widget.Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -251,31 +228,32 @@ fun MainScreen(
 ) {
     var showDropdownMenu by remember { mutableStateOf(false) }
 
-    val inputText                by viewModel.inputText.collectAsStateWithLifecycle()
-    val outputText               by viewModel.outputText.collectAsStateWithLifecycle()
-    val currentModeDisplayName   by viewModel.currentModeDisplayName.collectAsStateWithLifecycle()
-    val uiState                  by viewModel.uiState.collectAsStateWithLifecycle()
-    val isReverseMode            by viewModel.isReverseMode.collectAsStateWithLifecycle()
-    val isInputLikelyLeetspeak   by viewModel.isInputLikelyLeetspeak.collectAsStateWithLifecycle()
-    val showClearInputDialog     by viewModel.showClearInputDialog.collectAsStateWithLifecycle()
-    val pendingDelete            by viewModel.pendingDelete.collectAsStateWithLifecycle()
+    val inputText              by viewModel.inputText.collectAsStateWithLifecycle()
+    val outputText             by viewModel.outputText.collectAsStateWithLifecycle()
+    val currentModeDisplayName by viewModel.currentModeDisplayName.collectAsStateWithLifecycle()
+    val uiState                by viewModel.uiState.collectAsStateWithLifecycle()
+    val isReverseMode          by viewModel.isReverseMode.collectAsStateWithLifecycle()
+    val isInputLikelyLeetspeak by viewModel.isInputLikelyLeetspeak.collectAsStateWithLifecycle()
+    val showClearInputDialog   by viewModel.showClearInputDialog.collectAsStateWithLifecycle()
+    val pendingDelete          by viewModel.pendingDelete.collectAsStateWithLifecycle()
+    val currentMode            by viewModel.currentMode.collectAsStateWithLifecycle()  // NEU: für Animation
 
-    val density         = LocalDensity.current
-    val keyboardHeight  = WindowInsets.ime.getBottom(density)
+    val density           = LocalDensity.current
+    val keyboardHeight    = WindowInsets.ime.getBottom(density)
     val isKeyboardVisible = keyboardHeight > 100
-    val hasOutput       = outputText.isNotEmpty()
+    val hasOutput         = outputText.isNotEmpty()
 
-    var showBottomSheet  by remember { mutableStateOf(false) }
-    var showAboutDialog  by remember { mutableStateOf(false) }
-    val context          = LocalContext.current
+    var showBottomSheet by remember { mutableStateOf(false) }
+    var showAboutDialog by remember { mutableStateOf(false) }
+    val context         = LocalContext.current
 
-    val snackbarHostState = remember { SnackbarHostState() }
-    val undoLabel         = stringResource(R.string.undo)
+    val snackbarHostState  = remember { SnackbarHostState() }
+    val undoLabel          = stringResource(R.string.undo)
     val leetDeletedMessage = stringResource(R.string.leet_deleted_snackbar)
 
     LaunchedEffect(pendingDelete) {
         val pending = pendingDelete ?: return@LaunchedEffect
-        val result = snackbarHostState.showSnackbar(
+        val result  = snackbarHostState.showSnackbar(
             message     = leetDeletedMessage,
             actionLabel = undoLabel,
             duration    = SnackbarDuration.Short
@@ -318,10 +296,10 @@ fun MainScreen(
                                 shape = androidx.compose.foundation.shape.CircleShape
                             ) {
                                 Text(
-                                    text     = stringResource(R.string.reverse_badge),
-                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
-                                    color    = MaterialTheme.colorScheme.onTertiary,
-                                    fontSize = 12.sp,
+                                    text       = stringResource(R.string.reverse_badge),
+                                    modifier   = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+                                    color      = MaterialTheme.colorScheme.onTertiary,
+                                    fontSize   = 12.sp,
                                     fontWeight = FontWeight.Bold
                                 )
                             }
@@ -333,10 +311,10 @@ fun MainScreen(
                                 shape = androidx.compose.foundation.shape.CircleShape
                             ) {
                                 Text(
-                                    text     = stringResource(R.string.leet_detected_badge),
-                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
-                                    color    = MaterialTheme.colorScheme.onSecondary,
-                                    fontSize = 12.sp,
+                                    text       = stringResource(R.string.leet_detected_badge),
+                                    modifier   = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+                                    color      = MaterialTheme.colorScheme.onSecondary,
+                                    fontSize   = 12.sp,
                                     fontWeight = FontWeight.Bold
                                 )
                             }
@@ -344,8 +322,8 @@ fun MainScreen(
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor     = MaterialTheme.colorScheme.background,
-                    titleContentColor  = MaterialTheme.colorScheme.onBackground
+                    containerColor    = MaterialTheme.colorScheme.background,
+                    titleContentColor = MaterialTheme.colorScheme.onBackground
                 ),
                 actions = {
                     IconButton(onClick = onKofiSupport) {
@@ -365,15 +343,12 @@ fun MainScreen(
                             )
                         }
                         DropdownMenu(
-                            expanded          = showDropdownMenu,
-                            onDismissRequest  = { showDropdownMenu = false }
+                            expanded         = showDropdownMenu,
+                            onDismissRequest = { showDropdownMenu = false }
                         ) {
                             DropdownMenuItem(
                                 text = {
-                                    Row(
-                                        verticalAlignment     = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                                    ) {
+                                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                                         Icon(Icons.Default.BugReport, null, modifier = Modifier.size(20.dp))
                                         Text(stringResource(R.string.bug_report))
                                     }
@@ -382,10 +357,7 @@ fun MainScreen(
                             )
                             DropdownMenuItem(
                                 text = {
-                                    Row(
-                                        verticalAlignment     = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                                    ) {
+                                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                                         Icon(Icons.Default.Lightbulb, null, modifier = Modifier.size(20.dp))
                                         Text(stringResource(R.string.feedback_title))
                                     }
@@ -394,10 +366,7 @@ fun MainScreen(
                             )
                             DropdownMenuItem(
                                 text = {
-                                    Row(
-                                        verticalAlignment     = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                                    ) {
+                                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                                         Icon(Icons.Default.Info, null, modifier = Modifier.size(20.dp))
                                         Text(stringResource(R.string.about))
                                     }
@@ -406,10 +375,7 @@ fun MainScreen(
                             )
                             DropdownMenuItem(
                                 text = {
-                                    Row(
-                                        verticalAlignment     = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                                    ) {
+                                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                                         Icon(Icons.Default.Settings, null, modifier = Modifier.size(20.dp))
                                         Text(stringResource(R.string.settings))
                                     }
@@ -444,9 +410,9 @@ fun MainScreen(
                         modifier               = Modifier.weight(1f)
                     )
                     ModeSelectorButton(
-                        currentMode       = currentModeDisplayName,
+                        currentMode         = currentModeDisplayName,
                         onLeetSelectorClick = { showBottomSheet = true },
-                        modifier          = Modifier.weight(2f)
+                        modifier            = Modifier.weight(2f)
                     )
                 }
             }
@@ -462,16 +428,16 @@ fun MainScreen(
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             InputCard(
-                inputText    = inputText,
+                inputText     = inputText,
                 onInputChange = { viewModel.updateInputText(it) },
-                onClearText  = { viewModel.clearInput() },
-                showHeader   = true,
+                onClearText   = { viewModel.clearInput() },
+                showHeader    = true,
                 isReverseMode = isReverseMode,
-                title        = inputTitle,
+                title         = inputTitle,
                 onSpeechInput = if (!isReverseMode) {
                     { viewModel.updateInputText(it) }
                 } else null,
-                modifier     = Modifier
+                modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f)
             )
@@ -479,13 +445,14 @@ fun MainScreen(
                 OutputCard(
                     outputText   = outputText,
                     currentMode  = outputTitle,
+                    animationKey = currentMode,  // NEU: nur bei Moduswechsel animieren
                     onCopyClick  = {
                         onCopyToClipboard(outputText)
                         viewModel.handleIntent(MainIntent.CopyToClipboard)
                     },
-                    showHeader   = true,
+                    showHeader    = true,
                     isReverseMode = isReverseMode,
-                    modifier     = Modifier
+                    modifier      = Modifier
                         .fillMaxWidth()
                         .weight(1f)
                 )
@@ -549,12 +516,12 @@ private fun ModeSelectorButton(
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(
-                text      = currentMode,
-                style     = MaterialTheme.typography.labelMedium.copy(fontSize = 12.sp),
-                color     = MaterialTheme.colorScheme.primary,
+                text       = currentMode,
+                style      = MaterialTheme.typography.labelMedium.copy(fontSize = 12.sp),
+                color      = MaterialTheme.colorScheme.primary,
                 fontWeight = FontWeight.Bold,
-                maxLines  = 1,
-                overflow  = TextOverflow.Ellipsis
+                maxLines   = 1,
+                overflow   = TextOverflow.Ellipsis
             )
         }
     }
@@ -599,7 +566,6 @@ private fun EnhancedAnimatedArrows(
         label = "pulse_alpha"
     )
 
-    // Accessibility Strings hier auflösen
     val reverseActiveDesc   = stringResource(R.string.a11y_reverse_mode_active)
     val reverseInactiveDesc = stringResource(R.string.a11y_reverse_mode_inactive)
 
@@ -676,8 +642,8 @@ private fun EnhancedAnimatedArrows(
                     isInputLikelyLeetspeak -> stringResource(R.string.mode_display_leet_detected)
                     else                   -> stringResource(R.string.mode_display_mode)
                 },
-                style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp),
-                color = when {
+                style      = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp),
+                color      = when {
                     isReverseMode          -> MaterialTheme.colorScheme.tertiary
                     isInputLikelyLeetspeak -> MaterialTheme.colorScheme.secondary
                     else                   -> MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)

@@ -21,16 +21,16 @@ fun LeetSelectorBottomSheet(
 ) {
     val leetOptions by viewModel.leetOptions.collectAsStateWithLifecycle()
 
-    var showLeetCreationDialog by remember { mutableStateOf(false) }
-    var showLeetEditDialog by remember { mutableStateOf(false) }
+    var showLeetCreationDialog     by remember { mutableStateOf(false) }
+    var showLeetEditDialog         by remember { mutableStateOf(false) }
     var showTranslationTableDialog by remember { mutableStateOf(false) }
 
-    var currentEditOption by remember { mutableStateOf<LeetOption?>(null) }
+    var currentEditOption  by remember { mutableStateOf<LeetOption?>(null) }
     var currentTableOption by remember { mutableStateOf<LeetOption?>(null) }
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
-        modifier = modifier,
+        modifier         = modifier,
         dragHandle = {
             Surface(
                 modifier = Modifier
@@ -48,10 +48,10 @@ fun LeetSelectorBottomSheet(
                 .padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            LeetSelectorHeader(onCreateNew = { showLeetCreationDialog = true })
-
+            // Kein separater LeetSelectorHeader hier – er ist Teil von AllOptionsSection
             AllOptionsSection(
                 leetOptions      = leetOptions,
+                onCreateNew      = { showLeetCreationDialog = true },
                 onOptionSelected = { option ->
                     viewModel.handleIntent(MainIntent.ChangeMode(option))
                     onDismiss()
@@ -60,7 +60,7 @@ fun LeetSelectorBottomSheet(
                     viewModel.handleIntent(MainIntent.ToggleFavorite(option))
                 },
                 onEditOption     = { option ->
-                    currentEditOption = option
+                    currentEditOption  = option
                     showLeetEditDialog = true
                 },
                 onDeleteOption   = { option ->
@@ -68,11 +68,11 @@ fun LeetSelectorBottomSheet(
                     onDismiss()
                 },
                 onShowTable      = { option ->
-                    currentTableOption = option
+                    currentTableOption         = option
                     showTranslationTableDialog = true
                 },
-                onReorder = { from, to ->  // NEU
-                    viewModel.handleIntent(MainIntent.ReorderLeets(from, to))
+                onReorder        = { fromId, toId ->
+                    viewModel.handleIntent(MainIntent.ReorderOptions(fromId, toId))
                 }
             )
 
@@ -94,15 +94,15 @@ fun LeetSelectorBottomSheet(
         currentEditOption?.let { option ->
             if (option.isCustom) {
                 val leets by viewModel.leets.collectAsStateWithLifecycle()
-                val leet = leets.getOrNull(option.customIndex)
+                val leet   = leets.getOrNull(option.customIndex)
                 if (leet != null) {
                     LeetCreationDialog(
-                        viewModel = viewModel,
+                        viewModel    = viewModel,
                         existingLeet = leet,
-                        leetIndex = option.customIndex,
-                        onDismiss = {
+                        leetIndex    = option.customIndex,
+                        onDismiss    = {
                             showLeetEditDialog = false
-                            currentEditOption = null
+                            currentEditOption  = null
                         }
                     )
                 }
@@ -114,10 +114,10 @@ fun LeetSelectorBottomSheet(
         currentTableOption?.let { option ->
             TranslationTableDialog(
                 leetOption = option,
-                viewModel = viewModel,
-                onDismiss = {
+                viewModel  = viewModel,
+                onDismiss  = {
                     showTranslationTableDialog = false
-                    currentTableOption = null
+                    currentTableOption         = null
                 }
             )
         }
