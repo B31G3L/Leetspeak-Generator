@@ -384,6 +384,7 @@
 
     <string name="onboarding_2_title">Eigene Profile erstellen</string>
     <string name="onboarding_2_desc">Erstelle eigene Leet-Profile mit deinen eigenen Zeichenzuordnungen. Mach es zu deinem ganz persönlichen Stil.</string>
+    <string name="char_count">%1$d zeichen</string>
 
     <string name="onboarding_3_title">Favoriten speichern</string>
     <string name="onboarding_3_desc">Markiere deinen Lieblings-Leet-Modus für schnellen Zugriff. Die App merkt sich deine Einstellung bei jedem Start.</string>
@@ -397,7 +398,8 @@
     <string name="feedback_header">=== FEEDBACK ===</string>
     <string name="feedback_describe">Deine Idee oder dein Vorschlag:</string>
     <string name="feedback_placeholder">(Beschreibe deine Idee hier)</string>
-
+    <string name="a11y_input_field">Eingabefeld: %1$s</string>
+    <string name="a11y_output_field">Ausgabefeld: %1$s</string>
     <string name="about_planned_title">Was noch geplant ist</string>
     <string name="about_planned_keyboard">Leetspeak-Tastatur – IME-Service mit Übersetzungs-Engine verbinden</string>
     <string name="about_planned_widget">Widget umbauen – schneller Launch-Button zur App</string>

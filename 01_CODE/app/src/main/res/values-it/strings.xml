@@ -374,7 +374,24 @@
     <string name="a11y_reverse_mode_inactive">Modalità normale, tocca per la modalità inversa</string>
     <string name="a11y_mode_selector">Modalità attuale: %1$s. Tocca per cambiare.</string>
 
-
+    <string name="a11y_input_field">Campo di input: %1$s</string>
+    <string name="a11y_output_field">Campo di output: %1$s</string>
+    <string name="char_count">%1$d caratteri</string>
+    <string name="drag_handle">Trascina per riordinare</string>
+    <string name="empty_custom_leets_title">Nessun Leet personalizzato ancora</string>
+    <string name="empty_custom_leets_hint">Tocca \"Nuovo\" in alto per creare la tua traduzione</string>
+    <string name="error_reorder_leets">Riordinamento fallito: %1$s</string>
+    <string name="info_active_leet_deleted">Leet attivo eliminato, passato alla modalità Semplice</string>
+    <string name="reorder_mode_enable">Attiva modalità di riordinamento</string>
+    <string name="reorder_mode_disable">Disattiva modalità di riordinamento</string>
+    <string name="reorder_mode_hint">Tieni premuto e trascina per riordinare</string>
+    <string name="speech_input_start">Avvia input vocale</string>
+    <string name="speech_input_stop">Ferma input vocale</string>
+    <string name="speech_error_unavailable">Riconoscimento vocale non disponibile</string>
+    <string name="speech_error_no_match">Nulla riconosciuto, riprova</string>
+    <string name="speech_error_timeout">Timeout, riprova</string>
+    <string name="speech_error_audio">Errore audio</string>
+    <string name="speech_error_generic">Errore (%1$d)</string>
 
     <string name="feedback_title">Invia feedback</string>
     <string name="feedback_description">Hai un\'idea o un suggerimento? Fammelo sapere!</string>

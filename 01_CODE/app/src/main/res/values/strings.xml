@@ -367,7 +367,6 @@
     <string name="speech_error_audio">Audio error</string>
     <string name="speech_error_generic">Error (%1$d)</string>
     <string name="char_count">%1$d chars</string>
-    <!-- values/strings.xml -->
     <string name="drag_handle">Drag to reorder</string>
     <string name="error_reorder_leets">Failed to reorder: %1$s</string>
 

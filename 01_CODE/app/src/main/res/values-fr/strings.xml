@@ -386,6 +386,23 @@
     <string name="about_planned_deeplink">Support deeplink – leetspeak://translate?text=hello</string>
     <string name="about_planned_share">Bouton partager – directement depuis la sortie sans copier</string>
     <string name="about_planned_history">Historique – sauvegarder et réutiliser les traductions récentes</string>
-
+    <string name="a11y_input_field">Champ de saisie : %1$s</string>
+    <string name="a11y_output_field">Champ de sortie : %1$s</string>
+    <string name="char_count">%1$d caractères</string>
+    <string name="drag_handle">Faire glisser pour réorganiser</string>
+    <string name="empty_custom_leets_title">Pas encore de Leets personnalisés</string>
+    <string name="empty_custom_leets_hint">Appuyez sur \"Nouveau\" ci-dessus pour créer votre propre traduction</string>
+    <string name="error_reorder_leets">Échec de la réorganisation : %1$s</string>
+    <string name="info_active_leet_deleted">Leet actif supprimé, passé au mode Simple</string>
+    <string name="reorder_mode_enable">Activer le mode de réorganisation</string>
+    <string name="reorder_mode_disable">Désactiver le mode de réorganisation</string>
+    <string name="reorder_mode_hint">Maintenez appuyé et faites glisser pour réorganiser</string>
+    <string name="speech_input_start">Démarrer la saisie vocale</string>
+    <string name="speech_input_stop">Arrêter la saisie vocale</string>
+    <string name="speech_error_unavailable">Reconnaissance vocale non disponible</string>
+    <string name="speech_error_no_match">Rien reconnu, veuillez réessayer</string>
+    <string name="speech_error_timeout">Délai d\'attente dépassé, veuillez réessayer</string>
+    <string name="speech_error_audio">Erreur audio</string>
+    <string name="speech_error_generic">Erreur (%1$d)</string>
 
 </resources>
