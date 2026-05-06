@@ -360,5 +360,11 @@
     <string name="empty_custom_leets_title">Noch keine eigenen Leets</string>
     <string name="empty_custom_leets_hint">Tippe oben auf \"Neu\" um eine eigene Übersetzung zu erstellen</string>
 
-
+    <string name="speech_input_start">Spracheingabe starten</string>
+    <string name="speech_input_stop">Spracheingabe stoppen</string>
+    <string name="speech_error_unavailable">Spracherkennung nicht verfügbar</string>
+    <string name="speech_error_no_match">Nichts erkannt, bitte nochmal versuchen</string>
+    <string name="speech_error_timeout">Timeout, bitte nochmal versuchen</string>
+    <string name="speech_error_audio">Audiofehler</string>
+    <string name="speech_error_generic">Fehler (%1$d)</string>
 </resources>

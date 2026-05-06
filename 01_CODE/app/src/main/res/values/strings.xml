@@ -359,6 +359,12 @@
     <string name="info_active_leet_deleted">Aktiver Leet gelöscht, zu Einfach-Modus gewechselt</string>
     <string name="empty_custom_leets_title">No custom Leets yet</string>
     <string name="empty_custom_leets_hint">Tap \"New\" above to create your own translation</string>
-
+    <string name="speech_input_start">Start voice input</string>
+    <string name="speech_input_stop">Stop voice input</string>
+    <string name="speech_error_unavailable">Speech recognition not available</string>
+    <string name="speech_error_no_match">Nothing recognized, please try again</string>
+    <string name="speech_error_timeout">Timeout, please try again</string>
+    <string name="speech_error_audio">Audio error</string>
+    <string name="speech_error_generic">Error (%1$d)</string>
 
 </resources>

@@ -10,7 +10,7 @@
         android:protectionLevel="signature" />
     <permission android:name="com.beigel.leetspeak.WRITE_LEET_DATA"
         android:protectionLevel="signature" />
-
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <!-- IME-spezifische Permissions -->
     <uses-permission android:name="android.permission.BIND_INPUT_METHOD"
         tools:ignore="ProtectedPermissions" />

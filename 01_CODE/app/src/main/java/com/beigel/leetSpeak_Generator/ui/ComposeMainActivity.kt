@@ -437,6 +437,7 @@ fun MainScreen(
                 inputText = inputText,
                 onInputChange = { viewModel.updateInputText(it) },
                 onClearText = { viewModel.clearInput() },
+                onSpeechInput = { viewModel.updateInputText(it) },  // NEU
                 showHeader = true,
                 isReverseMode = isReverseMode,
                 title = inputTitle,
