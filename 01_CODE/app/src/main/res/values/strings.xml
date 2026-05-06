@@ -366,5 +366,7 @@
     <string name="speech_error_timeout">Timeout, please try again</string>
     <string name="speech_error_audio">Audio error</string>
     <string name="speech_error_generic">Error (%1$d)</string>
+    <string name="char_count">%1$d chars</string>
+
 
 </resources>

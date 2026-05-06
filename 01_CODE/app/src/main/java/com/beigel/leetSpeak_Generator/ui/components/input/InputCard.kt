@@ -96,6 +96,7 @@ fun InputCard(
                     title          = title,
                     headerTextColor = headerTextColor,
                     hasText        = inputText.isNotEmpty(),
+                    charCount       = inputText.length,  // NEU
                     onClearText    = onClearText,
                     showMicButton  = onSpeechInput != null,
                     isListening    = isListening,
@@ -151,6 +152,7 @@ private fun InputCardHeader(
     title: String,
     headerTextColor: androidx.compose.ui.graphics.Color,
     hasText: Boolean,
+    charCount: Int,
     onClearText: () -> Unit,
     showMicButton: Boolean = false,
     isListening: Boolean = false,
@@ -168,7 +170,13 @@ private fun InputCardHeader(
             fontWeight = FontWeight.Medium,
             color = headerTextColor
         )
-
+        AnimatedVisibility(visible = charCount > 0) {
+            Text(
+                text  = stringResource(R.string.char_count, charCount),
+                style = MaterialTheme.typography.labelSmall,
+                color = headerTextColor.copy(alpha = 0.6f)
+            )
+        }
         Row(
             horizontalArrangement = Arrangement.spacedBy(4.dp),
             verticalAlignment = Alignment.CenterVertically

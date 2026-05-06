@@ -83,6 +83,7 @@ fun OutputCard(
                     OutputCardHeader(
                         currentMode = currentMode,
                         headerTextColor = headerTextColor,
+                        charCount        = outputText.length,
                         translationStats = translationStats,
                         showCopyFeedback = showCopyFeedback,
                         onCopyClick = {
@@ -126,6 +127,7 @@ fun OutputCard(
 private fun OutputCardHeader(
     currentMode: String,
     headerTextColor: androidx.compose.ui.graphics.Color,
+    charCount: Int,
     translationStats: LeetTranslator.TranslationStats?,
     showCopyFeedback: Boolean,
     onCopyClick: () -> Unit,
@@ -144,6 +146,13 @@ private fun OutputCardHeader(
                 fontWeight = FontWeight.Medium,
                 color = headerTextColor
             )
+            AnimatedVisibility(visible = charCount > 0) {
+                Text(
+                    text  = stringResource(R.string.char_count, charCount),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = headerTextColor.copy(alpha = 0.6f)
+                )
+            }
 
             // Translation Statistics
             Row(
