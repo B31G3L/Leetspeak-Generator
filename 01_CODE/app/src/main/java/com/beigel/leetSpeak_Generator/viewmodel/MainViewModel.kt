@@ -205,6 +205,8 @@ class MainViewModel @Inject constructor(
             is MainIntent.MarkWhatsNewAsShown -> markWhatsNewAsShown()
             is MainIntent.ResetWhatsNewForTesting -> resetWhatsNewForTesting()
             is MainIntent.ForceShowWhatsNew -> forceShowWhatsNew()
+            is MainIntent.ReorderLeets -> reorderLeets(intent.from, intent.to)
+
         }
     }
 
@@ -416,5 +418,16 @@ class MainViewModel @Inject constructor(
     override fun onCleared() {
         super.onCleared()
         repository.cleanup()
+    }
+
+    private fun reorderLeets(from: Int, to: Int) {
+        viewModelScope.launch {
+            repository.reorderLeets(from, to)
+                .onFailure { exception ->
+                    uiManager.setError(
+                        application.getString(R.string.error_reorder_leets, exception.message ?: "")
+                    )
+                }
+        }
     }
 }

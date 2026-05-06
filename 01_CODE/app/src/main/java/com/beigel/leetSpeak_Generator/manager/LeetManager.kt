@@ -236,7 +236,20 @@ class LeetManager(private val context: Context) {
             addLeet(leet).getOrNull()
             leet
         }
-
+    suspend fun reorderLeets(reorderedList: List<CustomLeet>): ErrorHandler.Result<Unit> =
+        ErrorHandler.safeExecuteSuspend(context, "Failed to reorder leets") {
+            // Favoriten-Index mitziehen
+            val oldFavIndex = _favoriteIndex.value
+            if (oldFavIndex >= 0) {
+                val favLeet = _leets.value.getOrNull(oldFavIndex)
+                if (favLeet != null) {
+                    val newIndex = reorderedList.indexOf(favLeet)
+                    if (newIndex >= 0) _favoriteIndex.value = newIndex
+                }
+            }
+            _leets.value = reorderedList
+            saveLeets()
+        }
     fun cleanup() = scope.cancel()
 
     data class LeetDeletionResult(

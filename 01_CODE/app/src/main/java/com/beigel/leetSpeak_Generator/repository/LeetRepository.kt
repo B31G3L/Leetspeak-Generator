@@ -111,7 +111,16 @@ class LeetRepository @Inject constructor(
             Result.success(result)
         } catch (e: Exception) { Result.failure(e) }
     }
-
+    suspend fun reorderLeets(from: Int, to: Int): Result<Unit> {
+        return try {
+            val current = leets.value.toMutableList()
+            current.add(to, current.removeAt(from))
+            when (val result = leetManager.reorderLeets(current)) {
+                is ErrorHandler.Result.Success -> Result.success(Unit)
+                is ErrorHandler.Result.Error   -> Result.failure(result.exception)
+            }
+        } catch (e: Exception) { Result.failure(e) }
+    }
     suspend fun createLeetWithSimpleDefaults(name: String): Result<CustomLeet> {
         return try {
             val leet = CustomLeet.createWithSimpleDefaults(name)

@@ -51,7 +51,7 @@ fun LeetSelectorBottomSheet(
             LeetSelectorHeader(onCreateNew = { showLeetCreationDialog = true })
 
             AllOptionsSection(
-                leetOptions = leetOptions,
+                leetOptions      = leetOptions,
                 onOptionSelected = { option ->
                     viewModel.handleIntent(MainIntent.ChangeMode(option))
                     onDismiss()
@@ -59,18 +59,20 @@ fun LeetSelectorBottomSheet(
                 onToggleFavorite = { option ->
                     viewModel.handleIntent(MainIntent.ToggleFavorite(option))
                 },
-                onEditOption = { option ->
+                onEditOption     = { option ->
                     currentEditOption = option
                     showLeetEditDialog = true
                 },
-                // NEU: Löschen direkt als Intent weiterleiten
-                onDeleteOption = { option ->
+                onDeleteOption   = { option ->
                     viewModel.handleIntent(MainIntent.DeleteLeet(option.customIndex))
-                    onDismiss() // Bottom Sheet schließen damit Snackbar sichtbar ist
+                    onDismiss()
                 },
-                onShowTable = { option ->
+                onShowTable      = { option ->
                     currentTableOption = option
                     showTranslationTableDialog = true
+                },
+                onReorder = { from, to ->  // NEU
+                    viewModel.handleIntent(MainIntent.ReorderLeets(from, to))
                 }
             )
 

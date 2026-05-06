@@ -1,6 +1,7 @@
 package com.beigel.leetSpeak_Generator.ui.components.leet.selector
 
-import android.annotation.SuppressLint
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -10,9 +11,13 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 import com.beigel.leetSpeak_Generator.R
 import com.beigel.leetSpeak_Generator.data.LeetOption
 
@@ -24,11 +29,18 @@ fun AllOptionsSection(
     onEditOption: (LeetOption) -> Unit,
     onDeleteOption: (LeetOption) -> Unit,
     onShowTable: (LeetOption) -> Unit,
-    @SuppressLint("ModifierParameter") modifier: Modifier = Modifier
+    onReorder: (from: Int, to: Int) -> Unit,
+    modifier: Modifier = Modifier
 ) {
-    // State für den Bestätigungs-Dialog
     var pendingDeleteOption by remember { mutableStateOf<LeetOption?>(null) }
-    val customLeets = leetOptions.filter { it.isCustom }
+
+    val customOptions = leetOptions.filter { it.isCustom }
+    val fixedOptions  = leetOptions.filter { !it.isCustom }
+
+    // Drag-State
+    var draggingIndex by remember { mutableStateOf<Int?>(null) }
+    var dragOffsetY   by remember { mutableStateOf(0f) }
+    val itemHeightPx  = remember { mutableStateOf(0) }
 
     Column(modifier = modifier) {
         Column(
@@ -37,26 +49,76 @@ fun AllOptionsSection(
                 .heightIn(max = 400.dp)
                 .verticalScroll(rememberScrollState())
         ) {
-            leetOptions.forEach { option ->
+            // Fixe Optionen – kein Drag
+            fixedOptions.forEach { option ->
                 DetailedCard(
-                    option = option,
+                    option           = option,
                     onOptionSelected = onOptionSelected,
                     onToggleFavorite = onToggleFavorite,
-                    onEditOption = onEditOption,
-                    onDeleteOption = { pendingDeleteOption = it },
-                    onShowTable = onShowTable
+                    onEditOption     = onEditOption,
+                    onDeleteOption   = { pendingDeleteOption = it },
+                    onShowTable      = onShowTable
                 )
             }
-            if (customLeets.isEmpty()) {
-                EmptyCustomLeetsHint()
+
+            // Custom Leets – mit Drag Handle
+            customOptions.forEachIndexed { index, option ->
+                val isDragging = draggingIndex == index
+
+                // Visueller Offset während des Ziehens
+                val offsetDp = if (isDragging) {
+                    with(LocalDensity.current) { dragOffsetY.toDp() }
+                } else 0.dp
+
+                Box(
+                    modifier = Modifier
+                        .offset(y = offsetDp)
+                        .zIndex(if (isDragging) 1f else 0f)
+                        .onSizeChanged { itemHeightPx.value = it.height }
+                ) {
+                    DetailedCard(
+                        option           = option,
+                        onOptionSelected = onOptionSelected,
+                        onToggleFavorite = onToggleFavorite,
+                        onEditOption     = onEditOption,
+                        onDeleteOption   = { pendingDeleteOption = it },
+                        onShowTable      = onShowTable,
+                        isDragging       = isDragging,
+                        dragHandleModifier = Modifier.pointerInput(index) {
+                            detectDragGesturesAfterLongPress(
+                                onDragStart = {
+                                    draggingIndex = index
+                                    dragOffsetY   = 0f
+                                },
+                                onDrag = { _, dragAmount ->
+                                    dragOffsetY += dragAmount.y
+
+                                    // Berechne Zielindex
+                                    val itemH = itemHeightPx.value.toFloat()
+                                    if (itemH > 0) {
+                                        val shift = (dragOffsetY / itemH).toInt()
+                                        val targetIndex = (index + shift)
+                                            .coerceIn(0, customOptions.size - 1)
+                                        if (targetIndex != index) {
+                                            onReorder(index, targetIndex)
+                                            draggingIndex = targetIndex
+                                            dragOffsetY  -= shift * itemH
+                                        }
+                                    }
+                                },
+                                onDragEnd    = { draggingIndex = null; dragOffsetY = 0f },
+                                onDragCancel = { draggingIndex = null; dragOffsetY = 0f }
+                            )
+                        }
+                    )
+                }
             }
         }
     }
 
-    // Bestätigungs-Dialog
     pendingDeleteOption?.let { option ->
         DeleteConfirmationDialog(
-            leetName = option.name,
+            leetName  = option.name,
             onConfirm = {
                 onDeleteOption(option)
                 pendingDeleteOption = null
@@ -151,23 +213,29 @@ private fun DetailedCard(
     onEditOption: (LeetOption) -> Unit,
     onDeleteOption: (LeetOption) -> Unit,
     onShowTable: (LeetOption) -> Unit,
+    isDragging: Boolean = false,
+    dragHandleModifier: Modifier = Modifier,  // NEU
     modifier: Modifier = Modifier
 ) {
+    val elevation by animateDpAsState(
+        targetValue = if (isDragging) 8.dp else 0.dp,
+        label       = "drag_elevation"
+    )
+
     Card(
-        onClick = { onOptionSelected(option) },
-        modifier = modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
+        onClick   = { onOptionSelected(option) },
+        modifier  = modifier.fillMaxWidth(),
+        colors    = CardDefaults.cardColors(
             containerColor = if (option.isSelected)
                 MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
             else
                 MaterialTheme.colorScheme.surface
         ),
-        border = if (option.isSelected) {
-            CardDefaults.outlinedCardBorder().copy(
-                width = 1.dp,
-                brush = androidx.compose.ui.graphics.SolidColor(MaterialTheme.colorScheme.primary)
-            )
-        } else null
+        elevation = CardDefaults.cardElevation(defaultElevation = elevation),
+        border    = if (option.isSelected) CardDefaults.outlinedCardBorder().copy(
+            width = 1.dp,
+            brush = androidx.compose.ui.graphics.SolidColor(MaterialTheme.colorScheme.primary)
+        ) else null
     ) {
         Row(
             modifier = Modifier
@@ -175,40 +243,53 @@ private fun DetailedCard(
                 .padding(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
+            // Drag Handle – nur bei Custom Leets sichtbar
+            if (option.isCustom) {
+                Icon(
+                    imageVector        = Icons.Default.DragHandle,
+                    contentDescription = stringResource(R.string.drag_handle),
+                    modifier           = Modifier
+                        .size(20.dp)
+                        .then(dragHandleModifier),  // Gesture hier
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+            }
+
             Column(modifier = Modifier.weight(1f)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
-                        text = option.name,
-                        style = MaterialTheme.typography.bodyLarge,
+                        text       = option.name,
+                        style      = MaterialTheme.typography.bodyLarge,
                         fontWeight = FontWeight.Medium
                     )
                     if (option.isFavorite) {
                         Spacer(modifier = Modifier.width(4.dp))
                         Icon(
-                            imageVector = Icons.Default.Star,
+                            imageVector        = Icons.Default.Star,
                             contentDescription = stringResource(R.string.content_description_favorite),
-                            modifier = Modifier.size(14.dp),
-                            tint = MaterialTheme.colorScheme.secondary
+                            modifier           = Modifier.size(14.dp),
+                            tint               = MaterialTheme.colorScheme.secondary
                         )
                     }
                     if (option.isSelected) {
                         Spacer(modifier = Modifier.width(4.dp))
                         Icon(
-                            imageVector = Icons.Default.CheckCircle,
+                            imageVector        = Icons.Default.CheckCircle,
                             contentDescription = stringResource(R.string.leet_selector_selected),
-                            modifier = Modifier.size(14.dp),
-                            tint = MaterialTheme.colorScheme.primary
+                            modifier           = Modifier.size(14.dp),
+                            tint               = MaterialTheme.colorScheme.primary
                         )
                     }
                 }
             }
 
             ActionButtons(
-                option = option,
+                option           = option,
                 onToggleFavorite = onToggleFavorite,
-                onEditOption = onEditOption,
-                onDeleteOption = onDeleteOption,
-                onShowTable = onShowTable
+                onEditOption     = onEditOption,
+                onDeleteOption   = onDeleteOption,
+                onShowTable      = onShowTable
             )
         }
     }

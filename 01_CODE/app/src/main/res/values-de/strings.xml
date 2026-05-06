@@ -367,4 +367,7 @@
     <string name="speech_error_timeout">Timeout, bitte nochmal versuchen</string>
     <string name="speech_error_audio">Audiofehler</string>
     <string name="speech_error_generic">Fehler (%1$d)</string>
+    <!-- values-de/strings.xml -->
+    <string name="drag_handle">Zum Umsortieren ziehen</string>
+    <string name="error_reorder_leets">Umsortieren fehlgeschlagen: %1$s</string>
 </resources>
