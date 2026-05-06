@@ -1,81 +1,104 @@
 # Leetspeak Generator – Roadmap
 
-## ✅ Erledigt
+> **Format:** `[x]` = erledigt · `[ ]` = offen · `[!]` = Bug/Fix · `[~]` = in Arbeit
+> 
+> Neue Bugs bitte unter **🐛 Bugs / Fixes** eintragen, neue Feature-Ideen unter der passenden Kategorie.
 
-| # | Was |
-|---|-----|
-| 1 | Scroll-Fix in `AllOptionsSection` |
-| 2 | Race Condition in `initializeFavoriteLeet` entfernt |
-| 3 | Toter Icon-Parameter (`ImageVector`) bereinigt |
-| 4 | `TranslationTableDialog` dedupliziert – nutzt jetzt `LeetTranslator.translateChar()` |
-| 5 | Versionsnummer dynamisch aus `BuildConfig.VERSION_NAME` |
-| 6 | `DomainModule` aufgeräumt – Hilt löst Use Cases automatisch auf |
-| 7 | Undo-Snackbar beim Löschen eines Custom Leets |
-| 8 | Löschen-Button mit Bestätigungs-Dialog im Bottom Sheet |
+---
+
+## ✅ Veröffentlicht in v1337.014
+
+### Architektur & Basis
+- [x] Scroll-Fix in `AllOptionsSection`
+- [x] Race Condition in `initializeFavoriteLeet` entfernt
+- [x] Toter Icon-Parameter (`ImageVector`) bereinigt
+- [x] `TranslationTableDialog` dedupliziert – nutzt `LeetTranslator.translateChar()`
+- [x] Versionsnummer dynamisch aus `BuildConfig.VERSION_NAME`
+- [x] `DomainModule` aufgeräumt – Hilt löst Use Cases automatisch auf
+- [x] `WhatsNewDialog` vollständig entfernt
+- [x] GitHub Actions CI (Unit Tests, Lint, Coverage)
+
+### Bugs behoben
+- [x] `WhatsNewDialog` – Versionsvergleich war hartcodiert, brach bei jeder neuen Version
+- [x] `LeetCreationDialogState` – `applyTemplate()` nutzte `indexOf`, zählte bei doppelten States falsch
+- [x] Aktiv genutzter Leet gelöscht – kein sauberer Fallback auf Simple Modus mit Feedback
+- [x] Leerer Zustand im Bottom Sheet wenn noch keine Custom Leets existieren
+- [x] `AnimatedContent` in `OutputCard` animierte bei **jedem Tastendruck** statt nur beim Moduswechsel → `animationKey: LeetTranslator.TranslationMode` als separater Parameter
+
+### Features
+- [x] **Undo-Snackbar** beim Löschen eines Custom Leets
+- [x] **Bestätigungs-Dialog** beim Löschen im Bottom Sheet
+- [x] **Spracheingabe** – Mikrofon-Button im Input, Sprache → Text → Leet
+- [x] **Zeichenanzahl-Anzeige** – bei Input und Output
+- [x] **Drag & Drop** – Leets im Bottom Sheet umsortieren (Long-Press + ziehen)
+- [x] **Animierter Moduswechsel** – Slide/Fade beim Wechsel des Leet-Modus (nur Moduswechsel, nicht Tastendruck)
+- [x] **Haptic Feedback konfigurierbar** – Ein/Aus-Schalter in den Einstellungen
+- [x] **Onboarding** – 3-Screen HorizontalPager beim ersten Start
+- [x] **Accessibility** – Content Descriptions für alle interaktiven Elemente
+- [x] **Feedback-Funktion** – E-Mail-Intent im Menü (Lightbulb-Icon)
+- [x] **About-Dialog** – Geplante Features statt Feature-Übersicht; App-Logo statt Schneeflocke
+- [x] **5 Farbthemen** – PlanIt, NexTime, Leetspeak, DailyList, Unknown
+- [x] **5 Sprachen** – EN, DE, ES, FR, IT
+- [x] **Unit Tests** – `LeetTranslatorTest` (18 Tests) + `ReverseTranslatorTest` (alle grün)
+- [x] **In-App Review** – Google Play Review API nach 3 App-Starts
+- [x] **Ko-Fi Support-Button** in TopBar und About-Dialog
 
 ---
 
 ## 🐛 Bugs / Fixes
 
-- [x] `WhatsNewDialog` – Versionsvergleich mit `contains("1337.00_8374_4")` ist hartcodiert, bricht bei jeder neuen Version
-- [x] `LeetCreationDialogState` – `applyTemplate()` nutzt `indexOf`, was bei doppelten States falsch zählen kann
-- [x] Aktiv genutzter Leet wird gelöscht – kein sauberer Fallback auf Simple Modus mit Feedback
-- [x] Leerer Zustand im Bottom Sheet wenn noch keine Custom Leets existieren – aktuell einfach nichts sichtbar
+> Neue Bugs hier eintragen: Datum, Beschreibung, Priorität
+
+| Prio | Status | Beschreibung |
+|------|--------|-------------|
+| – | – | *Hier neue Bugs eintragen* |
 
 ---
 
-## 🚀 Features
-
-### Eingabe
-- [x] **Spracheingabe** – Mikrofon-Button im Input, Sprache → Text → Leet
-- [x] **Favoriten-Text** – häufig übersetzte Sätze speichern und per Tipp wiederverwenden
-- [x] **Case-Modus** – Ausgabe wahlweise `GROSSBUCHSTABEN` / `kleinbuchstaben` / `aLtErNiErEnD`
+## 🚀 Geplante Features
 
 ### Ausgabe
-- [x] **Zeichenanzahl-Anzeige** – bei Input und Output
 - [ ] **Share-Button** – direkt beim Output, ohne Umweg über Copy
-- [ ] **Verlauf** – letzte Übersetzungen speichern und wiederverwenden
+- [ ] **Verlauf** – letzte X Übersetzungen speichern und wiederverwenden
+
 
 ### Modi / Leets
 - [ ] **Vorschau im Modus-Selector** – zeigt direkt wie der aktuelle Input in jedem Modus aussehen würde
-- [ ] **Zufalls-Modus** – wählt zufällig einen Custom Leet aus
-- [x] **Drag & Drop** – Custom Leets im Bottom Sheet umsortieren
 
-### Gamification
-- [ ] **Leet-Quiz** – zeigt Leet-Text, User muss raten was es bedeutet
-- [ ] **Tipp des Tages** – kleines Leetspeak-Wissen beim App-Start
 
-### System
-- [ ] **Leetspeak-Tastatur fertigstellen** – IME-Service mit Übersetzungs-Engine verbinden
+### System / Platform
+- [ ] **Leetspeak-Tastatur** – IME-Service mit Übersetzungs-Engine verbinden
 - [ ] **Widget umbauen** – kein Übersetzungs-Widget mehr, nur schneller Launch-Button zur App
 - [ ] **Deeplink-Support** – `leetspeak://translate?text=hello` öffnet App mit vorausgefülltem Text
 
 ---
 
-## 🎨 UX / Design
 
-- [ ] **Onboarding** – kurze 3-Schritte-Erklärung beim ersten Start für neue Nutzer
-- [ ] **Animierter Moduswechsel** – Übergangseffekt wenn Leet-Modus gewechselt wird
-- [ ] **Haptic Feedback konfigurierbar** – Ein/Aus-Schalter in den Einstellungen
-- [ ] **Floating Action Button** – statt BottomBar-Modus-Button als Alternative
-- [ ] **Leerer Zustand** – Illustration + Hinweis wenn noch keine Custom Leets vorhanden
-
----
 
 ## 🔧 Technisch / Qualität
 
-- [ ] **Unit Tests** – für `LeetTranslator` und `ReverseTranslator`
-- [ ] **Accessibility** – Content Descriptions vervollständigen, TalkBack testen
 - [ ] **ProGuard-Regeln prüfen** – `CustomLeet` und Gson-Serialisierung absichern
-- [ ] **In-App Changelog** – direkt aus Git-Tags generieren statt hartcodiert in `WhatsNewDialog`
+- [ ] **Weitere Unit Tests** – ViewModel, Repository, Use Cases
+- [ ] **TalkBack vollständig testen** – Accessibility-Durchlauf auf echtem Gerät
 
 ---
 
 ## 📦 Store / Marketing
 
-- [ ] **Play Store Screenshots** – automatisch generieren
-- [ ] **In-App Changelog aus Git** – `WhatsNewDialog` mit echten Release-Notes befüllen
+- [ ] **Play Store Screenshots** – aktuelle UI abfotografieren / automatisch generieren
+- [ ] **Play Store Beschreibung** – alle 5 Sprachen aktualisieren
+- [ ] **Feature Graphic** – Banner für Play Store erstellen
 
 ---
 
-*Zuletzt aktualisiert: April 2026*
+## 📋 Release-Log
+
+| Version | Datum | Highlights |
+|---------|-------|-----------|
+| v1337.014 | Mai 2026 | Animation-Fix OutputCard, Feedback-Button, About-Dialog überarbeitet |
+| v1337.009 | Apr 2026 | Onboarding, Drag & Drop, Spracheingabe, Haptic Feedback, 5 Themes |
+| v1337.001 | 2025 | Initial Release |
+
+---
+
+*Zuletzt aktualisiert: Mai 2026*
