@@ -55,7 +55,7 @@ fun AboutDialog(onDismiss: () -> Unit) {
                 Spacer(modifier = Modifier.height(24.dp))
                 PersonalStorySection()
                 Spacer(modifier = Modifier.height(20.dp))
-                FeaturesOverviewSection()
+                PlannedFeaturesSection()
                 Spacer(modifier = Modifier.height(20.dp))
                 SupportSection(uriHandler = uriHandler, onDismiss = onDismiss)
                 Spacer(modifier = Modifier.height(16.dp))
@@ -378,6 +378,80 @@ private fun FeatureChip(text: String, icon: ImageVector, modifier: Modifier = Mo
                 color = MaterialTheme.colorScheme.onSurface,
                 fontWeight = FontWeight.Medium
             )
+        }
+    }
+}
+
+@Composable
+private fun PlannedFeaturesSection() {
+    Card(
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
+        ),
+        shape = RoundedCornerShape(16.dp)
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Row(
+                verticalAlignment     = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                modifier              = Modifier.padding(bottom = 12.dp)
+            ) {
+                Icon(
+                    imageVector        = Icons.Default.RocketLaunch,
+                    contentDescription = null,
+                    modifier           = Modifier.size(20.dp),
+                    tint               = MaterialTheme.colorScheme.primary
+                )
+                Text(
+                    text       = stringResource(R.string.about_planned_title),
+                    style      = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color      = MaterialTheme.colorScheme.primary
+                )
+            }
+
+            val planned = listOf(
+                Icons.Default.Keyboard      to R.string.about_planned_keyboard,
+                Icons.Default.Widgets       to R.string.about_planned_widget,
+                Icons.Default.Link          to R.string.about_planned_deeplink,
+                Icons.Default.Share         to R.string.about_planned_share,
+                Icons.Default.History       to R.string.about_planned_history
+            )
+
+            planned.forEachIndexed { index, (icon, textRes) ->
+                Row(
+                    verticalAlignment     = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    modifier              = Modifier.padding(vertical = 4.dp)
+                ) {
+                    Surface(
+                        color  = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+                        shape  = CircleShape,
+                        modifier = Modifier.size(32.dp)
+                    ) {
+                        Box(contentAlignment = Alignment.Center) {
+                            Icon(
+                                imageVector        = icon,
+                                contentDescription = null,
+                                modifier           = Modifier.size(16.dp),
+                                tint               = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                    }
+                    Text(
+                        text  = stringResource(textRes),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                }
+                if (index < planned.size - 1) {
+                    HorizontalDivider(
+                        modifier  = Modifier.padding(start = 44.dp),
+                        thickness = 0.5.dp,
+                        color     = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f)
+                    )
+                }
+            }
         }
     }
 }

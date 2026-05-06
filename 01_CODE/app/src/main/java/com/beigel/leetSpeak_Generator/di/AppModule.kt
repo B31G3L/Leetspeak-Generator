@@ -1,8 +1,8 @@
 package com.beigel.leetSpeak_Generator.di
 
 import android.content.Context
+import com.beigel.leetSpeak_Generator.data.OnboardingPreferences
 import com.beigel.leetSpeak_Generator.data.ThemePreferences
-import com.beigel.leetSpeak_Generator.data.WhatsNewPreferences
 import com.beigel.leetSpeak_Generator.repository.LeetRepository
 import com.beigel.leetSpeak_Generator.review.InAppReviewManager
 import dagger.Module
@@ -28,15 +28,16 @@ object AppModule {
         @ApplicationContext context: Context
     ): ThemePreferences = ThemePreferences(context)
 
-    @Provides
-    @Singleton
-    fun provideWhatsNewPreferences(
-        @ApplicationContext context: Context
-    ): WhatsNewPreferences = WhatsNewPreferences(context)
 
     @Provides
     @Singleton
     fun provideInAppReviewManager(
         @ApplicationContext context: Context
     ): InAppReviewManager = InAppReviewManager(context)
+
+    @Provides
+    @Singleton
+    fun provideOnboardingPreferences(
+        @ApplicationContext context: Context
+    ): OnboardingPreferences = OnboardingPreferences(context)
 }

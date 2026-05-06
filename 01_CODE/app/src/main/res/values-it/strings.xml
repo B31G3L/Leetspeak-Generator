@@ -361,5 +361,32 @@
     <string name="settings_haptic_desc">Vibra durante la copia del testo</string>
     <string name="settings_haptic_on">Attivo</string>
     <string name="settings_haptic_off">Disattivo</string>
+    <string name="onboarding_skip">Salta</string>
+    <string name="onboarding_next">Avanti</string>
+    <string name="onboarding_start">Andiamo!</string>
+    <string name="onboarding_1_title">Trasforma il testo</string>
+    <string name="onboarding_1_desc">Converti qualsiasi testo in fantastico Leetspeak con un solo tocco.</string>
+    <string name="onboarding_2_title">Crea il tuo</string>
+    <string name="onboarding_2_desc">Crea profili Leet personalizzati con le tue mappature di caratteri.</string>
+    <string name="onboarding_3_title">Salva i tuoi preferiti</string>
+    <string name="onboarding_3_desc">Segna la tua modalità Leet preferita per un accesso rapido.</string>
+    <string name="a11y_reverse_mode_active">Modalità inversa attiva, tocca per cambiare</string>
+    <string name="a11y_reverse_mode_inactive">Modalità normale, tocca per la modalità inversa</string>
+    <string name="a11y_mode_selector">Modalità attuale: %1$s. Tocca per cambiare.</string>
 
+
+
+    <string name="feedback_title">Invia feedback</string>
+    <string name="feedback_description">Hai un\'idea o un suggerimento? Fammelo sapere!</string>
+    <string name="feedback_send">Invia feedback</string>
+    <string name="feedback_subject">Feedback - Generatore Leetspeak v%1$s</string>
+    <string name="feedback_header">=== FEEDBACK ===</string>
+    <string name="feedback_describe">La tua idea o suggerimento:</string>
+    <string name="feedback_placeholder">(Descrivi la tua idea qui)</string>
+    <string name="about_planned_title">Cosa è pianificato</string>
+    <string name="about_planned_keyboard">Tastiera Leetspeak – servizio IME con motore di traduzione</string>
+    <string name="about_planned_widget">Ridisegno widget – pulsante di avvio rapido all\'app</string>
+    <string name="about_planned_deeplink">Supporto deeplink – leetspeak://translate?text=hello</string>
+    <string name="about_planned_share">Pulsante condividi – direttamente dall\'output senza copiare</string>
+    <string name="about_planned_history">Cronologia – salva e riutilizza le traduzioni recenti</string>
 </resources>

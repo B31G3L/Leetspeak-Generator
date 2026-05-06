@@ -361,4 +361,30 @@
     <string name="settings_haptic_desc">Vibrar al copiar texto</string>
     <string name="settings_haptic_on">Activado</string>
     <string name="settings_haptic_off">Desactivado</string>
+    <string name="onboarding_skip">Omitir</string>
+    <string name="onboarding_next">Siguiente</string>
+    <string name="onboarding_start">¡Vamos!</string>
+    <string name="onboarding_1_title">Transformar texto</string>
+    <string name="onboarding_1_desc">Convierte cualquier texto en increíble Leetspeak con un solo toque.</string>
+    <string name="onboarding_2_title">Crea el tuyo</string>
+    <string name="onboarding_2_desc">Crea perfiles Leet personalizados con tus propias asignaciones de caracteres.</string>
+    <string name="onboarding_3_title">Guarda tus favoritos</string>
+    <string name="onboarding_3_desc">Marca tu modo Leet favorito para acceso rápido.</string>
+    <string name="a11y_reverse_mode_active">Modo inverso activo, toca para cambiar</string>
+    <string name="a11y_reverse_mode_inactive">Modo normal, toca para el modo inverso</string>
+    <string name="a11y_mode_selector">Modo actual: %1$s. Toca para cambiar.</string>
+    <string name="feedback_title">Enviar comentarios</string>
+    <string name="feedback_description">¿Tienes una idea o sugerencia? ¡Cuéntame!</string>
+    <string name="feedback_send">Enviar comentarios</string>
+    <string name="feedback_subject">Comentarios - Generador de Leetspeak v%1$s</string>
+    <string name="feedback_header">=== COMENTARIOS ===</string>
+    <string name="feedback_describe">Tu idea o sugerencia:</string>
+    <string name="feedback_placeholder">(Describe tu idea aquí)</string>
+    <string name="about_planned_title">Lo que está planeado</string>
+    <string name="about_planned_keyboard">Teclado Leetspeak – servicio IME con motor de traducción</string>
+    <string name="about_planned_widget">Rediseño de widget – botón de inicio rápido a la app</string>
+    <string name="about_planned_deeplink">Soporte de deeplink – leetspeak://translate?text=hello</string>
+    <string name="about_planned_share">Botón compartir – directamente desde la salida sin copiar</string>
+    <string name="about_planned_history">Historial – guardar y reutilizar traducciones recientes</string>
+
 </resources>

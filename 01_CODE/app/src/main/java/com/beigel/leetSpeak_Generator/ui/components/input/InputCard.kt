@@ -20,6 +20,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
@@ -39,11 +41,10 @@ fun InputCard(
     title: String = "Input: Plaintext",
     onSpeechInput: ((String) -> Unit)? = null
 ) {
-    val context = LocalContext.current
-    var isListening by remember { mutableStateOf(false) }
+    val context       = LocalContext.current
+    var isListening   by remember { mutableStateOf(false) }
     val speechManager = remember { SpeechInputManager(context) }
 
-    // Strings hier auflösen wo R verfügbar ist
     val errorMessages = SpeechInputManager.SpeechErrorMessages(
         unavailable = stringResource(R.string.speech_error_unavailable),
         noMatch     = stringResource(R.string.speech_error_no_match),
@@ -58,7 +59,7 @@ fun InputCard(
         if (granted) {
             speechManager.startListening(
                 onResult      = { onSpeechInput?.invoke(it) },
-                onError       = { /* ignorieren oder Toast */ },
+                onError       = { },
                 onStateChange = { isListening = it },
                 errorMessages = errorMessages
             )
@@ -72,6 +73,7 @@ fun InputCard(
     val cardColors = CardDefaults.cardColors(
         containerColor = MaterialTheme.colorScheme.background
     )
+
     val headerTextColor = if (isReverseMode)
         MaterialTheme.colorScheme.secondary
     else
@@ -82,9 +84,12 @@ fun InputCard(
     else
         MaterialTheme.colorScheme.primary
 
+    // Accessibility: TextField-Beschreibung
+    val textFieldDesc = stringResource(R.string.a11y_input_field, title)
+
     Card(
         modifier = modifier,
-        colors = cardColors
+        colors   = cardColors
     ) {
         Column(
             modifier = Modifier
@@ -93,14 +98,14 @@ fun InputCard(
         ) {
             if (showHeader) {
                 InputCardHeader(
-                    title          = title,
+                    title           = title,
                     headerTextColor = headerTextColor,
-                    hasText        = inputText.isNotEmpty(),
-                    charCount       = inputText.length,  // NEU
-                    onClearText    = onClearText,
-                    showMicButton  = onSpeechInput != null,
-                    isListening    = isListening,
-                    onMicClick     = {
+                    hasText         = inputText.isNotEmpty(),
+                    charCount       = inputText.length,
+                    onClearText     = onClearText,
+                    showMicButton   = onSpeechInput != null,
+                    isListening     = isListening,
+                    onMicClick      = {
                         if (isListening) {
                             speechManager.stop()
                             isListening = false
@@ -113,34 +118,38 @@ fun InputCard(
             }
 
             AdaptiveTextField(
-                value          = inputText,
-                onValueChange  = onInputChange,
-                modifier       = Modifier.fillMaxSize(),
-                placeholder    = {
+                value         = inputText,
+                onValueChange = onInputChange,
+                modifier      = Modifier
+                    .fillMaxSize()
+                    .semantics { contentDescription = textFieldDesc },
+                placeholder   = {
                     AnimatedPlaceholder(
                         adaptiveTextSize = when {
                             inputText.length <= 40  -> 30
                             inputText.length <= 180 -> 22
                             else                    -> 18
-                        }.let { androidx.compose.ui.unit.TextUnit(
-                            it.toFloat(),
-                            androidx.compose.ui.unit.TextUnitType.Sp
-                        )},
+                        }.let {
+                            androidx.compose.ui.unit.TextUnit(
+                                it.toFloat(),
+                                androidx.compose.ui.unit.TextUnitType.Sp
+                            )
+                        },
                         isReverseMode = isReverseMode
                     )
                 },
-                colors         = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor    = borderColor,
-                    unfocusedBorderColor  = borderColor.copy(alpha = 0.5f),
-                    disabledBorderColor   = borderColor.copy(alpha = 0.5f),
-                    focusedContainerColor = MaterialTheme.colorScheme.background,
+                colors        = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor      = borderColor,
+                    unfocusedBorderColor    = borderColor.copy(alpha = 0.5f),
+                    disabledBorderColor     = borderColor.copy(alpha = 0.5f),
+                    focusedContainerColor   = MaterialTheme.colorScheme.background,
                     unfocusedContainerColor = MaterialTheme.colorScheme.background,
                     disabledContainerColor  = MaterialTheme.colorScheme.surface,
-                    focusedTextColor      = MaterialTheme.colorScheme.onSurface,
-                    unfocusedTextColor    = MaterialTheme.colorScheme.onSurface,
-                    disabledTextColor     = MaterialTheme.colorScheme.onSurface
+                    focusedTextColor        = MaterialTheme.colorScheme.onSurface,
+                    unfocusedTextColor      = MaterialTheme.colorScheme.onSurface,
+                    disabledTextColor       = MaterialTheme.colorScheme.onSurface
                 ),
-                shape          = MaterialTheme.shapes.medium,
+                shape         = MaterialTheme.shapes.medium,
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Default)
             )
         }
@@ -160,27 +169,32 @@ private fun InputCardHeader(
     modifier: Modifier = Modifier
 ) {
     Row(
-        modifier = modifier.fillMaxWidth(),
+        modifier          = modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(
-            text  = title,
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Medium,
-            color = headerTextColor
-        )
-        AnimatedVisibility(visible = charCount > 0) {
+        // Titel + Zeichenanzahl
+        Column {
             Text(
-                text  = stringResource(R.string.char_count, charCount),
-                style = MaterialTheme.typography.labelSmall,
-                color = headerTextColor.copy(alpha = 0.6f)
+                text       = title,
+                style      = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Medium,
+                color      = headerTextColor
             )
+            AnimatedVisibility(visible = charCount > 0) {
+                Text(
+                    text  = stringResource(R.string.char_count, charCount),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = headerTextColor.copy(alpha = 0.6f)
+                )
+            }
         }
+
         Row(
             horizontalArrangement = Arrangement.spacedBy(4.dp),
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment     = Alignment.CenterVertically
         ) {
+            // Mikrofon-Button
             if (showMicButton) {
                 IconButton(
                     onClick  = onMicClick,
@@ -194,12 +208,13 @@ private fun InputCardHeader(
                             else R.string.speech_input_start
                         ),
                         modifier = Modifier.size(16.dp),
-                        tint = if (isListening) MaterialTheme.colorScheme.error
+                        tint     = if (isListening) MaterialTheme.colorScheme.error
                         else MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }
 
+            // Clear-Button
             AnimatedVisibility(
                 visible = hasText,
                 enter   = fadeIn() + scaleIn(),

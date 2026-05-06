@@ -375,5 +375,37 @@
     <string name="settings_haptic_desc">Vibrate when copying text</string>
     <string name="settings_haptic_on">On</string>
     <string name="settings_haptic_off">Off</string>
+    <string name="onboarding_skip">Skip</string>
+    <string name="onboarding_next">Next</string>
+    <string name="onboarding_start">Let\'s go!</string>
+
+    <string name="onboarding_1_title">Transform Text</string>
+    <string name="onboarding_1_desc">Convert any text into awesome Leetspeak with just one tap. Simple, Extended or your own custom style.</string>
+
+    <string name="onboarding_2_title">Create Your Own</string>
+    <string name="onboarding_2_desc">Build custom Leet profiles with your own character mappings. Make it truly yours.</string>
+
+    <string name="onboarding_3_title">Save Your Favorites</string>
+    <string name="onboarding_3_desc">Mark your favorite Leet mode for quick access. The app remembers your preference on every start.</string>
+    <string name="a11y_reverse_mode_active">Reverse mode active, tap to switch to normal mode</string>
+    <string name="a11y_reverse_mode_inactive">Normal mode, tap to switch to reverse mode</string>
+    <string name="a11y_mode_selector">Current mode: %1$s. Tap to change.</string>
+    <string name="a11y_input_field">Input field: %1$s</string>
+    <string name="a11y_output_field">Output field: %1$s</string>
+
+    <string name="feedback_title">Send Feedback</string>
+    <string name="feedback_description">Got an idea or suggestion? Let me know!</string>
+    <string name="feedback_send">Send Feedback</string>
+    <string name="feedback_subject">Feedback - Leetspeak Generator v%1$s</string>
+    <string name="feedback_header">=== FEEDBACK ===</string>
+    <string name="feedback_describe">Your idea or suggestion:</string>
+    <string name="feedback_placeholder">(Describe your idea here)</string>
+
+    <string name="about_planned_title">What\'s planned</string>
+    <string name="about_planned_keyboard">Leetspeak keyboard – IME service with translation engine</string>
+    <string name="about_planned_widget">Widget redesign – quick launch button to the app</string>
+    <string name="about_planned_deeplink">Deeplink support – leetspeak://translate?text=hello</string>
+    <string name="about_planned_share">Share button – directly from output without copy</string>
+    <string name="about_planned_history">History – save and reuse recent translations</string>
 
 </resources>

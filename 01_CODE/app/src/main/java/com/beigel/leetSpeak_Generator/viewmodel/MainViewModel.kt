@@ -6,9 +6,8 @@ import androidx.lifecycle.viewModelScope
 import com.beigel.leetSpeak_Generator.R
 import com.beigel.leetSpeak_Generator.data.CustomLeet
 import com.beigel.leetSpeak_Generator.data.LeetOption
+import com.beigel.leetSpeak_Generator.data.OnboardingPreferences
 import com.beigel.leetSpeak_Generator.data.ThemePreferences
-import com.beigel.leetSpeak_Generator.data.VersionInfo
-import com.beigel.leetSpeak_Generator.data.WhatsNewPreferences
 import com.beigel.leetSpeak_Generator.domain.usecase.leet.LeetManagerUseCase
 import com.beigel.leetSpeak_Generator.domain.usecase.translation.TranslationManagerUseCase
 import com.beigel.leetSpeak_Generator.domain.usecase.ui.UiManagerUseCase
@@ -32,8 +31,9 @@ class MainViewModel @Inject constructor(
     private val uiManager: UiManagerUseCase,
     private val repository: LeetRepository,
     private val themePreferences: ThemePreferences,
-    private val whatsNewPreferences: WhatsNewPreferences,
-    private val inAppReviewManager: InAppReviewManager
+    private val inAppReviewManager: InAppReviewManager,
+    private val onboardingPreferences: OnboardingPreferences
+
 ) : ViewModel() {
 
     val inputText = uiManager.inputText
@@ -50,16 +50,8 @@ class MainViewModel @Inject constructor(
     val themeMode: StateFlow<String> = themePreferences.themeMode
         .stateIn(viewModelScope, SharingStarted.Eagerly, ThemePreferences.THEME_SYSTEM)
 
-    val shouldShowWhatsNew: StateFlow<Boolean> = whatsNewPreferences.shouldShowWhatsNew
-        .stateIn(viewModelScope, SharingStarted.Eagerly, false)
-
-    val currentVersionInfo: VersionInfo = whatsNewPreferences.getCurrentVersionInfo()
-
     val appTheme: StateFlow<AppTheme> = themePreferences.appTheme
         .stateIn(viewModelScope, SharingStarted.Eagerly, AppTheme.PLANIT)
-
-    val isFirstLaunch: StateFlow<Boolean> = whatsNewPreferences.isFirstLaunch
-        .stateIn(viewModelScope, SharingStarted.Eagerly, false)
 
     val clearInputAfterCopy: StateFlow<Boolean> = themePreferences.clearInputAfterCopy
         .stateIn(viewModelScope, SharingStarted.Eagerly, false)
@@ -71,7 +63,14 @@ class MainViewModel @Inject constructor(
         .stateIn(viewModelScope, SharingStarted.Eagerly, true)
 
     private val _isInitialized = MutableStateFlow(false)
+    val isOnboardingCompleted: StateFlow<Boolean> = onboardingPreferences.isOnboardingCompleted
+        .stateIn(viewModelScope, SharingStarted.Eagerly, true) // true = kein Flackern beim Start
 
+    fun completeOnboarding() {
+        viewModelScope.launch {
+            onboardingPreferences.setOnboardingCompleted()
+        }
+    }
     val leetOptions: StateFlow<List<LeetOption>> = combine(
         leetManager.getLeetOptions(), currentMode, repository.currentLeetIndex, _isInitialized
     ) { options, currentTranslationMode, currentLeetIndex, isInitialized ->
@@ -204,10 +203,6 @@ class MainViewModel @Inject constructor(
             is MainIntent.ClearError -> uiManager.clearError()
             is MainIntent.ClearSuccess -> uiManager.clearSuccess()
             is MainIntent.ToggleReverseMode -> toggleReverseMode()
-            is MainIntent.DismissWhatsNew -> { }
-            is MainIntent.MarkWhatsNewAsShown -> markWhatsNewAsShown()
-            is MainIntent.ResetWhatsNewForTesting -> resetWhatsNewForTesting()
-            is MainIntent.ForceShowWhatsNew -> forceShowWhatsNew()
             is MainIntent.ReorderLeets -> reorderLeets(intent.from, intent.to)
 
         }
@@ -377,23 +372,9 @@ class MainViewModel @Inject constructor(
 
     fun dismissClearInputDialog() { _showClearInputDialog.value = false }
 
-    private fun markWhatsNewAsShown() {
-        viewModelScope.launch { whatsNewPreferences.markCurrentVersionAsShown() }
-    }
 
-    private fun resetWhatsNewForTesting() {
-        viewModelScope.launch {
-            whatsNewPreferences.resetForTesting()
-            uiManager.setSuccess(application.getString(R.string.debug_whatsnew_reset_shown))
-        }
-    }
 
-    private fun forceShowWhatsNew() {
-        viewModelScope.launch {
-            whatsNewPreferences.forceShowNextTime()
-            uiManager.setSuccess(application.getString(R.string.debug_whatsnew_will_show))
-        }
-    }
+
 
     fun generatePreview(leetOption: LeetOption, sampleText: String = "Hello"): String {
         val mode = when (leetOption.mode) {

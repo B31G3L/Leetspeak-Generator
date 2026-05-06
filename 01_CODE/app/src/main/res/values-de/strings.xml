@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="language_system">System default</string>
-    <string name="language_system_desc">Use device language</string>
-    <string name="language_english">English</string>
-    <string name="language_english_desc">English (United States)</string>
-    <string name="language_german">German</string>
+    <string name="language_system">Systemstandard</string>
+    <string name="language_system_desc">Gerätesprache verwenden</string>
+    <string name="language_english">Englisch</string>
+    <string name="language_english_desc">Englisch (Vereinigte Staaten)</string>
+    <string name="language_german">Deutsch</string>
     <string name="language_german_desc">Deutsch (Deutschland)</string>
-    <string name="language_spanish">Spanish</string>
-    <string name="language_spanish_desc">Español (España)</string>
-    <string name="language_french">French</string>
-    <string name="language_french_desc">Français (France)</string>
-    <string name="language_italian">Italian</string>
-    <string name="language_italian_desc">Italiano (Italia)</string>
+    <string name="language_spanish">Spanisch</string>
+    <string name="language_spanish_desc">Spanisch (Spanien)</string>
+    <string name="language_french">Französisch</string>
+    <string name="language_french_desc">Französisch (Frankreich)</string>
+    <string name="language_italian">Italienisch</string>
+    <string name="language_italian_desc">Italienisch (Italien)</string>
     <string name="settings_language">Sprache</string>
 
     <string name="settings_title">Einstellungen</string>
@@ -375,5 +375,34 @@
     <string name="settings_haptic_desc">Vibration beim Kopieren von Text</string>
     <string name="settings_haptic_on">Ein</string>
     <string name="settings_haptic_off">Aus</string>
+    <string name="onboarding_skip">Überspringen</string>
+    <string name="onboarding_next">Weiter</string>
+    <string name="onboarding_start">Los geht\'s!</string>
+
+    <string name="onboarding_1_title">Text umwandeln</string>
+    <string name="onboarding_1_desc">Verwandle jeden Text mit einem Tipp in cooles Leetspeak. Einfach, Erweitert oder dein eigener Stil.</string>
+
+    <string name="onboarding_2_title">Eigene Profile erstellen</string>
+    <string name="onboarding_2_desc">Erstelle eigene Leet-Profile mit deinen eigenen Zeichenzuordnungen. Mach es zu deinem ganz persönlichen Stil.</string>
+
+    <string name="onboarding_3_title">Favoriten speichern</string>
+    <string name="onboarding_3_desc">Markiere deinen Lieblings-Leet-Modus für schnellen Zugriff. Die App merkt sich deine Einstellung bei jedem Start.</string>
+    <string name="a11y_reverse_mode_active">Rückwärts-Modus aktiv, tippen zum Wechseln</string>
+    <string name="a11y_reverse_mode_inactive">Normaler Modus, tippen für Rückwärts-Modus</string>
+    <string name="a11y_mode_selector">Aktueller Modus: %1$s. Tippen zum Ändern.</string>
+    <string name="feedback_title">Feedback senden</string>
+    <string name="feedback_description">Eine Idee oder ein Verbesserungsvorschlag? Schreib mir!</string>
+    <string name="feedback_send">Feedback senden</string>
+    <string name="feedback_subject">Feedback - Leetspeak Generator v%1$s</string>
+    <string name="feedback_header">=== FEEDBACK ===</string>
+    <string name="feedback_describe">Deine Idee oder dein Vorschlag:</string>
+    <string name="feedback_placeholder">(Beschreibe deine Idee hier)</string>
+
+    <string name="about_planned_title">Was noch geplant ist</string>
+    <string name="about_planned_keyboard">Leetspeak-Tastatur – IME-Service mit Übersetzungs-Engine verbinden</string>
+    <string name="about_planned_widget">Widget umbauen – schneller Launch-Button zur App</string>
+    <string name="about_planned_deeplink">Deeplink-Support – leetspeak://translate?text=hello</string>
+    <string name="about_planned_share">Share-Button – direkt beim Output, ohne Umweg über Copy</string>
+    <string name="about_planned_history">Verlauf – letzte Übersetzungen speichern und wiederverwenden</string>
 
 </resources>

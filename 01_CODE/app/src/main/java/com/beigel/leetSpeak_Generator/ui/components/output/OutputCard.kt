@@ -11,21 +11,15 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.beigel.leetSpeak_Generator.R
 import com.beigel.leetSpeak_Generator.translation.LeetTranslator
-import com.beigel.leetSpeak_Generator.ui.components.text.*
+import com.beigel.leetSpeak_Generator.ui.components.text.AdaptiveTextField
 import kotlinx.coroutines.delay
-import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.slideInHorizontally
-import androidx.compose.animation.slideOutHorizontally
-import androidx.compose.animation.togetherWith
 
-/**
- * Output Card Component für Übersetzungsergebnisse
- * Unterstützt Reverse Mode und Copy-Funktionalität
- */
 @Composable
 fun OutputCard(
     outputText: String,
@@ -38,7 +32,6 @@ fun OutputCard(
 ) {
     var showCopyFeedback by remember { mutableStateOf(false) }
 
-
     LaunchedEffect(showCopyFeedback) {
         if (showCopyFeedback) {
             delay(1500)
@@ -50,47 +43,45 @@ fun OutputCard(
         containerColor = MaterialTheme.colorScheme.background
     )
 
-    val headerTextColor = if (isReverseMode) {
+    val headerTextColor = if (isReverseMode)
         MaterialTheme.colorScheme.primary
-    } else {
+    else
         MaterialTheme.colorScheme.secondary
-    }
 
-    val borderColor = if (isReverseMode) {
+    val borderColor = if (isReverseMode)
         MaterialTheme.colorScheme.primary
-    } else {
+    else
         MaterialTheme.colorScheme.secondary
-    }
+
+    // Accessibility: TextField-Beschreibung
+    val textFieldDesc = stringResource(R.string.a11y_output_field, currentMode)
 
     AnimatedVisibility(
-        visible = outputText.isNotEmpty(),
-        enter = fadeIn(animationSpec = tween(300)) + slideInVertically(
-            animationSpec = tween(300),
+        visible  = outputText.isNotEmpty(),
+        enter    = fadeIn(animationSpec = tween(300)) + slideInVertically(
+            animationSpec  = tween(300),
             initialOffsetY = { it / 4 }
         ),
-        exit = fadeOut(animationSpec = tween(200)) + slideOutVertically(
+        exit     = fadeOut(animationSpec = tween(200)) + slideOutVertically(
             animationSpec = tween(200),
             targetOffsetY = { it / 4 }
         ),
         modifier = modifier
     ) {
-        Card(
-            colors = cardColors,
-        ) {
+        Card(colors = cardColors) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(8.dp)
             ) {
-                // Header Section
                 if (showHeader) {
                     OutputCardHeader(
-                        currentMode = currentMode,
-                        headerTextColor = headerTextColor,
+                        currentMode      = currentMode,
+                        headerTextColor  = headerTextColor,
                         charCount        = outputText.length,
                         translationStats = translationStats,
                         showCopyFeedback = showCopyFeedback,
-                        onCopyClick = {
+                        onCopyClick      = {
                             onCopyClick()
                             showCopyFeedback = true
                         }
@@ -98,13 +89,13 @@ fun OutputCard(
                     Spacer(modifier = Modifier.height(8.dp))
                 }
 
-                // Output Display
+                // AnimatedContent für Moduswechsel-Animation
                 AnimatedContent(
-                    targetState = outputText,
+                    targetState    = outputText,
                     transitionSpec = {
                         (fadeIn(animationSpec = tween(200)) +
                                 slideInHorizontally(
-                                    animationSpec = tween(200),
+                                    animationSpec  = tween(200),
                                     initialOffsetX = { it / 8 }
                                 )) togetherWith
                                 (fadeOut(animationSpec = tween(150)) +
@@ -117,11 +108,15 @@ fun OutputCard(
                 ) { text ->
                     SelectionContainer {
                         AdaptiveTextField(
-                            value           = text,
-                            onValueChange   = { },
-                            modifier        = Modifier.fillMaxSize(),
-                            readOnly        = true,
-                            colors          = OutlinedTextFieldDefaults.colors(
+                            value         = text,
+                            onValueChange = { },
+                            modifier      = Modifier
+                                .fillMaxSize()
+                                .semantics {
+                                    contentDescription = textFieldDesc
+                                },
+                            readOnly = true,
+                            colors   = OutlinedTextFieldDefaults.colors(
                                 focusedBorderColor      = borderColor,
                                 unfocusedBorderColor    = borderColor.copy(alpha = 0.5f),
                                 disabledBorderColor     = borderColor.copy(alpha = 0.5f),
@@ -141,9 +136,6 @@ fun OutputCard(
     }
 }
 
-/**
- * Header für die Output Card
- */
 @Composable
 private fun OutputCardHeader(
     currentMode: String,
@@ -155,17 +147,16 @@ private fun OutputCardHeader(
     modifier: Modifier = Modifier
 ) {
     Row(
-        modifier = modifier.fillMaxWidth(),
+        modifier              = modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment     = Alignment.CenterVertically
     ) {
-        // Mode Info and Statistics
         Column {
             Text(
-                text = currentMode,
-                style = MaterialTheme.typography.titleMedium,
+                text       = currentMode,
+                style      = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Medium,
-                color = headerTextColor
+                color      = headerTextColor
             )
             AnimatedVisibility(visible = charCount > 0) {
                 Text(
@@ -174,36 +165,16 @@ private fun OutputCardHeader(
                     color = headerTextColor.copy(alpha = 0.6f)
                 )
             }
-
-            // Translation Statistics
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                translationStats?.let { stats ->
-                    AnimatedVisibility(
-                        visible = stats.totalChars > 0,
-                        enter = fadeIn() + slideInVertically(),
-                        exit = fadeOut() + slideOutVertically()
-                    ) {
-
-                    }
-                }
-            }
         }
 
-        // Copy Button with Feedback
         CopyButton(
             showCopyFeedback = showCopyFeedback,
-            onCopyClick = onCopyClick,
-            tint = headerTextColor
+            onCopyClick      = onCopyClick,
+            tint             = headerTextColor
         )
     }
 }
 
-/**
- * Copy Button mit animiertem Feedback
- */
 @Composable
 private fun CopyButton(
     showCopyFeedback: Boolean,
@@ -213,11 +184,11 @@ private fun CopyButton(
 ) {
     Box(modifier = modifier) {
         IconButton(
-            onClick = onCopyClick,
+            onClick  = onCopyClick,
             modifier = Modifier.size(40.dp)
         ) {
             AnimatedContent(
-                targetState = showCopyFeedback,
+                targetState    = showCopyFeedback,
                 transitionSpec = {
                     scaleIn() + fadeIn() togetherWith scaleOut() + fadeOut()
                 },
@@ -225,27 +196,26 @@ private fun CopyButton(
             ) { feedback ->
                 if (feedback) {
                     Icon(
-                        imageVector = Icons.Default.Check,
+                        imageVector        = Icons.Default.Check,
                         contentDescription = stringResource(R.string.copied),
-                        tint = tint,
-                        modifier = Modifier.size(20.dp)
+                        tint               = tint,
+                        modifier           = Modifier.size(20.dp)
                     )
                 } else {
                     Icon(
-                        imageVector = Icons.Default.ContentCopy,
+                        imageVector        = Icons.Default.ContentCopy,
                         contentDescription = stringResource(R.string.copy_text),
-                        tint = tint,
-                        modifier = Modifier.size(20.dp)
+                        tint               = tint,
+                        modifier           = Modifier.size(20.dp)
                     )
                 }
             }
         }
 
-        // Success indicator dot
         AnimatedVisibility(
             visible = showCopyFeedback,
-            enter = scaleIn() + fadeIn(),
-            exit = scaleOut() + fadeOut()
+            enter   = scaleIn() + fadeIn(),
+            exit    = scaleOut() + fadeOut()
         ) {
             Surface(
                 modifier = Modifier

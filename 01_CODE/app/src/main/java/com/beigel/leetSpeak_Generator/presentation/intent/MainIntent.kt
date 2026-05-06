@@ -20,10 +20,6 @@ sealed class MainIntent {
     object ClearError : MainIntent()
     object ClearSuccess : MainIntent()
     object ToggleReverseMode : MainIntent()
-    object DismissWhatsNew : MainIntent()
-    object MarkWhatsNewAsShown : MainIntent()
-    object ResetWhatsNewForTesting : MainIntent()
-    object ForceShowWhatsNew : MainIntent()
 
     data class ReorderLeets(val from: Int, val to: Int) : MainIntent()
 

@@ -26,11 +26,14 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.view.WindowCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.beigel.leetSpeak_Generator.R
 import com.beigel.leetSpeak_Generator.ui.components.AboutDialog
@@ -41,8 +44,8 @@ import dagger.hilt.android.AndroidEntryPoint
 import com.beigel.leetSpeak_Generator.presentation.intent.MainIntent
 import com.beigel.leetSpeak_Generator.review.InAppReviewManager
 import com.beigel.leetSpeak_Generator.ui.components.ClearInputDialog
-import com.beigel.leetSpeak_Generator.ui.components.WhatsNewDialog
 import com.beigel.leetSpeak_Generator.ui.components.input.InputCard
+import com.beigel.leetSpeak_Generator.ui.onboarding.OnboardingScreen
 import com.beigel.leetSpeak_Generator.ui.settings.SettingsActivity
 import com.beigel.leetSpeak_Generator.ui.components.output.OutputCard
 import javax.inject.Inject
@@ -56,14 +59,8 @@ class ComposeMainActivity : AppCompatActivity() {
     @Inject
     lateinit var inAppReviewManager: InAppReviewManager
 
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        // ✅ Edge-to-Edge Setup VOR setContent
-        // Entferne die alte Zeile:
-        // WindowCompat.setDecorFitsSystemWindows(window, false)
-        // Das macht jetzt EdgeToEdgeHelper
 
         vibrator = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
             val vibratorManager = getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as android.os.VibratorManager
@@ -74,67 +71,93 @@ class ComposeMainActivity : AppCompatActivity() {
         }
 
         setContent {
-            // Theme aus Settings laden und überwachen
             val themeMode by viewModel.themeMode.collectAsStateWithLifecycle()
-            val appTheme by viewModel.appTheme.collectAsStateWithLifecycle()
+            val appTheme  by viewModel.appTheme.collectAsStateWithLifecycle()
+            val isOnboardingCompleted by viewModel.isOnboardingCompleted.collectAsStateWithLifecycle()
 
             val isDarkTheme = when (themeMode) {
-                com.beigel.leetSpeak_Generator.data.ThemePreferences.THEME_DARK -> true
+                com.beigel.leetSpeak_Generator.data.ThemePreferences.THEME_DARK  -> true
                 com.beigel.leetSpeak_Generator.data.ThemePreferences.THEME_LIGHT -> false
                 else -> androidx.compose.foundation.isSystemInDarkTheme()
             }
 
             LeetspeakGeneratorTheme(
                 darkTheme = isDarkTheme,
-                appTheme = appTheme
+                appTheme  = appTheme
             ) {
-                val shouldRequestReview by viewModel.shouldRequestReview.collectAsStateWithLifecycle()
+                if (!isOnboardingCompleted) {
+                    OnboardingScreen(
+                        onComplete = { viewModel.completeOnboarding() }
+                    )
+                } else {
+                    val shouldRequestReview by viewModel.shouldRequestReview.collectAsStateWithLifecycle()
 
-                MainScreen(
-                    viewModel = viewModel,
-                    onCopyToClipboard = { text -> copyToClipboardWithFeedback(text) },
-                    onOpenSettings = {
-                        startActivity(
-                            Intent(
-                                this@ComposeMainActivity,
-                                SettingsActivity::class.java
+                    MainScreen(
+                        viewModel         = viewModel,
+                        onCopyToClipboard = { text -> copyToClipboardWithFeedback(text) },
+                        onOpenSettings    = {
+                            startActivity(
+                                Intent(this@ComposeMainActivity, SettingsActivity::class.java)
                             )
-                        )
-                    },
-                    onBugReport = { sendBugReport() },
-                    onKofiSupport = { openKofiLink() }
-                )
-                LaunchedEffect(shouldRequestReview) {
-                    if (shouldRequestReview) {
-                        // Kurze Verzögerung für bessere UX
-                        kotlinx.coroutines.delay(1000)
+                        },
+                        onFeedback        = { sendFeedback() },
+                        onBugReport   = { sendBugReport() },
+                        onKofiSupport = { openKofiLink() }
+                    )
 
-                        // Review Dialog anzeigen
-                        val success = inAppReviewManager.requestReview(this@ComposeMainActivity)
-
-                        if (success) {
-                            android.util.Log.d("Review", "✅ Review dialog shown successfully")
-                        } else {
-                            android.util.Log.w("Review", "⚠️ Review dialog failed to show")
+                    LaunchedEffect(shouldRequestReview) {
+                        if (shouldRequestReview) {
+                            kotlinx.coroutines.delay(1000)
+                            inAppReviewManager.requestReview(this@ComposeMainActivity)
+                            viewModel.onReviewHandled()
                         }
-
-                        // Markiere als behandelt
-                        viewModel.onReviewHandled()
                     }
                 }
             }
         }
     }
+    private fun sendFeedback() {
+        try {
+            val versionName = getVersionName()
+            val body = buildString {
+                appendLine(getString(R.string.feedback_header))
+                appendLine()
+                appendLine(getString(R.string.feedback_describe))
+                appendLine(getString(R.string.feedback_placeholder))
+            }
 
+            val intent = Intent(Intent.ACTION_SEND).apply {
+                type = "message/rfc822"
+                putExtra(Intent.EXTRA_EMAIL, arrayOf(getString(R.string.bug_report_email)))
+                putExtra(Intent.EXTRA_SUBJECT, getString(R.string.feedback_subject, versionName))
+                putExtra(Intent.EXTRA_TEXT, body)
+            }
+
+            val chooser = Intent.createChooser(intent, getString(R.string.feedback_send))
+            if (intent.resolveActivity(packageManager) != null) {
+                startActivity(chooser)
+            } else {
+                android.widget.Toast.makeText(
+                    this,
+                    getString(R.string.no_email_app),
+                    android.widget.Toast.LENGTH_LONG
+                ).show()
+            }
+        } catch (e: Exception) {
+            android.widget.Toast.makeText(
+                this,
+                getString(R.string.bug_report_error_format, e.message),
+                android.widget.Toast.LENGTH_LONG
+            ).show()
+        }
+    }
     private fun copyToClipboardWithFeedback(text: String) {
         val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
         val clip = ClipData.newPlainText(getString(R.string.clipboard_label), text)
         clipboard.setPrimaryClip(clip)
 
         if (viewModel.hapticFeedbackEnabled.value) {
-            vibrator.vibrate(
-                VibrationEffect.createOneShot(50, VibrationEffect.DEFAULT_AMPLITUDE)
-            )
+            vibrator.vibrate(VibrationEffect.createOneShot(50, VibrationEffect.DEFAULT_AMPLITUDE))
         }
     }
 
@@ -187,14 +210,11 @@ class ComposeMainActivity : AppCompatActivity() {
         }
     }
 
-    // NEU: Ko-Fi Link öffnen
     private fun openKofiLink() {
         try {
             val kofiUrl = getString(R.string.url_kofi)
-            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(kofiUrl))
+            val intent  = Intent(Intent.ACTION_VIEW, Uri.parse(kofiUrl))
             startActivity(intent)
-
-            // Optional: Dankeschön-Toast
             android.widget.Toast.makeText(
                 this,
                 getString(R.string.kofi_toast_thanks),
@@ -226,56 +246,43 @@ fun MainScreen(
     onCopyToClipboard: (String) -> Unit,
     onOpenSettings: () -> Unit,
     onBugReport: () -> Unit = {},
+    onFeedback: () -> Unit = {},
     onKofiSupport: () -> Unit = {}
 ) {
     var showDropdownMenu by remember { mutableStateOf(false) }
 
-    val inputText by viewModel.inputText.collectAsStateWithLifecycle()
-    val outputText by viewModel.outputText.collectAsStateWithLifecycle()
-    val currentModeDisplayName by viewModel.currentModeDisplayName.collectAsStateWithLifecycle()
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val isReverseMode by viewModel.isReverseMode.collectAsStateWithLifecycle()
-    val isInputLikelyLeetspeak by viewModel.isInputLikelyLeetspeak.collectAsStateWithLifecycle()
-    val shouldShowWhatsNew by viewModel.shouldShowWhatsNew.collectAsStateWithLifecycle()
-    val isFirstLaunch by viewModel.isFirstLaunch.collectAsStateWithLifecycle()
-    val showClearInputDialog by viewModel.showClearInputDialog.collectAsStateWithLifecycle()
+    val inputText                by viewModel.inputText.collectAsStateWithLifecycle()
+    val outputText               by viewModel.outputText.collectAsStateWithLifecycle()
+    val currentModeDisplayName   by viewModel.currentModeDisplayName.collectAsStateWithLifecycle()
+    val uiState                  by viewModel.uiState.collectAsStateWithLifecycle()
+    val isReverseMode            by viewModel.isReverseMode.collectAsStateWithLifecycle()
+    val isInputLikelyLeetspeak   by viewModel.isInputLikelyLeetspeak.collectAsStateWithLifecycle()
+    val showClearInputDialog     by viewModel.showClearInputDialog.collectAsStateWithLifecycle()
+    val pendingDelete            by viewModel.pendingDelete.collectAsStateWithLifecycle()
 
-    // NEU: Undo-State beobachten
-    val pendingDelete by viewModel.pendingDelete.collectAsStateWithLifecycle()
-
-    val density = LocalDensity.current
-    val keyboardHeight = WindowInsets.ime.getBottom(density)
+    val density         = LocalDensity.current
+    val keyboardHeight  = WindowInsets.ime.getBottom(density)
     val isKeyboardVisible = keyboardHeight > 100
-    val hasOutput = outputText.isNotEmpty()
+    val hasOutput       = outputText.isNotEmpty()
 
-    var showBottomSheet by remember { mutableStateOf(false) }
-    var showAboutDialog by remember { mutableStateOf(false) }
-    val context = LocalContext.current
+    var showBottomSheet  by remember { mutableStateOf(false) }
+    var showAboutDialog  by remember { mutableStateOf(false) }
+    val context          = LocalContext.current
 
-    // NEU: SnackbarHostState für Undo-Snackbar
     val snackbarHostState = remember { SnackbarHostState() }
-    val undoLabel = stringResource(R.string.undo)
+    val undoLabel         = stringResource(R.string.undo)
     val leetDeletedMessage = stringResource(R.string.leet_deleted_snackbar)
 
-    // NEU: Snackbar anzeigen wenn pendingDelete gesetzt wird
     LaunchedEffect(pendingDelete) {
         val pending = pendingDelete ?: return@LaunchedEffect
-
         val result = snackbarHostState.showSnackbar(
-            message = leetDeletedMessage,
+            message     = leetDeletedMessage,
             actionLabel = undoLabel,
-            duration = SnackbarDuration.Short
+            duration    = SnackbarDuration.Short
         )
-
         when (result) {
-            SnackbarResult.ActionPerformed -> {
-                // User hat "Rückgängig" getippt
-                viewModel.handleIntent(MainIntent.UndoDeleteLeet)
-            }
-            SnackbarResult.Dismissed -> {
-                // Snackbar lief ab ohne Aktion – pendingDelete leeren
-                viewModel.clearPendingDelete()
-            }
+            SnackbarResult.ActionPerformed -> viewModel.handleIntent(MainIntent.UndoDeleteLeet)
+            SnackbarResult.Dismissed       -> viewModel.clearPendingDelete()
         }
     }
 
@@ -294,7 +301,6 @@ fun MainScreen(
         modifier = Modifier
             .fillMaxSize()
             .windowInsetsPadding(WindowInsets.systemBars),
-        // NEU: SnackbarHost einbinden
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         topBar = {
             TopAppBar(
@@ -312,9 +318,9 @@ fun MainScreen(
                                 shape = androidx.compose.foundation.shape.CircleShape
                             ) {
                                 Text(
-                                    text = stringResource(R.string.reverse_badge),
+                                    text     = stringResource(R.string.reverse_badge),
                                     modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
-                                    color = MaterialTheme.colorScheme.onTertiary,
+                                    color    = MaterialTheme.colorScheme.onTertiary,
                                     fontSize = 12.sp,
                                     fontWeight = FontWeight.Bold
                                 )
@@ -327,9 +333,9 @@ fun MainScreen(
                                 shape = androidx.compose.foundation.shape.CircleShape
                             ) {
                                 Text(
-                                    text = stringResource(R.string.leet_detected_badge),
+                                    text     = stringResource(R.string.leet_detected_badge),
                                     modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
-                                    color = MaterialTheme.colorScheme.onSecondary,
+                                    color    = MaterialTheme.colorScheme.onSecondary,
                                     fontSize = 12.sp,
                                     fontWeight = FontWeight.Bold
                                 )
@@ -338,34 +344,36 @@ fun MainScreen(
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background,
-                    titleContentColor = MaterialTheme.colorScheme.onBackground
+                    containerColor     = MaterialTheme.colorScheme.background,
+                    titleContentColor  = MaterialTheme.colorScheme.onBackground
                 ),
                 actions = {
                     IconButton(onClick = onKofiSupport) {
                         Icon(
-                            imageVector = Icons.Default.LocalCafe,
+                            imageVector        = Icons.Default.LocalCafe,
                             contentDescription = stringResource(R.string.kofi_support),
-                            modifier = Modifier.size(24.dp),
-                            tint = MaterialTheme.colorScheme.secondary
+                            modifier           = Modifier.size(24.dp),
+                            tint               = MaterialTheme.colorScheme.secondary
                         )
                     }
                     Box {
                         IconButton(onClick = { showDropdownMenu = true }) {
                             Icon(
-                                imageVector = Icons.Default.MoreVert,
+                                imageVector        = Icons.Default.MoreVert,
                                 contentDescription = stringResource(R.string.menu),
-                                modifier = Modifier.size(24.dp)
+                                modifier           = Modifier.size(24.dp)
                             )
                         }
                         DropdownMenu(
-                            expanded = showDropdownMenu,
-                            onDismissRequest = { showDropdownMenu = false }
+                            expanded          = showDropdownMenu,
+                            onDismissRequest  = { showDropdownMenu = false }
                         ) {
                             DropdownMenuItem(
                                 text = {
-                                    Row(verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                                    Row(
+                                        verticalAlignment     = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                                    ) {
                                         Icon(Icons.Default.BugReport, null, modifier = Modifier.size(20.dp))
                                         Text(stringResource(R.string.bug_report))
                                     }
@@ -374,8 +382,22 @@ fun MainScreen(
                             )
                             DropdownMenuItem(
                                 text = {
-                                    Row(verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                                    Row(
+                                        verticalAlignment     = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                                    ) {
+                                        Icon(Icons.Default.Lightbulb, null, modifier = Modifier.size(20.dp))
+                                        Text(stringResource(R.string.feedback_title))
+                                    }
+                                },
+                                onClick = { showDropdownMenu = false; onFeedback() }
+                            )
+                            DropdownMenuItem(
+                                text = {
+                                    Row(
+                                        verticalAlignment     = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                                    ) {
                                         Icon(Icons.Default.Info, null, modifier = Modifier.size(20.dp))
                                         Text(stringResource(R.string.about))
                                     }
@@ -384,8 +406,10 @@ fun MainScreen(
                             )
                             DropdownMenuItem(
                                 text = {
-                                    Row(verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                                    Row(
+                                        verticalAlignment     = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                                    ) {
                                         Icon(Icons.Default.Settings, null, modifier = Modifier.size(20.dp))
                                         Text(stringResource(R.string.settings))
                                     }
@@ -400,9 +424,9 @@ fun MainScreen(
         bottomBar = {
             BottomAppBar(
                 containerColor = MaterialTheme.colorScheme.background,
-                contentColor = MaterialTheme.colorScheme.onBackground,
+                contentColor   = MaterialTheme.colorScheme.onBackground,
                 tonalElevation = 0.dp,
-                modifier = Modifier.then(
+                modifier       = Modifier.then(
                     if (isKeyboardVisible) Modifier.offset(y = 56.dp) else Modifier
                 )
             ) {
@@ -411,18 +435,18 @@ fun MainScreen(
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp, vertical = 8.dp),
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment     = Alignment.CenterVertically
                 ) {
                     EnhancedAnimatedArrows(
-                        isReverseMode = isReverseMode,
+                        isReverseMode          = isReverseMode,
                         isInputLikelyLeetspeak = isInputLikelyLeetspeak,
-                        onToggleReverse = { viewModel.handleIntent(MainIntent.ToggleReverseMode) },
-                        modifier = Modifier.weight(1f)
+                        onToggleReverse        = { viewModel.handleIntent(MainIntent.ToggleReverseMode) },
+                        modifier               = Modifier.weight(1f)
                     )
                     ModeSelectorButton(
-                        currentMode = currentModeDisplayName,
+                        currentMode       = currentModeDisplayName,
                         onLeetSelectorClick = { showBottomSheet = true },
-                        modifier = Modifier.weight(2f)
+                        modifier          = Modifier.weight(2f)
                     )
                 }
             }
@@ -438,26 +462,32 @@ fun MainScreen(
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             InputCard(
-                inputText = inputText,
+                inputText    = inputText,
                 onInputChange = { viewModel.updateInputText(it) },
-                onClearText = { viewModel.clearInput() },
-                onSpeechInput = { viewModel.updateInputText(it) },  // NEU
-                showHeader = true,
+                onClearText  = { viewModel.clearInput() },
+                showHeader   = true,
                 isReverseMode = isReverseMode,
-                title = inputTitle,
-                modifier = Modifier.fillMaxWidth().weight(1f)
+                title        = inputTitle,
+                onSpeechInput = if (!isReverseMode) {
+                    { viewModel.updateInputText(it) }
+                } else null,
+                modifier     = Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
             )
             if (hasOutput) {
                 OutputCard(
-                    outputText = outputText,
-                    currentMode = outputTitle,
-                    onCopyClick = {
+                    outputText   = outputText,
+                    currentMode  = outputTitle,
+                    onCopyClick  = {
                         onCopyToClipboard(outputText)
                         viewModel.handleIntent(MainIntent.CopyToClipboard)
                     },
-                    showHeader = true,
+                    showHeader   = true,
                     isReverseMode = isReverseMode,
-                    modifier = Modifier.fillMaxWidth().weight(1f)
+                    modifier     = Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
                 )
             }
         }
@@ -470,14 +500,6 @@ fun MainScreen(
         }
         if (showAboutDialog) {
             AboutDialog(onDismiss = { showAboutDialog = false })
-        }
-        if (shouldShowWhatsNew) {
-            WhatsNewDialog(
-                currentVersion = viewModel.currentVersionInfo,
-                isFirstLaunch = isFirstLaunch,
-                onDismiss = { viewModel.handleIntent(MainIntent.DismissWhatsNew) },
-                onMarkAsShown = { viewModel.handleIntent(MainIntent.MarkWhatsNewAsShown) }
-            )
         }
         if (showClearInputDialog) {
             ClearInputDialog(
@@ -493,42 +515,46 @@ fun MainScreen(
     }
 }
 
-// Rest der Datei bleibt unverändert...
 @Composable
 private fun ModeSelectorButton(
     currentMode: String,
     onLeetSelectorClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val desc = stringResource(R.string.a11y_mode_selector, currentMode)
+
     Surface(
-        onClick = onLeetSelectorClick,
-        modifier = modifier.height(48.dp),
+        onClick  = onLeetSelectorClick,
+        modifier = modifier
+            .height(48.dp)
+            .semantics {
+                contentDescription = desc
+                role               = Role.Button
+            },
         color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f),
         shape = MaterialTheme.shapes.medium
     ) {
         Row(
             horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
+            verticalAlignment     = Alignment.CenterVertically,
+            modifier              = Modifier
                 .fillMaxHeight()
                 .padding(horizontal = 12.dp, vertical = 8.dp)
         ) {
             Icon(
-                imageVector = Icons.Default.Transform,
+                imageVector        = Icons.Default.Transform,
                 contentDescription = null,
-                modifier = Modifier.size(20.dp),
-                tint = MaterialTheme.colorScheme.primary
+                modifier           = Modifier.size(20.dp),
+                tint               = MaterialTheme.colorScheme.primary
             )
-
             Spacer(modifier = Modifier.width(8.dp))
-
             Text(
-                text = currentMode,
-                style = MaterialTheme.typography.labelMedium.copy(fontSize = 12.sp),
-                color = MaterialTheme.colorScheme.primary,
+                text      = currentMode,
+                style     = MaterialTheme.typography.labelMedium.copy(fontSize = 12.sp),
+                color     = MaterialTheme.colorScheme.primary,
                 fontWeight = FontWeight.Bold,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
+                maxLines  = 1,
+                overflow  = TextOverflow.Ellipsis
             )
         }
     }
@@ -545,9 +571,9 @@ private fun EnhancedAnimatedArrows(
 
     val arrowAlpha by infiniteTransition.animateFloat(
         initialValue = 0.4f,
-        targetValue = 1.0f,
+        targetValue  = 1.0f,
         animationSpec = infiniteRepeatable(
-            animation = tween(1500, easing = FastOutSlowInEasing),
+            animation  = tween(1500, easing = FastOutSlowInEasing),
             repeatMode = RepeatMode.Reverse
         ),
         label = "arrow_alpha"
@@ -555,9 +581,9 @@ private fun EnhancedAnimatedArrows(
 
     val arrowOffset by infiniteTransition.animateFloat(
         initialValue = -3f,
-        targetValue = 3f,
+        targetValue  = 3f,
         animationSpec = infiniteRepeatable(
-            animation = tween(2000, easing = LinearEasing),
+            animation  = tween(2000, easing = LinearEasing),
             repeatMode = RepeatMode.Reverse
         ),
         label = "arrow_offset"
@@ -565,78 +591,79 @@ private fun EnhancedAnimatedArrows(
 
     val pulseAlpha by infiniteTransition.animateFloat(
         initialValue = 0.7f,
-        targetValue = 1.0f,
+        targetValue  = 1.0f,
         animationSpec = infiniteRepeatable(
-            animation = tween(1000, easing = FastOutSlowInEasing),
+            animation  = tween(1000, easing = FastOutSlowInEasing),
             repeatMode = RepeatMode.Reverse
         ),
         label = "pulse_alpha"
     )
 
+    // Accessibility Strings hier auflösen
+    val reverseActiveDesc   = stringResource(R.string.a11y_reverse_mode_active)
+    val reverseInactiveDesc = stringResource(R.string.a11y_reverse_mode_inactive)
+
     Surface(
-        onClick = onToggleReverse,
-        modifier = modifier,
+        onClick  = onToggleReverse,
+        modifier = modifier.semantics {
+            contentDescription = if (isReverseMode) reverseActiveDesc else reverseInactiveDesc
+            role               = Role.Button
+        },
         color = when {
-            isReverseMode -> MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.7f)
+            isReverseMode          -> MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.7f)
             isInputLikelyLeetspeak -> MaterialTheme.colorScheme.secondaryContainer.copy(alpha = pulseAlpha * 0.5f)
-            else -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
+            else                   -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
         },
         shape = MaterialTheme.shapes.medium
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
-            modifier = Modifier.padding(8.dp)
+            modifier            = Modifier.padding(8.dp)
         ) {
             Row(
                 horizontalArrangement = Arrangement.spacedBy(2.dp),
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment     = Alignment.CenterVertically
             ) {
                 if (isReverseMode) {
                     Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        imageVector        = Icons.AutoMirrored.Filled.ArrowBack,
                         contentDescription = null,
-                        modifier = Modifier
+                        modifier           = Modifier
                             .size(20.dp)
-                            .graphicsLayer(
-                                alpha = arrowAlpha,
-                                translationX = -arrowOffset
-                            ),
+                            .graphicsLayer(alpha = arrowAlpha, translationX = -arrowOffset),
                         tint = MaterialTheme.colorScheme.tertiary
                     )
                     Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        imageVector        = Icons.AutoMirrored.Filled.ArrowBack,
                         contentDescription = null,
-                        modifier = Modifier
+                        modifier           = Modifier
                             .size(20.dp)
-                            .graphicsLayer(
-                                alpha = arrowAlpha * 0.7f,
-                                translationX = arrowOffset
-                            ),
+                            .graphicsLayer(alpha = arrowAlpha * 0.7f, translationX = arrowOffset),
                         tint = MaterialTheme.colorScheme.tertiary
                     )
                 } else {
                     Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                        imageVector        = Icons.AutoMirrored.Filled.ArrowForward,
                         contentDescription = null,
-                        modifier = Modifier
+                        modifier           = Modifier
                             .size(20.dp)
-                            .graphicsLayer(
-                                alpha = arrowAlpha * 0.7f,
-                                translationX = arrowOffset
-                            ),
-                        tint = if (isInputLikelyLeetspeak) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.onSurfaceVariant
+                            .graphicsLayer(alpha = arrowAlpha * 0.7f, translationX = arrowOffset),
+                        tint = if (isInputLikelyLeetspeak)
+                            MaterialTheme.colorScheme.secondary
+                        else
+                            MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                        imageVector        = Icons.AutoMirrored.Filled.ArrowForward,
                         contentDescription = null,
-                        modifier = Modifier
+                        modifier           = Modifier
                             .size(20.dp)
-                            .graphicsLayer(
-                                alpha = arrowAlpha,
-                                translationX = -arrowOffset
-                            ),
-                        tint = if (isInputLikelyLeetspeak) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.onSurfaceVariant
+                            .graphicsLayer(alpha = arrowAlpha, translationX = -arrowOffset),
+                        tint = if (isInputLikelyLeetspeak)
+                            MaterialTheme.colorScheme.secondary
+                        else
+                            MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }
@@ -645,17 +672,20 @@ private fun EnhancedAnimatedArrows(
 
             Text(
                 text = when {
-                    isReverseMode -> stringResource(R.string.mode_display_reverse)
+                    isReverseMode          -> stringResource(R.string.mode_display_reverse)
                     isInputLikelyLeetspeak -> stringResource(R.string.mode_display_leet_detected)
-                    else -> stringResource(R.string.mode_display_mode)
+                    else                   -> stringResource(R.string.mode_display_mode)
                 },
                 style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp),
                 color = when {
-                    isReverseMode -> MaterialTheme.colorScheme.tertiary
+                    isReverseMode          -> MaterialTheme.colorScheme.tertiary
                     isInputLikelyLeetspeak -> MaterialTheme.colorScheme.secondary
-                    else -> MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                    else                   -> MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                 },
-                fontWeight = if (isReverseMode || isInputLikelyLeetspeak) FontWeight.Bold else FontWeight.Normal
+                fontWeight = if (isReverseMode || isInputLikelyLeetspeak)
+                    FontWeight.Bold
+                else
+                    FontWeight.Normal
             )
         }
     }
@@ -669,22 +699,13 @@ private fun HandleUiState(
 ) {
     uiState.successMessage?.let { message ->
         LaunchedEffect(message) {
-            android.widget.Toast.makeText(
-                context,
-                "✅ $message",
-                android.widget.Toast.LENGTH_SHORT
-            ).show()
+            android.widget.Toast.makeText(context, "✅ $message", android.widget.Toast.LENGTH_SHORT).show()
             viewModel.handleIntent(MainIntent.ClearSuccess)
         }
     }
-
     uiState.errorMessage?.let { message ->
         LaunchedEffect(message) {
-            android.widget.Toast.makeText(
-                context,
-                "❌ $message",
-                android.widget.Toast.LENGTH_LONG
-            ).show()
+            android.widget.Toast.makeText(context, "❌ $message", android.widget.Toast.LENGTH_LONG).show()
             viewModel.handleIntent(MainIntent.ClearError)
         }
     }
