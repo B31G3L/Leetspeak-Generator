@@ -17,6 +17,10 @@ import com.beigel.leetSpeak_Generator.R
 import com.beigel.leetSpeak_Generator.translation.LeetTranslator
 import com.beigel.leetSpeak_Generator.ui.components.text.*
 import kotlinx.coroutines.delay
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.togetherWith
 
 /**
  * Output Card Component für Übersetzungsergebnisse
@@ -95,25 +99,42 @@ fun OutputCard(
                 }
 
                 // Output Display
-                SelectionContainer {
-                    AdaptiveTextField(
-                        value = outputText,
-                        onValueChange = { }, // Read-only
-                        modifier = Modifier.fillMaxSize(),
-                        readOnly = true,
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = borderColor,
-                            unfocusedBorderColor = borderColor.copy(alpha = 0.5f),
-                            disabledBorderColor = borderColor.copy(alpha = 0.5f),
-                            focusedContainerColor = MaterialTheme.colorScheme.background,
-                            unfocusedContainerColor = MaterialTheme.colorScheme.background,
-                            disabledContainerColor = MaterialTheme.colorScheme.background,
-                            focusedTextColor = MaterialTheme.colorScheme.onBackground,
-                            unfocusedTextColor = MaterialTheme.colorScheme.onBackground,
-                            disabledTextColor = MaterialTheme.colorScheme.onBackground
-                        ),
-                        shape = MaterialTheme.shapes.medium
-                    )
+                AnimatedContent(
+                    targetState = outputText,
+                    transitionSpec = {
+                        (fadeIn(animationSpec = tween(200)) +
+                                slideInHorizontally(
+                                    animationSpec = tween(200),
+                                    initialOffsetX = { it / 8 }
+                                )) togetherWith
+                                (fadeOut(animationSpec = tween(150)) +
+                                        slideOutHorizontally(
+                                            animationSpec = tween(150),
+                                            targetOffsetX = { -it / 8 }
+                                        ))
+                    },
+                    label = "output_mode_transition"
+                ) { text ->
+                    SelectionContainer {
+                        AdaptiveTextField(
+                            value           = text,
+                            onValueChange   = { },
+                            modifier        = Modifier.fillMaxSize(),
+                            readOnly        = true,
+                            colors          = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor      = borderColor,
+                                unfocusedBorderColor    = borderColor.copy(alpha = 0.5f),
+                                disabledBorderColor     = borderColor.copy(alpha = 0.5f),
+                                focusedContainerColor   = MaterialTheme.colorScheme.background,
+                                unfocusedContainerColor = MaterialTheme.colorScheme.background,
+                                disabledContainerColor  = MaterialTheme.colorScheme.background,
+                                focusedTextColor        = MaterialTheme.colorScheme.onBackground,
+                                unfocusedTextColor      = MaterialTheme.colorScheme.onBackground,
+                                disabledTextColor       = MaterialTheme.colorScheme.onBackground
+                            ),
+                            shape = MaterialTheme.shapes.medium
+                        )
+                    }
                 }
             }
         }

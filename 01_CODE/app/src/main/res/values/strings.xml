@@ -371,4 +371,9 @@
     <string name="drag_handle">Drag to reorder</string>
     <string name="error_reorder_leets">Failed to reorder: %1$s</string>
 
+    <string name="settings_haptic_title">Haptic Feedback</string>
+    <string name="settings_haptic_desc">Vibrate when copying text</string>
+    <string name="settings_haptic_on">On</string>
+    <string name="settings_haptic_off">Off</string>
+
 </resources>

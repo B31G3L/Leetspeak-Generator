@@ -17,29 +17,29 @@
 
 ## 🐛 Bugs / Fixes
 
-- [ ] `WhatsNewDialog` – Versionsvergleich mit `contains("1337.00_8374_4")` ist hartcodiert, bricht bei jeder neuen Version
-- [ ] `LeetCreationDialogState` – `applyTemplate()` nutzt `indexOf`, was bei doppelten States falsch zählen kann
-- [ ] Aktiv genutzter Leet wird gelöscht – kein sauberer Fallback auf Simple Modus mit Feedback
-- [ ] Leerer Zustand im Bottom Sheet wenn noch keine Custom Leets existieren – aktuell einfach nichts sichtbar
+- [x] `WhatsNewDialog` – Versionsvergleich mit `contains("1337.00_8374_4")` ist hartcodiert, bricht bei jeder neuen Version
+- [x] `LeetCreationDialogState` – `applyTemplate()` nutzt `indexOf`, was bei doppelten States falsch zählen kann
+- [x] Aktiv genutzter Leet wird gelöscht – kein sauberer Fallback auf Simple Modus mit Feedback
+- [x] Leerer Zustand im Bottom Sheet wenn noch keine Custom Leets existieren – aktuell einfach nichts sichtbar
 
 ---
 
 ## 🚀 Features
 
 ### Eingabe
-- [ ] **Spracheingabe** – Mikrofon-Button im Input, Sprache → Text → Leet
-- [ ] **Favoriten-Text** – häufig übersetzte Sätze speichern und per Tipp wiederverwenden
-- [ ] **Case-Modus** – Ausgabe wahlweise `GROSSBUCHSTABEN` / `kleinbuchstaben` / `aLtErNiErEnD`
+- [x] **Spracheingabe** – Mikrofon-Button im Input, Sprache → Text → Leet
+- [x] **Favoriten-Text** – häufig übersetzte Sätze speichern und per Tipp wiederverwenden
+- [x] **Case-Modus** – Ausgabe wahlweise `GROSSBUCHSTABEN` / `kleinbuchstaben` / `aLtErNiErEnD`
 
 ### Ausgabe
-- [ ] **Zeichenanzahl-Anzeige** – bei Input und Output
+- [x] **Zeichenanzahl-Anzeige** – bei Input und Output
 - [ ] **Share-Button** – direkt beim Output, ohne Umweg über Copy
 - [ ] **Verlauf** – letzte Übersetzungen speichern und wiederverwenden
 
 ### Modi / Leets
 - [ ] **Vorschau im Modus-Selector** – zeigt direkt wie der aktuelle Input in jedem Modus aussehen würde
 - [ ] **Zufalls-Modus** – wählt zufällig einen Custom Leet aus
-- [ ] **Drag & Drop** – Custom Leets im Bottom Sheet umsortieren
+- [x] **Drag & Drop** – Custom Leets im Bottom Sheet umsortieren
 
 ### Gamification
 - [ ] **Leet-Quiz** – zeigt Leet-Text, User muss raten was es bedeutet

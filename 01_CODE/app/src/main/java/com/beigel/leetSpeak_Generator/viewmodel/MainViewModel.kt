@@ -67,6 +67,9 @@ class MainViewModel @Inject constructor(
     val askBeforeClear: StateFlow<Boolean> = themePreferences.askBeforeClear
         .stateIn(viewModelScope, SharingStarted.Eagerly, true)
 
+    val hapticFeedbackEnabled: StateFlow<Boolean> = themePreferences.hapticFeedbackEnabled
+        .stateIn(viewModelScope, SharingStarted.Eagerly, true)
+
     private val _isInitialized = MutableStateFlow(false)
 
     val leetOptions: StateFlow<List<LeetOption>> = combine(

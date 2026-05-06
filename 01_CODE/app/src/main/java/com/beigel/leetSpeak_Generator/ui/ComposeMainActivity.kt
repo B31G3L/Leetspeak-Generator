@@ -131,7 +131,11 @@ class ComposeMainActivity : AppCompatActivity() {
         val clip = ClipData.newPlainText(getString(R.string.clipboard_label), text)
         clipboard.setPrimaryClip(clip)
 
-        vibrator.vibrate(VibrationEffect.createOneShot(50, VibrationEffect.DEFAULT_AMPLITUDE))
+        if (viewModel.hapticFeedbackEnabled.value) {
+            vibrator.vibrate(
+                VibrationEffect.createOneShot(50, VibrationEffect.DEFAULT_AMPLITUDE)
+            )
+        }
     }
 
     private fun sendBugReport() {

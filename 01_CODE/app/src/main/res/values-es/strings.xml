@@ -357,4 +357,8 @@
     <string name="delete_leet_dialog_confirm">Eliminar</string>
     <string name="delete_leet_dialog_cancel">Cancelar</string>
 
+    <string name="settings_haptic_title">Retroalimentación háptica</string>
+    <string name="settings_haptic_desc">Vibrar al copiar texto</string>
+    <string name="settings_haptic_on">Activado</string>
+    <string name="settings_haptic_off">Desactivado</string>
 </resources>

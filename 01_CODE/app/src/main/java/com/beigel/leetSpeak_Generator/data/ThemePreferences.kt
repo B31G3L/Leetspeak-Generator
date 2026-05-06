@@ -3,6 +3,7 @@ package com.beigel.leetSpeak_Generator.data
 import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.preferencesDataStore
 import com.beigel.leetSpeak_Generator.ui.theme.AppTheme
@@ -18,6 +19,7 @@ class ThemePreferences(private val context: Context) {
         private val APP_THEME_KEY = androidx.datastore.preferences.core.stringPreferencesKey("app_theme_preference")
         private val DEFAULT_VIEW_EXPANDED_KEY = androidx.datastore.preferences.core.booleanPreferencesKey("default_view_expanded")
         private val LANGUAGE_KEY = androidx.datastore.preferences.core.stringPreferencesKey("language_preference")
+        private val HAPTIC_FEEDBACK_KEY = booleanPreferencesKey("haptic_feedback_enabled")
 
         // Copy behavior preferences
         private val CLEAR_INPUT_AFTER_COPY_KEY = androidx.datastore.preferences.core.booleanPreferencesKey("clear_input_after_copy")
@@ -60,6 +62,9 @@ class ThemePreferences(private val context: Context) {
         preferences[LANGUAGE_KEY] ?: LANGUAGE_SYSTEM
     }
 
+    val hapticFeedbackEnabled: Flow<Boolean> = context.dataStore.data.map { preferences ->
+        preferences[HAPTIC_FEEDBACK_KEY] ?: true  // Standard: ein
+    }
     // Copy behavior preferences
     val clearInputAfterCopy: Flow<Boolean> = context.dataStore.data.map { preferences ->
         preferences[CLEAR_INPUT_AFTER_COPY_KEY] ?: false
@@ -81,6 +86,11 @@ class ThemePreferences(private val context: Context) {
         }
     }
 
+    suspend fun setHapticFeedbackEnabled(enabled: Boolean) {
+        context.dataStore.edit { preferences ->
+            preferences[HAPTIC_FEEDBACK_KEY] = enabled
+        }
+    }
     suspend fun setDefaultViewExpanded(expanded: Boolean) {
         context.dataStore.edit { preferences ->
             preferences[DEFAULT_VIEW_EXPANDED_KEY] = expanded

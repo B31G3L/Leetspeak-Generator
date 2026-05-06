@@ -72,7 +72,12 @@ class SettingsViewModel @Inject constructor(
                 started = SharingStarted.WhileSubscribed(5000),
                 initialValue = InAppReviewManager.ReviewStats(0, 0, 0, 0)
             )
+    val hapticFeedbackEnabled: StateFlow<Boolean> = themePreferences.hapticFeedbackEnabled
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), true)
 
+    suspend fun setHapticFeedbackEnabled(enabled: Boolean) {
+        themePreferences.setHapticFeedbackEnabled(enabled)
+    }
     suspend fun setTheme(theme: String) {
         themePreferences.setTheme(theme)
     }

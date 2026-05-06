@@ -115,7 +115,8 @@ fun SettingsScreen(
 
     // Review Stats
     val reviewStats by viewModel.reviewStats.collectAsStateWithLifecycle()
-
+    val hapticFeedbackEnabled by viewModel.hapticFeedbackEnabled
+        .collectAsStateWithLifecycle()
     // Expanded states für jede Sektion
     var languageExpanded by remember { mutableStateOf(false) }
     var colorThemeExpanded by remember { mutableStateOf(false) }
@@ -123,6 +124,7 @@ fun SettingsScreen(
     var copyBehaviorExpanded by remember { mutableStateOf(false) }
     var reviewExpanded by remember { mutableStateOf(false) }
     var aboutExpanded by remember { mutableStateOf(false) }
+    var hapticExpanded by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -238,7 +240,47 @@ fun SettingsScreen(
                 }
             }
 
-
+            item {
+                CollapsibleSettingsSection(
+                    title           = stringResource(R.string.settings_haptic_title),
+                    icon            = Icons.Default.Vibration,
+                    isExpanded      = hapticExpanded,
+                    onExpandToggle  = { hapticExpanded = !hapticExpanded },
+                    preview         = if (hapticFeedbackEnabled)
+                        stringResource(R.string.settings_haptic_on)
+                    else
+                        stringResource(R.string.settings_haptic_off)
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 8.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment     = Alignment.CenterVertically
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text       = stringResource(R.string.settings_haptic_title),
+                                style      = MaterialTheme.typography.bodyLarge,
+                                fontWeight = FontWeight.Medium
+                            )
+                            Text(
+                                text  = stringResource(R.string.settings_haptic_desc),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                        Switch(
+                            checked         = hapticFeedbackEnabled,
+                            onCheckedChange = { value ->
+                                scope.launch {
+                                    viewModel.setHapticFeedbackEnabled(value)
+                                }
+                            }
+                        )
+                    }
+                }
+            }
 
             // About Section
             item {

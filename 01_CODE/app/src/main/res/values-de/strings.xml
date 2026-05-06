@@ -370,4 +370,10 @@
     <!-- values-de/strings.xml -->
     <string name="drag_handle">Zum Umsortieren ziehen</string>
     <string name="error_reorder_leets">Umsortieren fehlgeschlagen: %1$s</string>
+
+    <string name="settings_haptic_title">Haptisches Feedback</string>
+    <string name="settings_haptic_desc">Vibration beim Kopieren von Text</string>
+    <string name="settings_haptic_on">Ein</string>
+    <string name="settings_haptic_off">Aus</string>
+
 </resources>
