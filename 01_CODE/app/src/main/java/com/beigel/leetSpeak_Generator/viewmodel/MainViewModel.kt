@@ -277,27 +277,33 @@ class MainViewModel @Inject constructor(
      */
     private fun deleteLeet(index: Int) {
         viewModelScope.launch {
+            val wasActive = currentMode.value == LeetTranslator.TranslationMode.CUSTOM
+                    && repository.getCurrentLeetIndex() == index
+
             uiManager.setLoading(true)
             leetManager.deleteLeet(index)
                 .onSuccess { result ->
-                    // Für Undo merken
                     _pendingDelete.value = PendingDelete(
                         leet = result.deletedLeet,
                         index = index
                     )
 
+                    if (result.wasLastLeet || wasActive) {
+                        uiManager.setTranslationMode(LeetTranslator.TranslationMode.SIMPLE)
+                    }
+
                     val message = when {
                         result.wasLastLeet -> application.getString(R.string.info_switched_to_simple)
+                        wasActive -> application.getString(R.string.info_active_leet_deleted)  // NEU
                         result.wasFavorite -> application.getString(R.string.info_favorite_deleted)
                         else -> application.getString(R.string.success_leet_deleted)
-                    }
-                    if (result.wasLastLeet) {
-                        uiManager.setTranslationMode(LeetTranslator.TranslationMode.SIMPLE)
                     }
                     uiManager.setSuccess(message)
                 }
                 .onFailure { exception ->
-                    uiManager.setError(application.getString(R.string.error_delete_leet, exception.message ?: ""))
+                    uiManager.setError(
+                        application.getString(R.string.error_delete_leet, exception.message ?: "")
+                    )
                 }
         }
     }

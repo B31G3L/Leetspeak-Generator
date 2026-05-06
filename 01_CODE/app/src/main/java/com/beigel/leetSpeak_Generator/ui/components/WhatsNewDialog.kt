@@ -446,9 +446,15 @@ private fun getNewFeaturesForVersion(version: VersionInfo): List<FeatureItem> {
 
         // Fallback für zukünftige Versionen
         else -> listOf(
-            FeatureItem(Icons.Default.NewReleases, stringResource(R.string.whats_new_fallback_title), stringResource(R.string.whats_new_fallback_desc)),
-            FeatureItem(Icons.Default.BugReport, stringResource(R.string.feature_bugfixes_title), stringResource(R.string.feature_bugfixes_desc)),
-            FeatureItem(Icons.Default.Speed, stringResource(R.string.whats_new_performance), stringResource(R.string.whats_new_performance_desc))
+            FeatureItem(Icons.Default.NewReleases,
+                stringResource(R.string.whats_new_fallback_title),
+                stringResource(R.string.whats_new_fallback_desc)),
+            FeatureItem(Icons.Default.BugReport,
+                stringResource(R.string.feature_bugfixes_title),
+                stringResource(R.string.feature_bugfixes_desc)),
+            FeatureItem(Icons.Default.Speed,
+                stringResource(R.string.whats_new_performance),
+                stringResource(R.string.whats_new_performance_desc))
         )
     }
 }

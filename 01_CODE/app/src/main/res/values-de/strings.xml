@@ -356,6 +356,9 @@
     <string name="delete_leet_dialog_message">\'%1$s\' wird unwiderruflich gelöscht.</string>
     <string name="delete_leet_dialog_confirm">Löschen</string>
     <string name="delete_leet_dialog_cancel">Abbrechen</string>
+    <string name="info_active_leet_deleted">Aktiver Leet gelöscht, zu Einfach-Modus gewechselt</string>
+    <string name="empty_custom_leets_title">Noch keine eigenen Leets</string>
+    <string name="empty_custom_leets_hint">Tippe oben auf \"Neu\" um eine eigene Übersetzung zu erstellen</string>
 
 
 </resources>

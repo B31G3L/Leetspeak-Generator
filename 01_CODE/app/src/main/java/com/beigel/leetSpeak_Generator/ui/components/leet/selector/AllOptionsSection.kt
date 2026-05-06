@@ -28,6 +28,7 @@ fun AllOptionsSection(
 ) {
     // State für den Bestätigungs-Dialog
     var pendingDeleteOption by remember { mutableStateOf<LeetOption?>(null) }
+    val customLeets = leetOptions.filter { it.isCustom }
 
     Column(modifier = modifier) {
         Column(
@@ -46,6 +47,9 @@ fun AllOptionsSection(
                     onShowTable = onShowTable
                 )
             }
+            if (customLeets.isEmpty()) {
+                EmptyCustomLeetsHint()
+            }
         }
     }
 
@@ -61,7 +65,42 @@ fun AllOptionsSection(
         )
     }
 }
-
+@Composable
+private fun EmptyCustomLeetsHint() {
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp),
+        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
+        shape = MaterialTheme.shapes.medium
+    ) {
+        Row(
+            modifier = Modifier.padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Default.Add,
+                contentDescription = null,
+                modifier = Modifier.size(24.dp),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Column {
+                Text(
+                    text = stringResource(R.string.empty_custom_leets_title),
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Medium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Text(
+                    text = stringResource(R.string.empty_custom_leets_hint),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                )
+            }
+        }
+    }
+}
 @Composable
 private fun DeleteConfirmationDialog(
     leetName: String,

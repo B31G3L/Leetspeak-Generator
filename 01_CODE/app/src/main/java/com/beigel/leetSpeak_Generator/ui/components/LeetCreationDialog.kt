@@ -150,9 +150,8 @@ class LeetCreationDialogState(
         get() = if (baseName.isBlank()) defaultName else "$baseName-Leet"
 
     fun applyTemplate() {
-        val hasUserChanges = translationStates.any { state ->
-            val originalChar = alphabet[translationStates.indexOf(state)]
-            state.value != originalChar.toString()
+        val hasUserChanges = translationStates.indices.any { i ->
+            translationStates[i].value != alphabet[i].toString()
         }
         if (!hasUserChanges || selectedTemplate != TemplateType.CUSTOM) {
             TemplateHelpers.applyTemplate(selectedTemplate, translationStates, alphabet)
