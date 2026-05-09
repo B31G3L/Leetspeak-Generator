@@ -40,7 +40,7 @@ fun LeetSelectorBottomSheet(
                 shape = RoundedCornerShape(2.dp)
             ) {}
         },
-        windowInsets = WindowInsets(0)
+        contentWindowInsets = { WindowInsets(0) }
     ) {
         Column(
             modifier = Modifier
@@ -48,7 +48,6 @@ fun LeetSelectorBottomSheet(
                 .padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            // Kein separater LeetSelectorHeader hier – er ist Teil von AllOptionsSection
             AllOptionsSection(
                 leetOptions      = leetOptions,
                 onCreateNew      = { showLeetCreationDialog = true },
@@ -60,8 +59,11 @@ fun LeetSelectorBottomSheet(
                     viewModel.handleIntent(MainIntent.ToggleFavorite(option))
                 },
                 onEditOption     = { option ->
-                    currentEditOption  = option
-                    showLeetEditDialog = true
+                    // Edit nur für Custom Leets sinnvoll – State sauber halten
+                    if (option.isCustom) {
+                        currentEditOption  = option
+                        showLeetEditDialog = true
+                    }
                 },
                 onDeleteOption   = { option ->
                     viewModel.handleIntent(MainIntent.DeleteLeet(option.customIndex))
@@ -90,22 +92,33 @@ fun LeetSelectorBottomSheet(
         )
     }
 
-    if (showLeetEditDialog && currentEditOption != null) {
-        currentEditOption?.let { option ->
-            if (option.isCustom) {
-                val leets by viewModel.leets.collectAsStateWithLifecycle()
-                val leet   = leets.getOrNull(option.customIndex)
-                if (leet != null) {
-                    LeetCreationDialog(
-                        viewModel    = viewModel,
-                        existingLeet = leet,
-                        leetIndex    = option.customIndex,
-                        onDismiss    = {
-                            showLeetEditDialog = false
-                            currentEditOption  = null
-                        }
-                    )
+    if (showLeetEditDialog) {
+        val option = currentEditOption
+        if (option != null && option.isCustom) {
+            val leets by viewModel.leets.collectAsStateWithLifecycle()
+            val leet   = leets.getOrNull(option.customIndex)
+            if (leet != null) {
+                LeetCreationDialog(
+                    viewModel    = viewModel,
+                    existingLeet = leet,
+                    leetIndex    = option.customIndex,
+                    onDismiss    = {
+                        showLeetEditDialog = false
+                        currentEditOption  = null
+                    }
+                )
+            } else {
+                // Leet wurde zwischenzeitlich gelöscht – State zurücksetzen
+                LaunchedEffect(option) {
+                    showLeetEditDialog = false
+                    currentEditOption  = null
                 }
+            }
+        } else {
+            // Defensiv: Edit für nicht-Custom angefragt → State zurücksetzen
+            LaunchedEffect(Unit) {
+                showLeetEditDialog = false
+                currentEditOption  = null
             }
         }
     }

@@ -2,18 +2,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- 🔐 PERMISSIONS für IME und Data Sharing -->
+    <!-- Permissions -->
     <uses-permission android:name="android.permission.VIBRATE" />
-
-    <!-- Custom Permission für Leet Data Access -->
-    <permission android:name="com.beigel.leetspeak.READ_LEET_DATA"
-        android:protectionLevel="signature" />
-    <permission android:name="com.beigel.leetspeak.WRITE_LEET_DATA"
-        android:protectionLevel="signature" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
-    <!-- IME-spezifische Permissions -->
-    <uses-permission android:name="android.permission.BIND_INPUT_METHOD"
-        tools:ignore="ProtectedPermissions" />
 
     <application
         android:name=".LeetSpeakApplication"
@@ -52,8 +43,7 @@
                 android:value=".ui.ComposeMainActivity" />
         </activity>
 
-
-        <!-- 🌍 LOCALE METADATA SERVICE (NEU: für API < 33) -->
+        <!-- 🌍 LOCALE METADATA SERVICE (für API < 33) -->
         <service
             android:name="androidx.appcompat.app.AppLocalesMetadataHolderService"
             android:enabled="false"

@@ -73,9 +73,14 @@ object LeetTranslator {
             TranslationMode.SIMPLE -> simpleMap[upperChar] ?: char.toString()
             TranslationMode.EXTENDED -> extendedMap[upperChar] ?: char.toString()
             TranslationMode.CUSTOM -> {
-                customLeet?.getTranslation(upperChar.toString())
-                    ?: simpleMap[upperChar]
-                    ?: char.toString()
+                // Konsistent mit CustomLeet.getTranslation:
+                // Wenn kein Custom-Mapping vorhanden ist, Original belassen.
+                // Fallback auf Simple-Map nur, wenn überhaupt kein CustomLeet vorhanden ist.
+                if (customLeet != null) {
+                    customLeet.getTranslation(upperChar.toString())
+                } else {
+                    simpleMap[upperChar] ?: char.toString()
+                }
             }
         }
     }

@@ -56,7 +56,7 @@
     <string name="bug_report_success">Bug report created successfully</string>
 
     <string name="about_dialog_title">Leetspeak Generator</string>
-    <string name="about_dialog_version">Version 1337.009</string>
+    <string name="about_dialog_version">Version 1337.015</string>
     <string name="about_dialog_subtitle">Transform text into awesome leetspeak</string>
     <string name="about_dialog_close">Close</string>
     <string name="about_dialog_rate">Rate App</string>
@@ -356,7 +356,7 @@
     <string name="delete_leet_dialog_message">\'%1$s\' will be permanently deleted.</string>
     <string name="delete_leet_dialog_confirm">Delete</string>
     <string name="delete_leet_dialog_cancel">Cancel</string>
-    <string name="info_active_leet_deleted">Aktiver Leet gelöscht, zu Einfach-Modus gewechselt</string>
+    <string name="info_active_leet_deleted">Active leet deleted, switched to Simple mode</string>
     <string name="empty_custom_leets_title">No custom Leets yet</string>
     <string name="empty_custom_leets_hint">Tap \"New\" above to create your own translation</string>
     <string name="speech_input_start">Start voice input</string>

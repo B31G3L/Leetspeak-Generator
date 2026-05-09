@@ -1,7 +1,6 @@
 package com.beigel.leetSpeak_Generator.ui.components
 
 import androidx.compose.animation.core.*
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -13,9 +12,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.foundation.Image
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.platform.UriHandler
@@ -97,7 +94,6 @@ private fun AppLogoHeader() {
     )
 
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        // Nur das Logo – kein Kreis drumherum
         Image(
             painter            = painterResource(R.mipmap.ic_launcher_foreground),
             contentDescription = stringResource(R.string.about_logo_description),
@@ -177,46 +173,6 @@ private fun PersonalStorySection() {
                     color = MaterialTheme.colorScheme.secondary,
                     fontWeight = FontWeight.Bold
                 )
-            }
-        }
-    }
-}
-
-@Composable
-private fun FeaturesOverviewSection() {
-    Card(
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
-        ),
-        shape = RoundedCornerShape(16.dp)
-    ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text(
-                text = stringResource(R.string.about_features_title),
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.padding(bottom = 12.dp)
-            )
-
-            val features = listOf(
-                stringResource(R.string.about_feature_simple) to Icons.Default.TextFields,
-                stringResource(R.string.about_feature_custom_leets) to Icons.Default.Tune,
-                stringResource(R.string.about_feature_favorites) to Icons.Default.Favorite,
-                stringResource(R.string.about_feature_material3) to Icons.Default.Palette
-            )
-
-            features.chunked(2).forEach { rowFeatures ->
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    rowFeatures.forEach { (feature, icon) ->
-                        FeatureChip(text = feature, icon = icon, modifier = Modifier.weight(1f))
-                    }
-                    if (rowFeatures.size == 1) Spacer(modifier = Modifier.weight(1f))
-                }
-                Spacer(modifier = Modifier.height(8.dp))
             }
         }
     }
@@ -316,35 +272,6 @@ private fun SupportSection(uriHandler: UriHandler, onDismiss: () -> Unit) {
                     modifier = Modifier.padding(12.dp)
                 )
             }
-        }
-    }
-}
-
-@Composable
-private fun FeatureChip(text: String, icon: ImageVector, modifier: Modifier = Modifier) {
-    Surface(
-        modifier = modifier,
-        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
-        shape = RoundedCornerShape(12.dp)
-    ) {
-        Row(
-            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center
-        ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                modifier = Modifier.size(16.dp),
-                tint = MaterialTheme.colorScheme.primary
-            )
-            Spacer(modifier = Modifier.width(6.dp))
-            Text(
-                text = text,
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onSurface,
-                fontWeight = FontWeight.Medium
-            )
         }
     }
 }

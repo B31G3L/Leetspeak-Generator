@@ -284,13 +284,19 @@ class MainViewModel @Inject constructor(
                         uiManager.setTranslationMode(LeetTranslator.TranslationMode.SIMPLE)
                     }
 
-                    val message = when {
-                        result.wasLastLeet -> application.getString(R.string.info_switched_to_simple)
-                        wasActive          -> application.getString(R.string.info_active_leet_deleted)
-                        result.wasFavorite -> application.getString(R.string.info_favorite_deleted)
-                        else               -> application.getString(R.string.success_leet_deleted)
+                    // Nur in Sonderfällen einen zusätzlichen Toast zeigen
+                    // (Standard-Erfolg wird ausschließlich über die Undo-Snackbar kommuniziert)
+                    when {
+                        result.wasLastLeet ->
+                            uiManager.setSuccess(application.getString(R.string.info_switched_to_simple))
+                        wasActive ->
+                            uiManager.setSuccess(application.getString(R.string.info_active_leet_deleted))
+                        result.wasFavorite ->
+                            uiManager.setSuccess(application.getString(R.string.info_favorite_deleted))
+                        // Standardfall: keine Erfolgsmeldung – Snackbar reicht
                     }
-                    uiManager.setSuccess(message)
+
+                    uiManager.setLoading(false)
                 }
                 .onFailure { exception ->
                     uiManager.setError(
