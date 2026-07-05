@@ -1,0 +1,17 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24"
+    android:tint="?attr/colorOnSurface">
+
+    <!-- Leetspeak "1337" als Icon -->
+    <path
+        android:fillColor="@android:color/white"
+        android:pathData="M3,12h2v8H3V12zM7,8h4v4H7V8zM7,14h4v6H7V14zM13,6h4v8h-4V6zM19,10h2v10h-2V10z"/>
+
+    <!-- Keyboard Base -->
+    <path
+        android:fillColor="@android:color/white"
+        android:pathData="M2,18h20v2H2V18zM4,14h16c1.1,0 2,0.9 2,2v4c0,1.1 -0.9,2 -2,2H4c-1.1,0 -2,-0.9 -2,-2v-4C2,14.9 2.9,14 4,14z"/>
+</vector>
