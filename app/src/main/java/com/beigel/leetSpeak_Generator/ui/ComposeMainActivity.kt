@@ -13,6 +13,8 @@ import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.animation.core.*
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -37,7 +39,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.beigel.leetSpeak_Generator.R
 import com.beigel.leetSpeak_Generator.ui.components.AboutDialog
-import com.beigel.leetSpeak_Generator.ui.components.LeetSelectorBottomSheet
+import com.beigel.leetSpeak_Generator.ui.components.leet.selector.ModiScreen
 import com.beigel.leetSpeak_Generator.ui.theme.LeetspeakGeneratorTheme
 import com.beigel.leetSpeak_Generator.viewmodel.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -286,8 +288,8 @@ fun MainScreen(
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(
                             stringResource(R.string.app_name),
-                            fontWeight = FontWeight.Bold,
-                            style = MaterialTheme.typography.headlineSmall.copy(fontSize = 22.sp)
+                            style = com.beigel.leetSpeak_Generator.ui.theme.WordmarkStyle,
+                            color = MaterialTheme.colorScheme.onBackground
                         )
                         if (isReverseMode) {
                             Spacer(modifier = Modifier.width(8.dp))
@@ -388,33 +390,22 @@ fun MainScreen(
             )
         },
         bottomBar = {
-            BottomAppBar(
-                containerColor = MaterialTheme.colorScheme.background,
-                contentColor   = MaterialTheme.colorScheme.onBackground,
-                tonalElevation = 0.dp,
-                modifier       = Modifier.then(
-                    if (isKeyboardVisible) Modifier.offset(y = 56.dp) else Modifier
-                )
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 14.dp)
+                    .then(
+                        if (isKeyboardVisible) Modifier.offset(y = 56.dp) else Modifier
+                    ),
+                contentAlignment = Alignment.Center
             ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 8.dp),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    verticalAlignment     = Alignment.CenterVertically
-                ) {
-                    EnhancedAnimatedArrows(
-                        isReverseMode          = isReverseMode,
-                        isInputLikelyLeetspeak = isInputLikelyLeetspeak,
-                        onToggleReverse        = { viewModel.handleIntent(MainIntent.ToggleReverseMode) },
-                        modifier               = Modifier.weight(1f)
-                    )
-                    ModeSelectorButton(
-                        currentMode         = currentModeDisplayName,
-                        onLeetSelectorClick = { showBottomSheet = true },
-                        modifier            = Modifier.weight(2f)
-                    )
-                }
+                BottomPillNav(
+                    currentMode = currentModeDisplayName,
+                    isReverseMode = isReverseMode,
+                    onSpeechResult = { viewModel.updateInputText(it) },
+                    onModeSelectorClick = { showBottomSheet = true },
+                    onSettingsClick = onOpenSettings
+                )
             }
         }
     ) { paddingValues ->
@@ -424,8 +415,8 @@ fun MainScreen(
                 .padding(paddingValues)
                 .consumeWindowInsets(paddingValues)
                 .imePadding()
-                .padding(8.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+                .padding(horizontal = 12.dp, vertical = 8.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
             InputCard(
                 inputText     = inputText,
@@ -434,13 +425,16 @@ fun MainScreen(
                 showHeader    = true,
                 isReverseMode = isReverseMode,
                 title         = inputTitle,
-                onSpeechInput = if (!isReverseMode) {
-                    { viewModel.updateInputText(it) }
-                } else null,
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f)
             )
+
+            SwapButton(
+                onClick = { viewModel.handleIntent(MainIntent.ToggleReverseMode) },
+                modifier = Modifier.padding(vertical = 10.dp)
+            )
+
             if (hasOutput) {
                 OutputCard(
                     outputText   = outputText,
@@ -460,9 +454,12 @@ fun MainScreen(
         }
 
         if (showBottomSheet) {
-            LeetSelectorBottomSheet(
+            ModiScreen(
                 viewModel = viewModel,
-                onDismiss = { showBottomSheet = false }
+                onDismiss = { showBottomSheet = false },
+                modifier = Modifier
+                    .fillMaxSize()
+                    .windowInsetsPadding(WindowInsets.systemBars)
             )
         }
         if (showAboutDialog) {
@@ -482,180 +479,181 @@ fun MainScreen(
     }
 }
 
+/**
+ * Kleiner runder Swap-Button zwischen Input- und Output-Karte (Redesign v4).
+ * Ersetzt die alte "EnhancedAnimatedArrows"-Leiste in der Bottom-Bar.
+ */
 @Composable
-private fun ModeSelectorButton(
-    currentMode: String,
-    onLeetSelectorClick: () -> Unit,
+private fun SwapButton(
+    onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val desc = stringResource(R.string.a11y_mode_selector, currentMode)
-
+    val desc = stringResource(R.string.a11y_reverse_mode_inactive)
     Surface(
-        onClick  = onLeetSelectorClick,
+        onClick = onClick,
         modifier = modifier
-            .height(48.dp)
+            .size(34.dp)
             .semantics {
                 contentDescription = desc
-                role               = Role.Button
+                role = Role.Button
             },
-        color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f),
-        shape = MaterialTheme.shapes.medium
+        shape = androidx.compose.foundation.shape.CircleShape,
+        color = MaterialTheme.colorScheme.surface,
+        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+        shadowElevation = 3.dp
     ) {
-        Row(
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment     = Alignment.CenterVertically,
-            modifier              = Modifier
-                .fillMaxHeight()
-                .padding(horizontal = 12.dp, vertical = 8.dp)
-        ) {
+        Box(contentAlignment = Alignment.Center) {
             Icon(
-                imageVector        = Icons.Default.Transform,
+                imageVector = Icons.Default.SwapVert,
                 contentDescription = null,
-                modifier           = Modifier.size(20.dp),
-                tint               = MaterialTheme.colorScheme.primary
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            Text(
-                text       = currentMode,
-                style      = MaterialTheme.typography.labelMedium.copy(fontSize = 12.sp),
-                color      = MaterialTheme.colorScheme.primary,
-                fontWeight = FontWeight.Bold,
-                maxLines   = 1,
-                overflow   = TextOverflow.Ellipsis
+                modifier = Modifier.size(18.dp),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
     }
 }
 
+/**
+ * Schwebende Pill-Bottom-Nav (Redesign v4): Mic-Toggle, Modus-Segment (Punkt + Name + Chevron),
+ * Settings-Icon. Ersetzt die alte volle BottomAppBar.
+ */
 @Composable
-private fun EnhancedAnimatedArrows(
+private fun BottomPillNav(
+    currentMode: String,
     isReverseMode: Boolean,
-    isInputLikelyLeetspeak: Boolean,
-    onToggleReverse: () -> Unit,
+    onSpeechResult: (String) -> Unit,
+    onModeSelectorClick: () -> Unit,
+    onSettingsClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val infiniteTransition = rememberInfiniteTransition(label = "arrows")
+    val context = LocalContext.current
+    var isListening by remember { mutableStateOf(false) }
+    val speechManager = remember { com.beigel.leetSpeak_Generator.utils.SpeechInputManager(context) }
 
-    val arrowAlpha by infiniteTransition.animateFloat(
-        initialValue = 0.4f,
-        targetValue  = 1.0f,
-        animationSpec = infiniteRepeatable(
-            animation  = tween(1500, easing = FastOutSlowInEasing),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "arrow_alpha"
+    val errorMessages = com.beigel.leetSpeak_Generator.utils.SpeechInputManager.SpeechErrorMessages(
+        unavailable = stringResource(R.string.speech_error_unavailable),
+        noMatch     = stringResource(R.string.speech_error_no_match),
+        timeout     = stringResource(R.string.speech_error_timeout),
+        audio       = stringResource(R.string.speech_error_audio),
+        generic     = stringResource(R.string.speech_error_generic)
     )
 
-    val arrowOffset by infiniteTransition.animateFloat(
-        initialValue = -3f,
-        targetValue  = 3f,
-        animationSpec = infiniteRepeatable(
-            animation  = tween(2000, easing = LinearEasing),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "arrow_offset"
-    )
+    val permissionLauncher = androidx.activity.compose.rememberLauncherForActivityResult(
+        androidx.activity.result.contract.ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        if (granted) {
+            speechManager.startListening(
+                onResult = onSpeechResult,
+                onError = { },
+                onStateChange = { isListening = it },
+                errorMessages = errorMessages
+            )
+        }
+    }
 
-    val pulseAlpha by infiniteTransition.animateFloat(
-        initialValue = 0.7f,
-        targetValue  = 1.0f,
-        animationSpec = infiniteRepeatable(
-            animation  = tween(1000, easing = FastOutSlowInEasing),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "pulse_alpha"
-    )
-
-    val reverseActiveDesc   = stringResource(R.string.a11y_reverse_mode_active)
-    val reverseInactiveDesc = stringResource(R.string.a11y_reverse_mode_inactive)
+    DisposableEffect(Unit) {
+        onDispose { speechManager.stop() }
+    }
 
     Surface(
-        onClick  = onToggleReverse,
-        modifier = modifier.semantics {
-            contentDescription = if (isReverseMode) reverseActiveDesc else reverseInactiveDesc
-            role               = Role.Button
-        },
-        color = when {
-            isReverseMode          -> MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.7f)
-            isInputLikelyLeetspeak -> MaterialTheme.colorScheme.secondaryContainer.copy(alpha = pulseAlpha * 0.5f)
-            else                   -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
-        },
-        shape = MaterialTheme.shapes.medium
+        modifier = modifier,
+        shape = com.beigel.leetSpeak_Generator.ui.theme.PillShape,
+        color = MaterialTheme.colorScheme.surface,
+        shadowElevation = 8.dp
     ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
-            modifier            = Modifier.padding(8.dp)
+        Row(
+            modifier = Modifier.padding(6.dp),
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(2.dp),
-                verticalAlignment     = Alignment.CenterVertically
+            // Mic-Toggle
+            Surface(
+                onClick = {
+                    if (isReverseMode) return@Surface
+                    if (isListening) {
+                        speechManager.stop()
+                        isListening = false
+                    } else {
+                        permissionLauncher.launch(android.Manifest.permission.RECORD_AUDIO)
+                    }
+                },
+                modifier = Modifier.size(44.dp),
+                shape = androidx.compose.foundation.shape.CircleShape,
+                color = if (isListening)
+                    MaterialTheme.colorScheme.primaryContainer
+                else
+                    MaterialTheme.colorScheme.surfaceVariant
             ) {
-                if (isReverseMode) {
+                Box(contentAlignment = Alignment.Center) {
                     Icon(
-                        imageVector        = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = null,
-                        modifier           = Modifier
-                            .size(20.dp)
-                            .graphicsLayer(alpha = arrowAlpha, translationX = -arrowOffset),
-                        tint = MaterialTheme.colorScheme.tertiary
-                    )
-                    Icon(
-                        imageVector        = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = null,
-                        modifier           = Modifier
-                            .size(20.dp)
-                            .graphicsLayer(alpha = arrowAlpha * 0.7f, translationX = arrowOffset),
-                        tint = MaterialTheme.colorScheme.tertiary
-                    )
-                } else {
-                    Icon(
-                        imageVector        = Icons.AutoMirrored.Filled.ArrowForward,
-                        contentDescription = null,
-                        modifier           = Modifier
-                            .size(20.dp)
-                            .graphicsLayer(alpha = arrowAlpha * 0.7f, translationX = arrowOffset),
-                        tint = if (isInputLikelyLeetspeak)
-                            MaterialTheme.colorScheme.secondary
-                        else
-                            MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Icon(
-                        imageVector        = Icons.AutoMirrored.Filled.ArrowForward,
-                        contentDescription = null,
-                        modifier           = Modifier
-                            .size(20.dp)
-                            .graphicsLayer(alpha = arrowAlpha, translationX = -arrowOffset),
-                        tint = if (isInputLikelyLeetspeak)
-                            MaterialTheme.colorScheme.secondary
+                        imageVector = if (isListening) Icons.Default.MicOff else Icons.Default.Mic,
+                        contentDescription = stringResource(
+                            if (isListening) R.string.speech_input_stop else R.string.speech_input_start
+                        ),
+                        modifier = Modifier.size(20.dp),
+                        tint = if (isListening)
+                            MaterialTheme.colorScheme.primary
                         else
                             MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.height(2.dp))
+            // Modus-Segment: Punkt + Name + Chevron
+            val modeDesc = stringResource(R.string.a11y_mode_selector, currentMode)
+            Row(
+                modifier = Modifier
+                    .padding(horizontal = 12.dp, vertical = 10.dp)
+                    .semantics {
+                        contentDescription = modeDesc
+                        role = Role.Button
+                    }
+                    .clickable(onClick = onModeSelectorClick),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(8.dp)
+                        .background(MaterialTheme.colorScheme.primary, androidx.compose.foundation.shape.CircleShape)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = currentMode,
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+                Spacer(modifier = Modifier.width(4.dp))
+                Icon(
+                    imageVector = Icons.Default.ExpandMore,
+                    contentDescription = null,
+                    modifier = Modifier.size(18.dp),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
 
-            Text(
-                text = when {
-                    isReverseMode          -> stringResource(R.string.mode_display_reverse)
-                    isInputLikelyLeetspeak -> stringResource(R.string.mode_display_leet_detected)
-                    else                   -> stringResource(R.string.mode_display_mode)
-                },
-                style      = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp),
-                color      = when {
-                    isReverseMode          -> MaterialTheme.colorScheme.tertiary
-                    isInputLikelyLeetspeak -> MaterialTheme.colorScheme.secondary
-                    else                   -> MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
-                },
-                fontWeight = if (isReverseMode || isInputLikelyLeetspeak)
-                    FontWeight.Bold
-                else
-                    FontWeight.Normal
-            )
+            // Settings
+            Surface(
+                onClick = onSettingsClick,
+                modifier = Modifier.size(44.dp),
+                shape = androidx.compose.foundation.shape.CircleShape,
+                color = androidx.compose.ui.graphics.Color.Transparent
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    Icon(
+                        imageVector = Icons.Default.Settings,
+                        contentDescription = stringResource(R.string.settings),
+                        modifier = Modifier.size(20.dp),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
         }
     }
 }
+
 
 @Composable
 private fun HandleUiState(

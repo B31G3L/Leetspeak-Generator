@@ -88,6 +88,22 @@ object TemplateHelpers {
         }
     }
 
+    /**
+     * Live-Vorschau eines ganzen Wortes für ein Template (Redesign v4 Template-Grid).
+     */
+    fun previewWord(template: TemplateType, word: String = "leetspeak"): String {
+        return word.map { c ->
+            val upper = c.uppercaseChar()
+            when (template) {
+                TemplateType.SIMPLE -> getSimpleTranslation(upper)
+                TemplateType.EXTENDED -> getExtendedTranslation(upper)
+                TemplateType.CUSTOM -> upper.toString()
+                TemplateType.NUMERIC -> getNumericTranslation(upper)
+                TemplateType.SYMBOLS -> getSymbolTranslation(upper)
+            }
+        }.joinToString("")
+    }
+
     // Private Translation Functions
     private fun getSimpleTranslation(char: Char): String {
         return when (char) {

@@ -29,6 +29,8 @@
     <string name="settings_widget_no_favorite">No favorite selected</string>
     <string name="settings_widget_description">The widget uses your favorite leet mode</string>
     <string name="settings_about_app">About app</string>
+    <string name="settings_support">Support</string>
+    <string name="settings_replay_onboarding">Show intro again</string>
     <string name="settings_about_description">Transform text into awesome leetspeak with custom modes and themes.</string>
 
     <string name="theme_system">System</string>
@@ -112,6 +114,12 @@
 
     <string name="leet_selector_title">Select Mode</string>
     <string name="leet_selector_new">New</string>
+    <string name="modi_filter_all">All</string>
+    <string name="modi_filter_favorites">Favorites</string>
+    <string name="modi_filter_custom">Custom</string>
+    <string name="modi_custom_badge">Custom</string>
+    <string name="modi_back">Back</string>
+    <string name="modi_screen_title">Modi</string>
     <string name="leet_selector_all_modes">All modes</string>
     <string name="leet_selector_grid_view">Grid view</string>
     <string name="leet_selector_list_view">List view</string>
@@ -122,6 +130,7 @@
     <string name="leet_selector_show_table">Show translation table</string>
 
     <string name="translation_table_dialog_title">Translation table - %1$s</string>
+    <string name="translation_table_card_title">Translation table</string>
     <string name="translation_table_close">Close</string>
     <string name="translation_table_plain">Plain</string>
     <string name="translation_table_leet">Leet</string>

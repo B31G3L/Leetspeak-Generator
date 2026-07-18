@@ -65,7 +65,10 @@ class SettingsActivity : AppCompatActivity() {
                     onBackPressed = { finish() },
                     onLanguageChanged = { newLanguage ->
                         applyLanguageChange(newLanguage)
-                    }
+                    },
+                    onBugReport = { sendBugReport() },
+                    onFeedback = { sendFeedback() },
+                    onKofiSupport = { openKofiLink() }
                 )
             }
         }
@@ -92,6 +95,94 @@ class SettingsActivity : AppCompatActivity() {
             recreate()
         }
     }
+
+    // Redesign v4 — "Support"-Sektion: dieselben Aktionen wie zuvor im Overflow-Menü von ComposeMainActivity.
+    private fun sendBugReport() {
+        try {
+            val versionName = getVersionName()
+            val deviceInfo = buildString {
+                appendLine(getString(R.string.bug_report_header))
+                appendLine()
+                appendLine(getString(R.string.bug_report_describe))
+                appendLine(getString(R.string.bug_report_question_1))
+                appendLine(getString(R.string.bug_report_question_2))
+                appendLine(getString(R.string.bug_report_question_3))
+                appendLine()
+                appendLine(getString(R.string.bug_report_device_info))
+                appendLine(getString(R.string.bug_report_app_version, versionName))
+                appendLine(getString(R.string.bug_report_android_version, Build.VERSION.RELEASE, Build.VERSION.SDK_INT))
+                appendLine(getString(R.string.bug_report_device, Build.MANUFACTURER, Build.MODEL))
+                appendLine(getString(R.string.bug_report_brand, Build.BRAND))
+                appendLine(getString(R.string.bug_report_language, java.util.Locale.getDefault().language))
+                appendLine()
+                appendLine(getString(R.string.bug_report_additional))
+                appendLine(getString(R.string.bug_report_additional_hint))
+            }
+
+            val intent = android.content.Intent(android.content.Intent.ACTION_SEND).apply {
+                type = "message/rfc822"
+                putExtra(android.content.Intent.EXTRA_EMAIL, arrayOf(getString(R.string.bug_report_email)))
+                putExtra(android.content.Intent.EXTRA_SUBJECT, getString(R.string.bug_report_subject, versionName))
+                putExtra(android.content.Intent.EXTRA_TEXT, deviceInfo)
+            }
+
+            val chooser = android.content.Intent.createChooser(intent, getString(R.string.bug_report_send_chooser))
+            if (intent.resolveActivity(packageManager) != null) {
+                startActivity(chooser)
+            } else {
+                android.widget.Toast.makeText(this, getString(R.string.no_email_app), android.widget.Toast.LENGTH_LONG).show()
+            }
+        } catch (e: Exception) {
+            android.widget.Toast.makeText(this, getString(R.string.bug_report_error_format, e.message), android.widget.Toast.LENGTH_LONG).show()
+        }
+    }
+
+    private fun sendFeedback() {
+        try {
+            val versionName = getVersionName()
+            val body = buildString {
+                appendLine(getString(R.string.feedback_header))
+                appendLine()
+                appendLine(getString(R.string.feedback_describe))
+                appendLine(getString(R.string.feedback_placeholder))
+            }
+
+            val intent = android.content.Intent(android.content.Intent.ACTION_SEND).apply {
+                type = "message/rfc822"
+                putExtra(android.content.Intent.EXTRA_EMAIL, arrayOf(getString(R.string.bug_report_email)))
+                putExtra(android.content.Intent.EXTRA_SUBJECT, getString(R.string.feedback_subject, versionName))
+                putExtra(android.content.Intent.EXTRA_TEXT, body)
+            }
+
+            val chooser = android.content.Intent.createChooser(intent, getString(R.string.feedback_send))
+            if (intent.resolveActivity(packageManager) != null) {
+                startActivity(chooser)
+            } else {
+                android.widget.Toast.makeText(this, getString(R.string.no_email_app), android.widget.Toast.LENGTH_LONG).show()
+            }
+        } catch (e: Exception) {
+            android.widget.Toast.makeText(this, getString(R.string.bug_report_error_format, e.message), android.widget.Toast.LENGTH_LONG).show()
+        }
+    }
+
+    private fun openKofiLink() {
+        try {
+            val kofiUrl = getString(R.string.url_kofi)
+            val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(kofiUrl))
+            startActivity(intent)
+            android.widget.Toast.makeText(this, getString(R.string.kofi_toast_thanks), android.widget.Toast.LENGTH_SHORT).show()
+        } catch (e: Exception) {
+            android.widget.Toast.makeText(this, getString(R.string.kofi_toast_error), android.widget.Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun getVersionName(): String {
+        return try {
+            packageManager.getPackageInfo(packageName, 0).versionName ?: "Unknown"
+        } catch (e: Exception) {
+            "Unknown"
+        }
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -99,7 +190,10 @@ class SettingsActivity : AppCompatActivity() {
 fun SettingsScreen(
     viewModel: SettingsViewModel,
     onBackPressed: () -> Unit,
-    onLanguageChanged: (String) -> Unit = {}
+    onLanguageChanged: (String) -> Unit = {},
+    onBugReport: () -> Unit = {},
+    onFeedback: () -> Unit = {},
+    onKofiSupport: () -> Unit = {}
 ) {
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
@@ -124,22 +218,39 @@ fun SettingsScreen(
     var copyBehaviorExpanded by remember { mutableStateOf(false) }
     var reviewExpanded by remember { mutableStateOf(false) }
     var aboutExpanded by remember { mutableStateOf(false) }
+    var supportExpanded by remember { mutableStateOf(false) }
     var hapticExpanded by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text(stringResource(R.string.settings_title)) },
-                navigationIcon = {
-                    IconButton(onClick = onBackPressed) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.settings_back))
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 18.dp, vertical = 12.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Surface(
+                    onClick = onBackPressed,
+                    shape = CircleShape,
+                    color = MaterialTheme.colorScheme.surfaceVariant,
+                    modifier = Modifier.size(36.dp)
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = stringResource(R.string.settings_back),
+                            modifier = Modifier.size(18.dp),
+                            tint = MaterialTheme.colorScheme.onSurface
+                        )
                     }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background,
-                    titleContentColor = MaterialTheme.colorScheme.onBackground
-                ),
-            )
+                }
+                Spacer(modifier = Modifier.width(12.dp))
+                Text(
+                    text = stringResource(R.string.settings_title),
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onBackground
+                )
+            }
         }
     ) { paddingValues ->
         LazyColumn(
@@ -276,9 +387,30 @@ fun SettingsScreen(
                                 scope.launch {
                                     viewModel.setHapticFeedbackEnabled(value)
                                 }
-                            }
+                            },
+                            colors = SwitchDefaults.colors(
+                                checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
+                                checkedTrackColor = MaterialTheme.colorScheme.primary
+                            )
                         )
                     }
+                }
+            }
+
+            // Support Section (Redesign v4)
+            item {
+                CollapsibleSettingsSection(
+                    title = stringResource(R.string.settings_support),
+                    icon = Icons.Default.HelpOutline,
+                    isExpanded = supportExpanded,
+                    onExpandToggle = { supportExpanded = !supportExpanded },
+                    preview = stringResource(R.string.settings_support)
+                ) {
+                    SupportSettings(
+                        onBugReport = onBugReport,
+                        onFeedback = onFeedback,
+                        onKofiSupport = onKofiSupport
+                    )
                 }
             }
 
@@ -291,10 +423,82 @@ fun SettingsScreen(
                     onExpandToggle = { aboutExpanded = !aboutExpanded },
                     preview = stringResource(R.string.app_name)
                 ) {
-                    AboutSection()
+                    AboutSection(
+                        onReplayOnboarding = {
+                            scope.launch {
+                                viewModel.resetOnboarding()
+                                onBackPressed()
+                            }
+                        }
+                    )
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun SupportSettings(
+    onBugReport: () -> Unit,
+    onFeedback: () -> Unit,
+    onKofiSupport: () -> Unit
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+        SupportRow(
+            icon = Icons.Default.BugReport,
+            label = stringResource(R.string.bug_report),
+            onClick = onBugReport
+        )
+        SupportRow(
+            icon = Icons.Default.Lightbulb,
+            label = stringResource(R.string.feedback_title),
+            onClick = onFeedback
+        )
+        SupportRow(
+            icon = Icons.Default.LocalCafe,
+            label = stringResource(R.string.kofi_support),
+            onClick = onKofiSupport
+        )
+    }
+}
+
+@Composable
+private fun SupportRow(
+    icon: ImageVector,
+    label: String,
+    onClick: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .selectable(
+                selected = false,
+                onClick = onClick,
+                indication = null,
+                interactionSource = remember { MutableInteractionSource() }
+            )
+            .padding(vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            modifier = Modifier.size(20.dp),
+            tint = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Spacer(modifier = Modifier.width(12.dp))
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodyLarge,
+            fontWeight = FontWeight.Medium,
+            modifier = Modifier.weight(1f)
+        )
+        Icon(
+            imageVector = Icons.Default.ChevronRight,
+            contentDescription = null,
+            modifier = Modifier.size(20.dp),
+            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+        )
     }
 }
 
@@ -312,10 +516,11 @@ fun CollapsibleSettingsSection(
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
+        shape = MaterialTheme.shapes.medium,
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
     ) {
         Column(
             modifier = Modifier.padding(16.dp)
@@ -332,18 +537,26 @@ fun CollapsibleSettingsSection(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.weight(1f)
                 ) {
-                    Icon(
-                        imageVector = icon,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(24.dp)
-                    )
+                    Surface(
+                        shape = CircleShape,
+                        color = MaterialTheme.colorScheme.primaryContainer,
+                        modifier = Modifier.size(36.dp)
+                    ) {
+                        Box(contentAlignment = Alignment.Center) {
+                            Icon(
+                                imageVector = icon,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
+                    }
                     Spacer(modifier = Modifier.width(12.dp))
                     Column {
                         Text(
                             text = title,
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold
+                            style = MaterialTheme.typography.bodyLarge,
+                            fontWeight = FontWeight.SemiBold
                         )
 
                         // Preview wenn eingeklappt
@@ -365,12 +578,12 @@ fun CollapsibleSettingsSection(
                 // Expand/Collapse Button
                 IconButton(
                     onClick = onExpandToggle,
-                    modifier = Modifier.size(40.dp)
+                    modifier = Modifier.size(36.dp)
                 ) {
                     Icon(
                         imageVector = if (isExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
                         contentDescription = if (isExpanded) stringResource(R.string.collapse) else stringResource(R.string.expand),
-                        tint = MaterialTheme.colorScheme.primary
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }
@@ -586,7 +799,9 @@ fun ThemeSelector(
 }
 
 @Composable
-fun AboutSection() {
+fun AboutSection(
+    onReplayOnboarding: () -> Unit = {}
+) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Text(
             text = stringResource(R.string.app_name),
@@ -606,6 +821,14 @@ fun AboutSection() {
             text = stringResource(R.string.settings_about_description),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+
+        Spacer(modifier = Modifier.height(4.dp))
+
+        SupportRow(
+            icon = Icons.Default.Replay,
+            label = stringResource(R.string.settings_replay_onboarding),
+            onClick = onReplayOnboarding
         )
     }
 }
@@ -634,8 +857,8 @@ fun AppThemeSelector(
             theme = AppTheme.LEETSPEAK,
             name = stringResource(R.string.theme_leetspeak),
             description = stringResource(R.string.theme_leetspeak_desc),
-            primaryColor = Color(0xFF673AB7),
-            secondaryColor = Color(0xFF804FB3)
+            primaryColor = Color(0xFF6D42E0),
+            secondaryColor = Color(0xFFD1487A)
         ),
         ThemeColorOption(
             theme = AppTheme.DAILYLIST,
@@ -780,7 +1003,11 @@ fun CopyBehaviorSettings(
             }
             Switch(
                 checked = clearInputAfterCopy,
-                onCheckedChange = onClearInputAfterCopyChanged
+                onCheckedChange = onClearInputAfterCopyChanged,
+                colors = SwitchDefaults.colors(
+                    checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
+                    checkedTrackColor = MaterialTheme.colorScheme.primary
+                )
             )
         }
 
@@ -811,7 +1038,11 @@ fun CopyBehaviorSettings(
                 }
                 Switch(
                     checked = askBeforeClear,
-                    onCheckedChange = onAskBeforeClearChanged
+                    onCheckedChange = onAskBeforeClearChanged,
+                    colors = SwitchDefaults.colors(
+                        checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
+                        checkedTrackColor = MaterialTheme.colorScheme.primary
+                    )
                 )
             }
         }

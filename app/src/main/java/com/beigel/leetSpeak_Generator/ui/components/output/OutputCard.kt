@@ -41,18 +41,13 @@ fun OutputCard(
     }
 
     val cardColors = CardDefaults.cardColors(
-        containerColor = MaterialTheme.colorScheme.background
+        containerColor = MaterialTheme.colorScheme.surface
     )
 
-    val headerTextColor = if (isReverseMode)
-        MaterialTheme.colorScheme.primary
-    else
-        MaterialTheme.colorScheme.secondary
-
-    val borderColor = if (isReverseMode)
-        MaterialTheme.colorScheme.primary
-    else
-        MaterialTheme.colorScheme.secondary
+    // Ausgabe-Akzentfarbe ist im Redesign immer "secondary" (Pink), unabhängig von der Richtung —
+    // die Richtung wird bereits über die Eingabekarte + den Swap-Button kommuniziert.
+    val headerTextColor = MaterialTheme.colorScheme.secondary
+    val borderColor = MaterialTheme.colorScheme.secondary
 
     val textFieldDesc = stringResource(R.string.a11y_output_field, currentMode)
 
@@ -68,11 +63,15 @@ fun OutputCard(
         ),
         modifier = modifier
     ) {
-        Card(colors = cardColors) {
+        Card(
+            colors = cardColors,
+            shape = MaterialTheme.shapes.medium,
+            border = androidx.compose.foundation.BorderStroke(1.5.dp, MaterialTheme.colorScheme.outlineVariant)
+        ) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(8.dp)
+                    .padding(16.dp)
             ) {
                 if (showHeader) {
                     OutputCardHeader(
@@ -115,15 +114,15 @@ fun OutputCard(
                                 .semantics { contentDescription = textFieldDesc },
                             readOnly = true,
                             colors   = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor      = borderColor,
-                                unfocusedBorderColor    = borderColor.copy(alpha = 0.5f),
-                                disabledBorderColor     = borderColor.copy(alpha = 0.5f),
-                                focusedContainerColor   = MaterialTheme.colorScheme.background,
-                                unfocusedContainerColor = MaterialTheme.colorScheme.background,
-                                disabledContainerColor  = MaterialTheme.colorScheme.background,
-                                focusedTextColor        = MaterialTheme.colorScheme.onBackground,
-                                unfocusedTextColor      = MaterialTheme.colorScheme.onBackground,
-                                disabledTextColor       = MaterialTheme.colorScheme.onBackground
+                                focusedBorderColor      = androidx.compose.ui.graphics.Color.Transparent,
+                                unfocusedBorderColor    = androidx.compose.ui.graphics.Color.Transparent,
+                                disabledBorderColor     = androidx.compose.ui.graphics.Color.Transparent,
+                                focusedContainerColor   = MaterialTheme.colorScheme.surface,
+                                unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                                disabledContainerColor  = MaterialTheme.colorScheme.surface,
+                                focusedTextColor        = MaterialTheme.colorScheme.onSurface,
+                                unfocusedTextColor      = MaterialTheme.colorScheme.onSurface,
+                                disabledTextColor       = MaterialTheme.colorScheme.onSurface
                             ),
                             shape = MaterialTheme.shapes.medium
                         )
@@ -152,15 +151,15 @@ private fun OutputCardHeader(
         Column {
             Text(
                 text       = currentMode,
-                style      = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Medium,
+                style      = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.SemiBold,
                 color      = headerTextColor
             )
             AnimatedVisibility(visible = charCount > 0) {
                 Text(
                     text  = stringResource(R.string.char_count, charCount),
                     style = MaterialTheme.typography.labelSmall,
-                    color = headerTextColor.copy(alpha = 0.6f)
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }

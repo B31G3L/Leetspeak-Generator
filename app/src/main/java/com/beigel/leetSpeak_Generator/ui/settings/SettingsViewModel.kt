@@ -3,6 +3,7 @@ package com.beigel.leetSpeak_Generator.ui.settings
 import android.app.Activity
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.beigel.leetSpeak_Generator.data.OnboardingPreferences
 import com.beigel.leetSpeak_Generator.data.ThemePreferences
 import com.beigel.leetSpeak_Generator.repository.LeetRepository
 import com.beigel.leetSpeak_Generator.review.InAppReviewManager
@@ -18,6 +19,7 @@ import javax.inject.Inject
 class SettingsViewModel @Inject constructor(
     private val themePreferences: ThemePreferences,
     private val inAppReviewManager: InAppReviewManager,
+    private val onboardingPreferences: OnboardingPreferences,
     leetRepository: LeetRepository
 ) : ViewModel() {
 
@@ -111,5 +113,10 @@ class SettingsViewModel @Inject constructor(
         viewModelScope.launch {
             inAppReviewManager.resetForTesting()
         }
+    }
+
+    /** Redesign v4 — Settings "Über die App": Onboarding erneut anzeigen. */
+    suspend fun resetOnboarding() {
+        onboardingPreferences.resetOnboarding()
     }
 }
