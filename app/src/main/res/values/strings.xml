@@ -125,6 +125,7 @@
     <string name="leet_selector_list_view">List view</string>
     <string name="leet_selector_toggle_favorite">Toggle favorite</string>
     <string name="leet_selector_remove_favorite">Remove from favorites</string>
+    <string name="leet_selector_add_favorite">Add to favorites</string>
     <string name="leet_selector_selected">Selected</string>
     <string name="leet_selector_edit">Edit</string>
     <string name="leet_selector_show_table">Show translation table</string>
@@ -174,6 +175,7 @@
     <string name="about_support_message">If you like the app, I would greatly appreciate your support! A good rating or a small coffee helps me a lot to continue developing.</string>
     <string name="about_support_thanks">Thank you for your support! Every rating and every coffee motivates me to develop even better apps. ❤️</string>
     <string name="kofi_support_short">Ko-Fi</string>
+    <string name="discord_support_short">Discord</string>
 
     <string name="about_developer_info">Solo developer with passion</string>
     <string name="about_made_with_love">Made with ❤️ in Germany</string>
@@ -333,6 +335,7 @@
     <string name="leet_option_custom_name">Custom</string>
 
     <string name="url_kofi">https://ko-fi.com/beigel</string>
+    <string name="discord_invite_url" translatable="false">https://discord.gg/ww9DEnFUJp</string>
     <string name="url_play_store">https://play.google.com/store/apps/details?id=com.beigel.leetSpeak_Generator</string>
 
     <string name="content_description_favorite">Favorite</string>
@@ -369,15 +372,12 @@
     <string name="onboarding_skip">Skip</string>
     <string name="onboarding_next">Next</string>
     <string name="onboarding_start">Let\'s go!</string>
+    <string name="onboarding_app_title">Transform your text</string>
+    <string name="onboarding_app_desc">Convert any text into Leetspeak in one tap. Simple, Extended, or build your own custom style — mark your favorite mode for quick access every time you open the app.</string>
 
-    <string name="onboarding_1_title">Transform Text</string>
-    <string name="onboarding_1_desc">Convert any text into awesome Leetspeak with just one tap. Simple, Extended or your own custom style.</string>
-
-    <string name="onboarding_2_title">Create Your Own</string>
-    <string name="onboarding_2_desc">Build custom Leet profiles with your own character mappings. Make it truly yours.</string>
-
-    <string name="onboarding_3_title">Save Your Favorites</string>
-    <string name="onboarding_3_desc">Mark your favorite Leet mode for quick access. The app remembers your preference on every start.</string>
+    <string name="onboarding_about_me_title">Made by a solo developer</string>
+    <string name="onboarding_about_me_desc">Hi! 👋 I\'m a solo developer who built this app out of passion for coding and leetspeak. It\'s always free, no ads.</string>
+    <string name="onboarding_support_hint">If you like the app, a rating, a coffee, or joining the Discord helps me a lot to keep developing.</string>
     <string name="a11y_reverse_mode_active">Reverse mode active, tap to switch to normal mode</string>
     <string name="a11y_reverse_mode_inactive">Normal mode, tap to switch to reverse mode</string>
     <string name="a11y_mode_selector">Current mode: %1$s. Tap to change.</string>
@@ -403,6 +403,5 @@
     <string name="reorder_mode_hint">Hold and drag the handle to reorder</string>
 
     <string name="settings_about_more">Mehr über die App</string>
-    <string name="leet_selector_add_favorite">Zu Favoriten hinzufügen</string>
 
 </resources>

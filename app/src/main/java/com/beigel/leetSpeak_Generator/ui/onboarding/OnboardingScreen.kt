@@ -17,7 +17,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -26,43 +26,27 @@ import com.beigel.leetSpeak_Generator.R
 import kotlinx.coroutines.launch
 
 /**
- * Onboarding (Redesign v4): 3-Schritt-Intro, Vollbild, ohne Bottom-Nav.
+ * Onboarding (Redesign v4b): 2-Schritt-Intro, Vollbild, ohne Bottom-Nav.
+ * Seite 1: Über die App (zusammengefasste Funktionsübersicht).
+ * Seite 2: Über mich (Solo-Entwickler) + Bewerten / Ko-Fi / Discord.
  * 96x96dp abgerundete Icon-Kachel (28dp Radius, primaryContainer), Step-Dots
  * (aktiv = 20dp Pill, inaktiv = 6dp Kreis), volle-Breite CTA-Button (50dp, 16dp Radius).
  */
-data class OnboardingPage(
-    val icon: ImageVector,
-    val titleRes: Int,
-    val descriptionRes: Int
-)
-
 @OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
 @Composable
 fun OnboardingScreen(
     onComplete: () -> Unit
 ) {
     val scope = rememberCoroutineScope()
+    val uriHandler = LocalUriHandler.current
 
-    val pages = listOf(
-        OnboardingPage(
-            icon = Icons.Default.Transform,
-            titleRes = R.string.onboarding_1_title,
-            descriptionRes = R.string.onboarding_1_desc
-        ),
-        OnboardingPage(
-            icon = Icons.Default.Tune,
-            titleRes = R.string.onboarding_2_title,
-            descriptionRes = R.string.onboarding_2_desc
-        ),
-        OnboardingPage(
-            icon = Icons.Default.Favorite,
-            titleRes = R.string.onboarding_3_title,
-            descriptionRes = R.string.onboarding_3_desc
-        )
-    )
+    val pageCount = 2
+    val pagerState = rememberPagerState(pageCount = { pageCount })
+    val isLastPage = pagerState.currentPage == pageCount - 1
 
-    val pagerState = rememberPagerState(pageCount = { pages.size })
-    val isLastPage = pagerState.currentPage == pages.size - 1
+    val playStoreUrl = stringResource(R.string.url_play_store)
+    val kofiUrl = stringResource(R.string.url_kofi)
+    val discordUrl = stringResource(R.string.discord_invite_url)
 
     Box(
         modifier = Modifier
@@ -95,10 +79,17 @@ fun OnboardingScreen(
                     .fillMaxWidth()
                     .weight(1f)
             ) { pageIndex ->
-                OnboardingPageContent(
-                    page = pages[pageIndex],
-                    isActive = pagerState.currentPage == pageIndex
-                )
+                val isActive = pagerState.currentPage == pageIndex
+                if (pageIndex == 0) {
+                    OnboardingAppPage(isActive = isActive)
+                } else {
+                    OnboardingAboutMePage(
+                        isActive = isActive,
+                        onRateClick = { uriHandler.openUri(playStoreUrl) },
+                        onKofiClick = { uriHandler.openUri(kofiUrl) },
+                        onDiscordClick = { uriHandler.openUri(discordUrl) }
+                    )
+                }
             }
 
             // Bottom: Dots + CTA-Button
@@ -113,7 +104,7 @@ fun OnboardingScreen(
                     horizontalArrangement = Arrangement.spacedBy(6.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    pages.indices.forEach { index ->
+                    repeat(pageCount) { index ->
                         val isSelected = pagerState.currentPage == index
                         val width by animateDpAsState(
                             targetValue = if (isSelected) 20.dp else 6.dp,
@@ -168,10 +159,7 @@ fun OnboardingScreen(
 }
 
 @Composable
-private fun OnboardingPageContent(
-    page: OnboardingPage,
-    isActive: Boolean
-) {
+private fun OnboardingAppPage(isActive: Boolean) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -187,7 +175,7 @@ private fun OnboardingPageContent(
         ) {
             Box(contentAlignment = Alignment.Center) {
                 Icon(
-                    imageVector = page.icon,
+                    imageVector = Icons.Default.Transform,
                     contentDescription = null,
                     modifier = Modifier.size(40.dp),
                     tint = MaterialTheme.colorScheme.primary
@@ -206,7 +194,7 @@ private fun OnboardingPageContent(
                 )
             ) {
                 Text(
-                    text = stringResource(page.titleRes),
+                    text = stringResource(R.string.onboarding_app_title),
                     style = MaterialTheme.typography.titleLarge,
                     textAlign = TextAlign.Center,
                     color = MaterialTheme.colorScheme.onBackground
@@ -223,12 +211,160 @@ private fun OnboardingPageContent(
                 )
             ) {
                 Text(
-                    text = stringResource(page.descriptionRes),
+                    text = stringResource(R.string.onboarding_app_desc),
                     style = MaterialTheme.typography.bodyMedium,
                     textAlign = TextAlign.Center,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
+        }
+    }
+}
+
+@Composable
+private fun OnboardingAboutMePage(
+    isActive: Boolean,
+    onRateClick: () -> Unit,
+    onKofiClick: () -> Unit,
+    onDiscordClick: () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = 32.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Surface(
+            modifier = Modifier.size(96.dp),
+            color = MaterialTheme.colorScheme.secondaryContainer,
+            shape = RoundedCornerShape(28.dp)
+        ) {
+            Box(contentAlignment = Alignment.Center) {
+                Icon(
+                    imageVector = Icons.Default.Person,
+                    contentDescription = null,
+                    modifier = Modifier.size(40.dp),
+                    tint = MaterialTheme.colorScheme.secondary
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(40.dp))
+
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            AnimatedVisibility(
+                visible = isActive,
+                enter = fadeIn(tween(400)) + slideInVertically(
+                    animationSpec = tween(400),
+                    initialOffsetY = { it / 4 }
+                )
+            ) {
+                Text(
+                    text = stringResource(R.string.onboarding_about_me_title),
+                    style = MaterialTheme.typography.titleLarge,
+                    textAlign = TextAlign.Center,
+                    color = MaterialTheme.colorScheme.onBackground
+                )
+            }
+
+            Spacer(modifier = Modifier.height(14.dp))
+
+            AnimatedVisibility(
+                visible = isActive,
+                enter = fadeIn(tween(500, delayMillis = 100)) + slideInVertically(
+                    animationSpec = tween(500, delayMillis = 100),
+                    initialOffsetY = { it / 4 }
+                )
+            ) {
+                Text(
+                    text = stringResource(R.string.onboarding_about_me_desc),
+                    style = MaterialTheme.typography.bodyMedium,
+                    textAlign = TextAlign.Center,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            AnimatedVisibility(
+                visible = isActive,
+                enter = fadeIn(tween(600, delayMillis = 150)) + slideInVertically(
+                    animationSpec = tween(600, delayMillis = 150),
+                    initialOffsetY = { it / 4 }
+                )
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(
+                        text = stringResource(R.string.onboarding_support_hint),
+                        style = MaterialTheme.typography.bodySmall,
+                        textAlign = TextAlign.Center,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(10.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        OnboardingLinkButton(
+                            icon = Icons.Default.Star,
+                            label = stringResource(R.string.about_dialog_rate),
+                            containerColor = MaterialTheme.colorScheme.primary,
+                            contentColor = MaterialTheme.colorScheme.onPrimary,
+                            onClick = onRateClick
+                        )
+                        OnboardingLinkButton(
+                            icon = Icons.Default.LocalCafe,
+                            label = stringResource(R.string.kofi_support_short),
+                            containerColor = MaterialTheme.colorScheme.tertiary,
+                            contentColor = MaterialTheme.colorScheme.onTertiary,
+                            onClick = onKofiClick
+                        )
+                        OnboardingLinkButton(
+                            icon = Icons.Default.Forum,
+                            label = stringResource(R.string.discord_support_short),
+                            containerColor = MaterialTheme.colorScheme.secondary,
+                            contentColor = MaterialTheme.colorScheme.onSecondary,
+                            onClick = onDiscordClick
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun OnboardingLinkButton(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    label: String,
+    containerColor: androidx.compose.ui.graphics.Color,
+    contentColor: androidx.compose.ui.graphics.Color,
+    onClick: () -> Unit
+) {
+    Surface(
+        onClick = onClick,
+        shape = RoundedCornerShape(12.dp),
+        color = containerColor
+    ) {
+        Column(
+            modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                modifier = Modifier.size(18.dp),
+                tint = contentColor
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = label,
+                style = MaterialTheme.typography.labelSmall,
+                color = contentColor
+            )
         }
     }
 }

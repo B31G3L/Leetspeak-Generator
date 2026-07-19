@@ -158,8 +158,8 @@ fun ModiScreen(
 
                 FloatingActionButton(
                     onClick = { showLeetCreationDialog = true },
-                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
                     modifier = Modifier
                         .align(Alignment.BottomEnd)
                         .padding(20.dp)
@@ -278,15 +278,6 @@ private fun ModiCard(
         ) {
             Column(modifier = Modifier.weight(1f)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    if (option.isFavorite) {
-                        Icon(
-                            imageVector = Icons.Default.Star,
-                            contentDescription = stringResource(R.string.content_description_favorite),
-                            modifier = Modifier.size(16.dp),
-                            tint = MaterialTheme.colorScheme.secondary
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
-                    }
                     Text(
                         text = option.name,
                         style = MaterialTheme.typography.bodyLarge,
@@ -295,6 +286,31 @@ private fun ModiCard(
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
+                    if (option.isFavorite) {
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Surface(
+                            shape = PillShape,
+                            color = MaterialTheme.colorScheme.primaryContainer
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Star,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(11.dp),
+                                    tint = MaterialTheme.colorScheme.onPrimaryContainer
+                                )
+                                Spacer(modifier = Modifier.width(3.dp))
+                                Text(
+                                    text = stringResource(R.string.content_description_favorite),
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                                )
+                            }
+                        }
+                    }
                     if (option.isCustom) {
                         Spacer(modifier = Modifier.width(6.dp))
                         Surface(

@@ -184,11 +184,16 @@ fun MainScreen(
     val bgColor = MaterialTheme.colorScheme.background
     val isDarkTheme = (0.299f * bgColor.red + 0.587f * bgColor.green + 0.114f * bgColor.blue) < 0.5f
 
-    Box(modifier = Modifier.fillMaxSize()) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+    ) {
         Scaffold(
             modifier = Modifier
                 .fillMaxSize()
                 .windowInsetsPadding(WindowInsets.systemBars),
+            containerColor = androidx.compose.ui.graphics.Color.Transparent,
             snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
             topBar = {
                 TopAppBar(
@@ -317,7 +322,7 @@ fun MainScreen(
                 )
             }
 
-            HandleUiState(uiState, viewModel, context)
+            HandleUiState(uiState, viewModel, snackbarHostState)
         }
 
         // Modi-Vollbildschirm als eigene Ebene ÜBER dem Scaffold (inkl. TopAppBar/BottomNav),
@@ -420,7 +425,7 @@ private fun BottomPillNav(
         modifier = modifier,
         shape = com.beigel.leetSpeak_Generator.ui.theme.PillShape,
         color = MaterialTheme.colorScheme.surface,
-        shadowElevation = 8.dp
+        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
     ) {
         Row(
             modifier = Modifier.padding(6.dp),
@@ -516,17 +521,23 @@ private fun BottomPillNav(
 private fun HandleUiState(
     uiState: com.beigel.leetSpeak_Generator.domain.usecase.ui.UiStateManagementUseCase.UiState,
     viewModel: MainViewModel,
-    context: Context
+    snackbarHostState: SnackbarHostState
 ) {
     uiState.successMessage?.let { message ->
         LaunchedEffect(message) {
-            android.widget.Toast.makeText(context, "✅ $message", android.widget.Toast.LENGTH_SHORT).show()
+            snackbarHostState.showSnackbar(
+                message  = message,
+                duration = SnackbarDuration.Short
+            )
             viewModel.handleIntent(MainIntent.ClearSuccess)
         }
     }
     uiState.errorMessage?.let { message ->
         LaunchedEffect(message) {
-            android.widget.Toast.makeText(context, "❌ $message", android.widget.Toast.LENGTH_LONG).show()
+            snackbarHostState.showSnackbar(
+                message  = message,
+                duration = SnackbarDuration.Long
+            )
             viewModel.handleIntent(MainIntent.ClearError)
         }
     }
