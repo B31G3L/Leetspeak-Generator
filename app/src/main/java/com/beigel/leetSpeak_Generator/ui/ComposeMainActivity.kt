@@ -24,6 +24,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
@@ -38,7 +39,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.beigel.leetSpeak_Generator.R
-import com.beigel.leetSpeak_Generator.ui.components.AboutDialog
 import com.beigel.leetSpeak_Generator.ui.components.leet.selector.ModiScreen
 import com.beigel.leetSpeak_Generator.ui.theme.LeetspeakGeneratorTheme
 import com.beigel.leetSpeak_Generator.viewmodel.MainViewModel
@@ -100,10 +100,7 @@ class ComposeMainActivity : AppCompatActivity() {
                         onCopyToClipboard = { text -> copyToClipboardWithFeedback(text) },
                         onOpenSettings    = {
                             startActivity(Intent(this@ComposeMainActivity, SettingsActivity::class.java))
-                        },
-                        onBugReport   = { sendBugReport() },
-                        onFeedback    = { sendFeedback() },
-                        onKofiSupport = { openKofiLink() }
+                        }
                     )
 
                     LaunchedEffect(shouldRequestReview) {
@@ -127,94 +124,6 @@ class ComposeMainActivity : AppCompatActivity() {
             vibrator.vibrate(VibrationEffect.createOneShot(50, VibrationEffect.DEFAULT_AMPLITUDE))
         }
     }
-
-    private fun sendBugReport() {
-        try {
-            val versionName = getVersionName()
-            val deviceInfo = buildString {
-                appendLine(getString(R.string.bug_report_header))
-                appendLine()
-                appendLine(getString(R.string.bug_report_describe))
-                appendLine(getString(R.string.bug_report_question_1))
-                appendLine(getString(R.string.bug_report_question_2))
-                appendLine(getString(R.string.bug_report_question_3))
-                appendLine()
-                appendLine(getString(R.string.bug_report_device_info))
-                appendLine(getString(R.string.bug_report_app_version, versionName))
-                appendLine(getString(R.string.bug_report_android_version, Build.VERSION.RELEASE, Build.VERSION.SDK_INT))
-                appendLine(getString(R.string.bug_report_device, Build.MANUFACTURER, Build.MODEL))
-                appendLine(getString(R.string.bug_report_brand, Build.BRAND))
-                appendLine(getString(R.string.bug_report_language, java.util.Locale.getDefault().language))
-                appendLine()
-                appendLine(getString(R.string.bug_report_additional))
-                appendLine(getString(R.string.bug_report_additional_hint))
-            }
-
-            val intent = Intent(Intent.ACTION_SEND).apply {
-                type = "message/rfc822"
-                putExtra(Intent.EXTRA_EMAIL, arrayOf(getString(R.string.bug_report_email)))
-                putExtra(Intent.EXTRA_SUBJECT, getString(R.string.bug_report_subject, versionName))
-                putExtra(Intent.EXTRA_TEXT, deviceInfo)
-            }
-
-            val chooser = Intent.createChooser(intent, getString(R.string.bug_report_send_chooser))
-            if (intent.resolveActivity(packageManager) != null) {
-                startActivity(chooser)
-            } else {
-                copyToClipboardWithFeedback(deviceInfo)
-                android.widget.Toast.makeText(this, getString(R.string.no_email_app), android.widget.Toast.LENGTH_LONG).show()
-            }
-        } catch (e: Exception) {
-            android.widget.Toast.makeText(this, getString(R.string.bug_report_error_format, e.message), android.widget.Toast.LENGTH_LONG).show()
-        }
-    }
-
-    private fun sendFeedback() {
-        try {
-            val versionName = getVersionName()
-            val body = buildString {
-                appendLine(getString(R.string.feedback_header))
-                appendLine()
-                appendLine(getString(R.string.feedback_describe))
-                appendLine(getString(R.string.feedback_placeholder))
-            }
-
-            val intent = Intent(Intent.ACTION_SEND).apply {
-                type = "message/rfc822"
-                putExtra(Intent.EXTRA_EMAIL, arrayOf(getString(R.string.bug_report_email)))
-                putExtra(Intent.EXTRA_SUBJECT, getString(R.string.feedback_subject, versionName))
-                putExtra(Intent.EXTRA_TEXT, body)
-            }
-
-            val chooser = Intent.createChooser(intent, getString(R.string.feedback_send))
-            if (intent.resolveActivity(packageManager) != null) {
-                startActivity(chooser)
-            } else {
-                android.widget.Toast.makeText(this, getString(R.string.no_email_app), android.widget.Toast.LENGTH_LONG).show()
-            }
-        } catch (e: Exception) {
-            android.widget.Toast.makeText(this, getString(R.string.bug_report_error_format, e.message), android.widget.Toast.LENGTH_LONG).show()
-        }
-    }
-
-    private fun openKofiLink() {
-        try {
-            val kofiUrl = getString(R.string.url_kofi)
-            val intent  = Intent(Intent.ACTION_VIEW, Uri.parse(kofiUrl))
-            startActivity(intent)
-            android.widget.Toast.makeText(this, getString(R.string.kofi_toast_thanks), android.widget.Toast.LENGTH_SHORT).show()
-        } catch (e: Exception) {
-            android.widget.Toast.makeText(this, getString(R.string.kofi_toast_error), android.widget.Toast.LENGTH_SHORT).show()
-        }
-    }
-
-    private fun getVersionName(): String {
-        return try {
-            packageManager.getPackageInfo(packageName, 0).versionName ?: "Unknown"
-        } catch (e: Exception) {
-            "Unknown"
-        }
-    }
 }
 
 
@@ -223,13 +132,8 @@ class ComposeMainActivity : AppCompatActivity() {
 fun MainScreen(
     viewModel: MainViewModel,
     onCopyToClipboard: (String) -> Unit,
-    onOpenSettings: () -> Unit,
-    onBugReport: () -> Unit = {},
-    onFeedback: () -> Unit = {},
-    onKofiSupport: () -> Unit = {}
+    onOpenSettings: () -> Unit
 ) {
-    var showDropdownMenu by remember { mutableStateOf(false) }
-
     val inputText              by viewModel.inputText.collectAsStateWithLifecycle()
     val outputText             by viewModel.outputText.collectAsStateWithLifecycle()
     val currentModeDisplayName by viewModel.currentModeDisplayName.collectAsStateWithLifecycle()
@@ -246,7 +150,6 @@ fun MainScreen(
     val hasOutput         = outputText.isNotEmpty()
 
     var showBottomSheet by remember { mutableStateOf(false) }
-    var showAboutDialog by remember { mutableStateOf(false) }
     val context         = LocalContext.current
 
     val snackbarHostState  = remember { SnackbarHostState() }
@@ -277,182 +180,138 @@ fun MainScreen(
         stringResource(R.string.output_prefix) + currentModeDisplayName
     }
 
-    Scaffold(
-        modifier = Modifier
-            .fillMaxSize()
-            .windowInsetsPadding(WindowInsets.systemBars),
-        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
-        topBar = {
-            TopAppBar(
-                title = {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(
-                            stringResource(R.string.app_name),
-                            style = com.beigel.leetSpeak_Generator.ui.theme.WordmarkStyle,
-                            color = MaterialTheme.colorScheme.onBackground
-                        )
-                        if (isReverseMode) {
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Surface(
-                                color = MaterialTheme.colorScheme.tertiary,
-                                shape = androidx.compose.foundation.shape.CircleShape
-                            ) {
-                                Text(
-                                    text       = stringResource(R.string.reverse_badge),
-                                    modifier   = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
-                                    color      = MaterialTheme.colorScheme.onTertiary,
-                                    fontSize   = 12.sp,
-                                    fontWeight = FontWeight.Bold
-                                )
-                            }
-                        }
-                        if (!isReverseMode && isInputLikelyLeetspeak) {
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Surface(
-                                color = MaterialTheme.colorScheme.secondary,
-                                shape = androidx.compose.foundation.shape.CircleShape
-                            ) {
-                                Text(
-                                    text       = stringResource(R.string.leet_detected_badge),
-                                    modifier   = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
-                                    color      = MaterialTheme.colorScheme.onSecondary,
-                                    fontSize   = 12.sp,
-                                    fontWeight = FontWeight.Bold
-                                )
-                            }
-                        }
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor    = MaterialTheme.colorScheme.background,
-                    titleContentColor = MaterialTheme.colorScheme.onBackground
-                ),
-                actions = {
-                    IconButton(onClick = onKofiSupport) {
-                        Icon(
-                            imageVector        = Icons.Default.LocalCafe,
-                            contentDescription = stringResource(R.string.kofi_support),
-                            modifier           = Modifier.size(24.dp),
-                            tint               = MaterialTheme.colorScheme.secondary
-                        )
-                    }
-                    Box {
-                        IconButton(onClick = { showDropdownMenu = true }) {
-                            Icon(
-                                imageVector        = Icons.Default.MoreVert,
-                                contentDescription = stringResource(R.string.menu),
-                                modifier           = Modifier.size(24.dp)
-                            )
-                        }
-                        DropdownMenu(
-                            expanded         = showDropdownMenu,
-                            onDismissRequest = { showDropdownMenu = false }
-                        ) {
-                            DropdownMenuItem(
-                                text = {
-                                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                                        Icon(Icons.Default.BugReport, null, modifier = Modifier.size(20.dp))
-                                        Text(stringResource(R.string.bug_report))
-                                    }
-                                },
-                                onClick = { showDropdownMenu = false; onBugReport() }
-                            )
-                            DropdownMenuItem(
-                                text = {
-                                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                                        Icon(Icons.Default.Lightbulb, null, modifier = Modifier.size(20.dp))
-                                        Text(stringResource(R.string.feedback_title))
-                                    }
-                                },
-                                onClick = { showDropdownMenu = false; onFeedback() }
-                            )
-                            DropdownMenuItem(
-                                text = {
-                                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                                        Icon(Icons.Default.Info, null, modifier = Modifier.size(20.dp))
-                                        Text(stringResource(R.string.about))
-                                    }
-                                },
-                                onClick = { showDropdownMenu = false; showAboutDialog = true }
-                            )
-                            DropdownMenuItem(
-                                text = {
-                                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                                        Icon(Icons.Default.Settings, null, modifier = Modifier.size(20.dp))
-                                        Text(stringResource(R.string.settings))
-                                    }
-                                },
-                                onClick = { showDropdownMenu = false; onOpenSettings() }
-                            )
-                        }
-                    }
-                }
-            )
-        },
-        bottomBar = {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 14.dp)
-                    .then(
-                        if (isKeyboardVisible) Modifier.offset(y = 56.dp) else Modifier
-                    ),
-                contentAlignment = Alignment.Center
-            ) {
-                BottomPillNav(
-                    currentMode = currentModeDisplayName,
-                    isReverseMode = isReverseMode,
-                    onSpeechResult = { viewModel.updateInputText(it) },
-                    onModeSelectorClick = { showBottomSheet = true },
-                    onSettingsClick = onOpenSettings
-                )
-            }
-        }
-    ) { paddingValues ->
-        Column(
+    Box(modifier = Modifier.fillMaxSize()) {
+        Scaffold(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
-                .consumeWindowInsets(paddingValues)
-                .imePadding()
-                .padding(horizontal = 12.dp, vertical = 8.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            InputCard(
-                inputText     = inputText,
-                onInputChange = { viewModel.updateInputText(it) },
-                onClearText   = { viewModel.clearInput() },
-                showHeader    = true,
-                isReverseMode = isReverseMode,
-                title         = inputTitle,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f)
-            )
-
-            SwapButton(
-                onClick = { viewModel.handleIntent(MainIntent.ToggleReverseMode) },
-                modifier = Modifier.padding(vertical = 10.dp)
-            )
-
-            if (hasOutput) {
-                OutputCard(
-                    outputText   = outputText,
-                    currentMode  = outputTitle,
-                    animationKey = currentMode,  // NEU: nur bei Moduswechsel animieren
-                    onCopyClick  = {
-                        onCopyToClipboard(outputText)
-                        viewModel.handleIntent(MainIntent.CopyToClipboard)
+                .windowInsetsPadding(WindowInsets.systemBars),
+            snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
+            topBar = {
+                TopAppBar(
+                    title = {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                stringResource(R.string.app_name),
+                                style = com.beigel.leetSpeak_Generator.ui.theme.WordmarkStyle,
+                                color = MaterialTheme.colorScheme.onBackground
+                            )
+                            if (isReverseMode) {
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Surface(
+                                    color = MaterialTheme.colorScheme.tertiary,
+                                    shape = androidx.compose.foundation.shape.CircleShape
+                                ) {
+                                    Text(
+                                        text       = stringResource(R.string.reverse_badge),
+                                        modifier   = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+                                        color      = MaterialTheme.colorScheme.onTertiary,
+                                        fontSize   = 12.sp,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
+                            }
+                            if (!isReverseMode && isInputLikelyLeetspeak) {
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Surface(
+                                    color = MaterialTheme.colorScheme.secondary,
+                                    shape = androidx.compose.foundation.shape.CircleShape
+                                ) {
+                                    Text(
+                                        text       = stringResource(R.string.leet_detected_badge),
+                                        modifier   = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+                                        color      = MaterialTheme.colorScheme.onSecondary,
+                                        fontSize   = 12.sp,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
+                            }
+                        }
                     },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor    = MaterialTheme.colorScheme.background,
+                        titleContentColor = MaterialTheme.colorScheme.onBackground
+                    )
+                )
+            },
+            bottomBar = {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 14.dp)
+                        .then(
+                            if (isKeyboardVisible) Modifier.offset(y = 56.dp) else Modifier
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    BottomPillNav(
+                        currentMode = currentModeDisplayName,
+                        isReverseMode = isReverseMode,
+                        onSpeechResult = { viewModel.updateInputText(it) },
+                        onModeSelectorClick = { showBottomSheet = true },
+                        onSettingsClick = onOpenSettings
+                    )
+                }
+            }
+        ) { paddingValues ->
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+                    .consumeWindowInsets(paddingValues)
+                    .imePadding()
+                    .padding(horizontal = 12.dp, vertical = 8.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                InputCard(
+                    inputText     = inputText,
+                    onInputChange = { viewModel.updateInputText(it) },
+                    onClearText   = { viewModel.clearInput() },
                     showHeader    = true,
                     isReverseMode = isReverseMode,
-                    modifier      = Modifier
+                    title         = inputTitle,
+                    modifier = Modifier
                         .fillMaxWidth()
                         .weight(1f)
                 )
+
+                SwapButton(
+                    onClick = { viewModel.handleIntent(MainIntent.ToggleReverseMode) },
+                    modifier = Modifier.padding(vertical = 10.dp)
+                )
+
+                if (hasOutput) {
+                    OutputCard(
+                        outputText   = outputText,
+                        currentMode  = outputTitle,
+                        animationKey = currentMode,  // NEU: nur bei Moduswechsel animieren
+                        onCopyClick  = {
+                            onCopyToClipboard(outputText)
+                            viewModel.handleIntent(MainIntent.CopyToClipboard)
+                        },
+                        showHeader    = true,
+                        isReverseMode = isReverseMode,
+                        modifier      = Modifier
+                            .fillMaxWidth()
+                            .weight(1f)
+                    )
+                }
             }
+
+            if (showClearInputDialog) {
+                ClearInputDialog(
+                    onDismiss = { viewModel.dismissClearInputDialog() },
+                    onConfirm = { shouldClear, dontAskAgain ->
+                        viewModel.confirmClearInput(shouldClear, dontAskAgain)
+                    },
+                    isReverseMode = isReverseMode
+                )
+            }
+
+            HandleUiState(uiState, viewModel, context)
         }
 
+        // Modi-Vollbildschirm als eigene Ebene ÜBER dem Scaffold (inkl. TopAppBar/BottomNav),
+        // sonst würde er hinter TopAppBar/BottomPillNav versteckt liegen.
         if (showBottomSheet) {
             ModiScreen(
                 viewModel = viewModel,
@@ -462,20 +321,6 @@ fun MainScreen(
                     .windowInsetsPadding(WindowInsets.systemBars)
             )
         }
-        if (showAboutDialog) {
-            AboutDialog(onDismiss = { showAboutDialog = false })
-        }
-        if (showClearInputDialog) {
-            ClearInputDialog(
-                onDismiss = { viewModel.dismissClearInputDialog() },
-                onConfirm = { shouldClear, dontAskAgain ->
-                    viewModel.confirmClearInput(shouldClear, dontAskAgain)
-                },
-                isReverseMode = isReverseMode
-            )
-        }
-
-        HandleUiState(uiState, viewModel, context)
     }
 }
 
@@ -590,7 +435,9 @@ private fun BottomPillNav(
                         contentDescription = stringResource(
                             if (isListening) R.string.speech_input_stop else R.string.speech_input_start
                         ),
-                        modifier = Modifier.size(20.dp),
+                        modifier = Modifier
+                            .size(20.dp)
+                            .alpha(if (isReverseMode) 0.35f else 1f),
                         tint = if (isListening)
                             MaterialTheme.colorScheme.primary
                         else

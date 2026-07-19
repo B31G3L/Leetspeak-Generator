@@ -71,115 +71,115 @@ fun ModiScreen(
                 }
             )
         } else {
-        Column(modifier = Modifier.fillMaxSize()) {
-            // Header: Zurück + "Modi" + "+ Neu"
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 18.dp, vertical = 12.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
+            Column(modifier = Modifier.fillMaxSize()) {
+                // Header: Zurück + "Modi" + "+ Neu"
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 18.dp, vertical = 12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Surface(
+                            onClick = onDismiss,
+                            shape = androidx.compose.foundation.shape.CircleShape,
+                            color = MaterialTheme.colorScheme.surfaceVariant,
+                            modifier = Modifier.size(36.dp)
+                        ) {
+                            Box(contentAlignment = Alignment.Center) {
+                                Icon(
+                                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                    contentDescription = stringResource(R.string.modi_back),
+                                    modifier = Modifier.size(18.dp),
+                                    tint = MaterialTheme.colorScheme.onSurface
+                                )
+                            }
+                        }
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Text(
+                            text = stringResource(R.string.modi_screen_title),
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onBackground
+                        )
+                    }
+
                     Surface(
-                        onClick = onDismiss,
-                        shape = androidx.compose.foundation.shape.CircleShape,
-                        color = MaterialTheme.colorScheme.surfaceVariant,
-                        modifier = Modifier.size(36.dp)
+                        onClick = { showLeetCreationDialog = true },
+                        shape = PillShape,
+                        color = MaterialTheme.colorScheme.secondaryContainer
                     ) {
-                        Box(contentAlignment = Alignment.Center) {
+                        Row(
+                            modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
                             Icon(
-                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                contentDescription = stringResource(R.string.modi_back),
-                                modifier = Modifier.size(18.dp),
-                                tint = MaterialTheme.colorScheme.onSurface
+                                imageVector = Icons.Default.Add,
+                                contentDescription = null,
+                                modifier = Modifier.size(16.dp),
+                                tint = MaterialTheme.colorScheme.onSecondaryContainer
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = stringResource(R.string.leet_selector_new),
+                                style = MaterialTheme.typography.labelLarge,
+                                color = MaterialTheme.colorScheme.onSecondaryContainer
                             )
                         }
                     }
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Text(
-                        text = stringResource(R.string.modi_screen_title),
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.onBackground
+                }
+
+                // Filter-Chips
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 18.dp)
+                        .padding(bottom = 12.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    FilterChip(
+                        label = stringResource(R.string.modi_filter_all),
+                        selected = filter == ModiFilter.ALL,
+                        onClick = { filter = ModiFilter.ALL }
+                    )
+                    FilterChip(
+                        label = stringResource(R.string.modi_filter_favorites),
+                        selected = filter == ModiFilter.FAVORITES,
+                        onClick = { filter = ModiFilter.FAVORITES }
+                    )
+                    FilterChip(
+                        label = stringResource(R.string.modi_filter_custom),
+                        selected = filter == ModiFilter.CUSTOM,
+                        onClick = { filter = ModiFilter.CUSTOM }
                     )
                 }
 
-                Surface(
-                    onClick = { showLeetCreationDialog = true },
-                    shape = PillShape,
-                    color = MaterialTheme.colorScheme.secondaryContainer
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(horizontal = 18.dp, vertical = 4.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
-                    Row(
-                        modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Add,
-                            contentDescription = null,
-                            modifier = Modifier.size(16.dp),
-                            tint = MaterialTheme.colorScheme.onSecondaryContainer
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text(
-                            text = stringResource(R.string.leet_selector_new),
-                            style = MaterialTheme.typography.labelLarge,
-                            color = MaterialTheme.colorScheme.onSecondaryContainer
+                    items(filteredOptions, key = { it.mode.toString() + "_" + it.customIndex }) { option ->
+                        ModiCard(
+                            option = option,
+                            onSelect = {
+                                viewModel.handleIntent(MainIntent.ChangeMode(option))
+                                onDismiss()
+                            },
+                            onToggleFavorite = { viewModel.handleIntent(MainIntent.ToggleFavorite(option)) },
+                            onEdit = {
+                                currentEditOption = option
+                                showLeetEditDialog = true
+                            },
+                            onDelete = { pendingDeleteOption = option },
+                            onShowTable = {
+                                currentTableOption = option
+                                showTranslationTableDialog = true
+                            }
                         )
                     }
                 }
             }
-
-            // Filter-Chips
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 18.dp)
-                    .padding(bottom = 12.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                FilterChip(
-                    label = stringResource(R.string.modi_filter_all),
-                    selected = filter == ModiFilter.ALL,
-                    onClick = { filter = ModiFilter.ALL }
-                )
-                FilterChip(
-                    label = stringResource(R.string.modi_filter_favorites),
-                    selected = filter == ModiFilter.FAVORITES,
-                    onClick = { filter = ModiFilter.FAVORITES }
-                )
-                FilterChip(
-                    label = stringResource(R.string.modi_filter_custom),
-                    selected = filter == ModiFilter.CUSTOM,
-                    onClick = { filter = ModiFilter.CUSTOM }
-                )
-            }
-
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(horizontal = 18.dp, vertical = 4.dp),
-                verticalArrangement = Arrangement.spacedBy(10.dp)
-            ) {
-                items(filteredOptions, key = { it.mode.toString() + "_" + it.customIndex }) { option ->
-                    ModiCard(
-                        option = option,
-                        onSelect = {
-                            viewModel.handleIntent(MainIntent.ChangeMode(option))
-                            onDismiss()
-                        },
-                        onToggleFavorite = { viewModel.handleIntent(MainIntent.ToggleFavorite(option)) },
-                        onEdit = {
-                            currentEditOption = option
-                            showLeetEditDialog = true
-                        },
-                        onDelete = { pendingDeleteOption = option },
-                        onShowTable = {
-                            currentTableOption = option
-                            showTranslationTableDialog = true
-                        }
-                    )
-                }
-            }
-        }
         }
     }
 

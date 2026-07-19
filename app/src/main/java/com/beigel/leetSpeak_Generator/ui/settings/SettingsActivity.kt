@@ -33,6 +33,7 @@ import androidx.core.os.LocaleListCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.beigel.leetSpeak_Generator.R
 import com.beigel.leetSpeak_Generator.data.ThemePreferences
+import com.beigel.leetSpeak_Generator.ui.components.AboutDialog
 import com.beigel.leetSpeak_Generator.ui.theme.AppTheme
 import com.beigel.leetSpeak_Generator.ui.theme.LeetspeakGeneratorTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -219,6 +220,7 @@ fun SettingsScreen(
     var reviewExpanded by remember { mutableStateOf(false) }
     var aboutExpanded by remember { mutableStateOf(false) }
     var supportExpanded by remember { mutableStateOf(false) }
+    var showAboutDialog by remember { mutableStateOf(false) }
     var hapticExpanded by remember { mutableStateOf(false) }
 
     Scaffold(
@@ -429,11 +431,16 @@ fun SettingsScreen(
                                 viewModel.resetOnboarding()
                                 onBackPressed()
                             }
-                        }
+                        },
+                        onShowFullAbout = { showAboutDialog = true }
                     )
                 }
             }
         }
+    }
+
+    if (showAboutDialog) {
+        AboutDialog(onDismiss = { showAboutDialog = false })
     }
 }
 
@@ -800,7 +807,8 @@ fun ThemeSelector(
 
 @Composable
 fun AboutSection(
-    onReplayOnboarding: () -> Unit = {}
+    onReplayOnboarding: () -> Unit = {},
+    onShowFullAbout: () -> Unit = {}
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Text(
@@ -824,6 +832,12 @@ fun AboutSection(
         )
 
         Spacer(modifier = Modifier.height(4.dp))
+
+        SupportRow(
+            icon = Icons.Default.Info,
+            label = stringResource(R.string.settings_about_more),
+            onClick = onShowFullAbout
+        )
 
         SupportRow(
             icon = Icons.Default.Replay,
