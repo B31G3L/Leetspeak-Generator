@@ -34,7 +34,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.beigel.leetSpeak_Generator.R
 import com.beigel.leetSpeak_Generator.data.ThemePreferences
 import com.beigel.leetSpeak_Generator.ui.components.AboutDialog
-import com.beigel.leetSpeak_Generator.ui.theme.AppTheme
 import com.beigel.leetSpeak_Generator.ui.theme.LeetspeakGeneratorTheme
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -49,7 +48,6 @@ class SettingsActivity : AppCompatActivity() {
 
         setContent {
             val themeMode by viewModel.themeMode.collectAsStateWithLifecycle()
-            val appTheme by viewModel.appTheme.collectAsStateWithLifecycle()
 
             val isDarkTheme = when (themeMode) {
                 ThemePreferences.THEME_DARK -> true
@@ -58,8 +56,7 @@ class SettingsActivity : AppCompatActivity() {
             }
 
             LeetspeakGeneratorTheme(
-                darkTheme = isDarkTheme,
-                appTheme = appTheme
+                darkTheme = isDarkTheme
             ) {
                 SettingsScreen(
                     viewModel = viewModel,
@@ -200,7 +197,6 @@ fun SettingsScreen(
     val context = LocalContext.current
     val activity = context as? Activity
 
-    val appTheme by viewModel.appTheme.collectAsStateWithLifecycle()
     val themeMode by viewModel.themeMode.collectAsStateWithLifecycle()
     val language by viewModel.language.collectAsStateWithLifecycle()
 
@@ -214,7 +210,6 @@ fun SettingsScreen(
         .collectAsStateWithLifecycle()
     // Expanded states für jede Sektion
     var languageExpanded by remember { mutableStateOf(false) }
-    var colorThemeExpanded by remember { mutableStateOf(false) }
     var appearanceExpanded by remember { mutableStateOf(false) }
     var copyBehaviorExpanded by remember { mutableStateOf(false) }
     var reviewExpanded by remember { mutableStateOf(false) }
@@ -224,6 +219,9 @@ fun SettingsScreen(
     var hapticExpanded by remember { mutableStateOf(false) }
 
     Scaffold(
+        modifier = Modifier
+            .fillMaxSize()
+            .windowInsetsPadding(WindowInsets.systemBars),
         topBar = {
             Row(
                 modifier = Modifier
@@ -277,26 +275,6 @@ fun SettingsScreen(
                             scope.launch {
                                 viewModel.setLanguage(newLanguage)
                                 onLanguageChanged(newLanguage)
-                            }
-                        }
-                    )
-                }
-            }
-
-            // Color Theme Selection
-            item {
-                CollapsibleSettingsSection(
-                    title = stringResource(R.string.settings_color_theme),
-                    icon = Icons.Default.ColorLens,
-                    isExpanded = colorThemeExpanded,
-                    onExpandToggle = { colorThemeExpanded = !colorThemeExpanded },
-                    preview = getThemePreview(appTheme)
-                ) {
-                    AppThemeSelector(
-                        currentAppTheme = appTheme,
-                        onAppThemeSelected = { theme ->
-                            scope.launch {
-                                viewModel.setAppTheme(theme)
                             }
                         }
                     )
@@ -624,17 +602,6 @@ fun getLanguagePreview(languageCode: String): String {
 }
 
 @Composable
-fun getThemePreview(appTheme: AppTheme): String {
-    return when (appTheme) {
-        AppTheme.PLANIT -> stringResource(R.string.theme_planit)
-        AppTheme.NEXTIME -> stringResource(R.string.theme_nextime)
-        AppTheme.LEETSPEAK -> stringResource(R.string.theme_leetspeak)
-        AppTheme.DAILYLIST -> stringResource(R.string.theme_dailylist)
-        AppTheme.UNKNOWN -> stringResource(R.string.theme_unknown)
-    }
-}
-
-@Composable
 fun getAppearancePreview(themeMode: String): String {
     return when (themeMode) {
         ThemePreferences.THEME_SYSTEM -> stringResource(R.string.theme_system)
@@ -848,146 +815,6 @@ fun AboutSection(
 }
 
 @Composable
-fun AppThemeSelector(
-    currentAppTheme: AppTheme,
-    onAppThemeSelected: (AppTheme) -> Unit
-) {
-    val themeOptions = listOf(
-        ThemeColorOption(
-            theme = AppTheme.PLANIT,
-            name = stringResource(R.string.theme_planit),
-            description = stringResource(R.string.theme_planit_desc),
-            primaryColor = Color(0xFF00A896),
-            secondaryColor = Color(0xFF536360)
-        ),
-        ThemeColorOption(
-            theme = AppTheme.NEXTIME,
-            name = stringResource(R.string.theme_nextime),
-            description = stringResource(R.string.theme_nextime_desc),
-            primaryColor = Color(0xFFFF9800),
-            secondaryColor = Color(0xFF934B00)
-        ),
-        ThemeColorOption(
-            theme = AppTheme.LEETSPEAK,
-            name = stringResource(R.string.theme_leetspeak),
-            description = stringResource(R.string.theme_leetspeak_desc),
-            primaryColor = Color(0xFF6D42E0),
-            secondaryColor = Color(0xFFD1487A)
-        ),
-        ThemeColorOption(
-            theme = AppTheme.DAILYLIST,
-            name = stringResource(R.string.theme_dailylist),
-            description = stringResource(R.string.theme_dailylist_desc),
-            primaryColor = Color(0xFFA5D63E),
-            secondaryColor = Color(0xFF558B2F)
-        ),
-        ThemeColorOption(
-            theme = AppTheme.UNKNOWN,
-            name = stringResource(R.string.theme_unknown),
-            description = stringResource(R.string.theme_unknown_desc),
-            primaryColor = Color(0xFFD32F2F),
-            secondaryColor = Color(0xFFC62828)
-        )
-    )
-
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        themeOptions.forEach { option ->
-            ThemeColorCard(
-                option = option,
-                isSelected = currentAppTheme == option.theme,
-                onSelected = { onAppThemeSelected(option.theme) }
-            )
-        }
-    }
-}
-
-@Composable
-private fun ThemeColorCard(
-    option: ThemeColorOption,
-    isSelected: Boolean,
-    onSelected: () -> Unit
-) {
-    Card(
-        onClick = onSelected,
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = if (isSelected) {
-                MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
-            } else {
-                MaterialTheme.colorScheme.surface
-            }
-        ),
-        border = if (isSelected) {
-            BorderStroke(2.dp, MaterialTheme.colorScheme.primary)
-        } else {
-            BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.3f))
-        }
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(12.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            // Color Preview
-            Row(
-                modifier = Modifier.size(40.dp),
-                horizontalArrangement = Arrangement.spacedBy(4.dp)
-            ) {
-                Surface(
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxHeight(),
-                    color = option.primaryColor,
-                    shape = RoundedCornerShape(6.dp)
-                ) {}
-
-                Surface(
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxHeight(),
-                    color = option.secondaryColor,
-                    shape = RoundedCornerShape(6.dp)
-                ) {}
-            }
-
-            Spacer(modifier = Modifier.width(12.dp))
-
-            // Theme Info
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = option.name,
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
-                )
-                Text(
-                    text = option.description,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-
-            // Selection Indicator
-            if (isSelected) {
-                Icon(
-                    imageVector = Icons.Default.CheckCircle,
-                    contentDescription = stringResource(R.string.selected),
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(20.dp)
-                )
-            } else {
-                Surface(
-                    modifier = Modifier.size(20.dp),
-                    shape = CircleShape,
-                    border = BorderStroke(2.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.5f)),
-                    color = Color.Transparent
-                ) {}
-            }
-        }
-    }
-}
-
-@Composable
 fun CopyBehaviorSettings(
     clearInputAfterCopy: Boolean,
     askBeforeClear: Boolean,
@@ -1091,14 +918,6 @@ fun CopyBehaviorSettings(
 }
 
 // Data Classes
-data class ThemeColorOption(
-    val theme: AppTheme,
-    val name: String,
-    val description: String,
-    val primaryColor: Color,
-    val secondaryColor: Color
-)
-
 data class LanguageOption(
     val key: String,
     val name: String,

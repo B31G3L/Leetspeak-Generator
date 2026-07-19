@@ -128,6 +128,7 @@
     <string name="leet_selector_selected">Selected</string>
     <string name="leet_selector_edit">Edit</string>
     <string name="leet_selector_show_table">Show translation table</string>
+    <string name="modi_more_options">More options</string>
 
     <string name="translation_table_dialog_title">Translation table - %1$s</string>
     <string name="translation_table_card_title">Translation table</string>
@@ -176,24 +177,6 @@
 
     <string name="about_developer_info">Solo developer with passion</string>
     <string name="about_made_with_love">Made with ❤️ in Germany</string>
-
-    <string name="settings_color_theme">Color Theme</string>
-
-    <string name="theme_planit">PlanIt</string>
-    <string name="theme_planit_desc">Vibrant teal colors (PlanIt App Logo)</string>
-
-    <string name="theme_nextime">NexTime</string>
-    <string name="theme_nextime_desc">Warm orange tones (NexTime App Logo)</string>
-
-    <string name="theme_leetspeak">Leetspeak</string>
-    <string name="theme_leetspeak_desc">Deep violet theme (Leetspeak App Logo) (Default)</string>
-
-    <string name="theme_dailylist">DailyList</string>
-    <string name="theme_dailylist_desc">Fresh lime green colors (DailyList App Logo)</string>
-
-    <string name="theme_unknown">Unknown</string>
-    <string name="theme_unknown_desc">Bold red accent (Unknown App Logo)</string>
-
     <string name="clear_input_dialog_title">Clear input?</string>
     <string name="clear_input_dialog_message_normal">Do you want to clear the plaintext after copying?</string>
     <string name="clear_input_dialog_message_reverse">Do you want to clear the leetspeak text after copying?</string>
@@ -420,5 +403,6 @@
     <string name="reorder_mode_hint">Hold and drag the handle to reorder</string>
 
     <string name="settings_about_more">Mehr über die App</string>
+    <string name="leet_selector_add_favorite">Zu Favoriten hinzufügen</string>
 
 </resources>

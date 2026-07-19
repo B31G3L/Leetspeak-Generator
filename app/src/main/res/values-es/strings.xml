@@ -167,24 +167,6 @@
 
     <string name="about_developer_info">Desarrollador en solitario con pasión</string>
     <string name="about_made_with_love">Hecho con ❤️ en Alemania</string>
-
-    <string name="settings_color_theme">Tema de Color</string>
-
-    <string name="theme_planit">PlanIt</string>
-    <string name="theme_planit_desc">Colores verde azulado vibrantes (Logo de la App PlanIt)</string>
-
-    <string name="theme_nextime">NexTime</string>
-    <string name="theme_nextime_desc">Tonos anaranjados cálidos (Logo de la App NexTime)</string>
-
-    <string name="theme_leetspeak">Leetspeak</string>
-    <string name="theme_leetspeak_desc">Tema violeta profundo (Logo de la App Leetspeak) (Predeterminado)</string>
-
-    <string name="theme_dailylist">DailyList</string>
-    <string name="theme_dailylist_desc">Colores verde lima frescos (Logo de la App DailyList)</string>
-
-    <string name="theme_unknown">Desconocido</string>
-    <string name="theme_unknown_desc">Acento rojo audaz (Logo de la App Desconocida)</string>
-
     <string name="clear_input_dialog_title">¿Borrar la entrada?</string>
     <string name="clear_input_dialog_message_normal">¿Quieres borrar el texto sin formato después de copiar?</string>
     <string name="clear_input_dialog_message_reverse">¿Quieres borrar el texto leetspeak después de copiar?</string>

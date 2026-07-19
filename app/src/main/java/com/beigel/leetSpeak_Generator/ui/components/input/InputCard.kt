@@ -42,10 +42,19 @@ fun InputCard(
     title: String = "Input: Plaintext",
     onSpeechInput: ((String) -> Unit)? = null
 ) {
-    val accentColor = if (isReverseMode)
-        MaterialTheme.colorScheme.secondary
-    else
+    val bgColor = MaterialTheme.colorScheme.background
+    val isDarkTheme = (0.299f * bgColor.red + 0.587f * bgColor.green + 0.114f * bgColor.blue) < 0.5f
+
+    // Normal: primary (Violett). Reverse-Modus: einheitliche Reverse-Akzentfarbe (Türkis) —
+    // dieselbe Farbe wie OutputCard und das Reverse-Badge, für ein durchgängiges Bild.
+    val accentColor = if (isReverseMode) {
+        if (isDarkTheme)
+            com.beigel.leetSpeak_Generator.ui.theme.ReverseAccentDark
+        else
+            com.beigel.leetSpeak_Generator.ui.theme.ReverseAccentLight
+    } else {
         MaterialTheme.colorScheme.primary
+    }
 
     val textFieldDesc = stringResource(R.string.a11y_input_field, title)
 

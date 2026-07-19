@@ -14,7 +14,6 @@ import androidx.compose.ui.platform.LocalView
 @Composable
 fun LeetspeakGeneratorTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    appTheme: AppTheme = AppTheme.PLANIT,
     dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
@@ -24,8 +23,8 @@ fun LeetspeakGeneratorTheme(
             val context = LocalContext.current
             if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
         }
-        // Custom Themes
-        else -> getThemeColorScheme(appTheme, darkTheme)
+        // Fest definiertes App-Farbschema
+        else -> if (darkTheme) AppDarkColorScheme else AppLightColorScheme
     }
 
     val view = LocalView.current

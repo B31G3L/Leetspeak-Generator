@@ -17,7 +17,6 @@ import com.beigel.leetSpeak_Generator.presentation.intent.PendingDelete
 import com.beigel.leetSpeak_Generator.repository.LeetRepository
 import com.beigel.leetSpeak_Generator.review.InAppReviewManager
 import com.beigel.leetSpeak_Generator.translation.LeetTranslator
-import com.beigel.leetSpeak_Generator.ui.theme.AppTheme
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -48,9 +47,6 @@ class MainViewModel @Inject constructor(
 
     val themeMode: StateFlow<String> = themePreferences.themeMode
         .stateIn(viewModelScope, SharingStarted.Eagerly, ThemePreferences.THEME_SYSTEM)
-
-    val appTheme: StateFlow<AppTheme> = themePreferences.appTheme
-        .stateIn(viewModelScope, SharingStarted.Eagerly, AppTheme.PLANIT)
 
     val clearInputAfterCopy: StateFlow<Boolean> = themePreferences.clearInputAfterCopy
         .stateIn(viewModelScope, SharingStarted.Eagerly, false)

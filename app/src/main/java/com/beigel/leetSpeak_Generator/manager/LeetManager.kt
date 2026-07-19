@@ -16,7 +16,8 @@ class LeetManager(private val context: Context) {
         private const val PREFS_NAME        = "LeetSpeakProfiles"
         private const val LEETS_KEY         = "leets"
         private const val CURRENT_LEET_KEY  = "current_leet"
-        private const val FAVORITE_LEET_KEY = "favorite_leet"
+        private const val FAVORITE_LEET_KEY = "favorite_leet"          // Legacy: einzelner Favorit (Migration)
+        private const val FAVORITE_LEETS_KEY = "favorite_leets"        // Mehrere Favoriten, kommasepariert
         private const val OPTIONS_ORDER_KEY  = "options_order"
 
         const val MODE_SIMPLE   = 0
@@ -38,13 +39,13 @@ class LeetManager(private val context: Context) {
 
     private val _leets            = MutableStateFlow<List<CustomLeet>>(emptyList())
     private val _currentLeetIndex = MutableStateFlow(0)
-    private val _favoriteIndex    = MutableStateFlow(FAV_NONE)
+    private val _favoriteIndices  = MutableStateFlow<Set<Int>>(emptySet())
     private val _optionsOrder     = MutableStateFlow<List<Int>>(listOf(FAV_SIMPLE, FAV_EXTENDED))
     private val _isLoaded         = CompletableDeferred<Unit>()
 
     val leets:            StateFlow<List<CustomLeet>> = _leets.asStateFlow()
     val currentLeetIndex: StateFlow<Int>              = _currentLeetIndex.asStateFlow()
-    val favoriteIndex:    StateFlow<Int>              = _favoriteIndex.asStateFlow()
+    val favoriteIndices:  StateFlow<Set<Int>>         = _favoriteIndices.asStateFlow()
     val optionsOrder:     StateFlow<List<Int>>        = _optionsOrder.asStateFlow()
 
     val currentLeet: StateFlow<CustomLeet?> = combine(leets, currentLeetIndex) { leets, index ->
@@ -61,15 +62,23 @@ class LeetManager(private val context: Context) {
     private fun loadLeets() {
         scope.launch {
             try {
-                val leetsJson      = prefs.getString(LEETS_KEY, null)
-                val currentIndex   = prefs.getInt(CURRENT_LEET_KEY, 0)
-                val favoriteIndex  = prefs.getInt(FAVORITE_LEET_KEY, FAV_NONE)
-                val orderString    = prefs.getString(OPTIONS_ORDER_KEY, null)
+                val leetsJson       = prefs.getString(LEETS_KEY, null)
+                val currentIndex    = prefs.getInt(CURRENT_LEET_KEY, 0)
+                val favoritesString = prefs.getString(FAVORITE_LEETS_KEY, null)
+                val orderString     = prefs.getString(OPTIONS_ORDER_KEY, null)
 
                 val loadedLeets = if (leetsJson != null) {
                     val type = object : TypeToken<List<CustomLeet>>() {}.type
                     gson.fromJson<List<CustomLeet>>(leetsJson, type) ?: emptyList()
                 } else emptyList()
+
+                // Favoriten laden: neues Set-Format bevorzugen, sonst vom alten Einzel-Favoriten migrieren
+                val loadedFavorites = if (favoritesString != null) {
+                    favoritesString.split(",").mapNotNull { it.trim().toIntOrNull() }.toSet()
+                } else {
+                    val legacyFavorite = prefs.getInt(FAVORITE_LEET_KEY, FAV_NONE)
+                    if (legacyFavorite != FAV_NONE) setOf(legacyFavorite) else emptySet()
+                }
 
                 // Reihenfolge laden
                 val loadedOrder = if (orderString != null) {
@@ -84,7 +93,7 @@ class LeetManager(private val context: Context) {
                 withContext(Dispatchers.Main) {
                     _leets.value            = loadedLeets
                     _currentLeetIndex.value = currentIndex.coerceIn(0, maxOf(0, loadedLeets.size - 1))
-                    _favoriteIndex.value    = favoriteIndex
+                    _favoriteIndices.value  = loadedFavorites
                     _optionsOrder.value     = loadedOrder
                 }
             } catch (e: Exception) {
@@ -92,7 +101,7 @@ class LeetManager(private val context: Context) {
                 withContext(Dispatchers.Main) {
                     _leets.value            = emptyList()
                     _currentLeetIndex.value = 0
-                    _favoriteIndex.value    = FAV_NONE
+                    _favoriteIndices.value  = emptySet()
                     _optionsOrder.value     = listOf(FAV_SIMPLE, FAV_EXTENDED)
                 }
             } finally {
@@ -107,7 +116,8 @@ class LeetManager(private val context: Context) {
         prefs.edit()
             .putString(LEETS_KEY, gson.toJson(_leets.value))
             .putInt(CURRENT_LEET_KEY, _currentLeetIndex.value)
-            .putInt(FAVORITE_LEET_KEY, _favoriteIndex.value)
+            .putString(FAVORITE_LEETS_KEY, _favoriteIndices.value.joinToString(","))
+            .remove(FAVORITE_LEET_KEY) // Legacy-Key nicht mehr benötigt
             .apply()
     }
 
@@ -141,8 +151,10 @@ class LeetManager(private val context: Context) {
             val safeIndex    = index.coerceIn(0, currentLeets.size)
             currentLeets.add(safeIndex, leet)
 
-            if (_favoriteIndex.value >= safeIndex) {
-                _favoriteIndex.value = _favoriteIndex.value + 1
+            if (_favoriteIndices.value.isNotEmpty()) {
+                _favoriteIndices.value = _favoriteIndices.value.map { fav ->
+                    if (fav >= safeIndex) fav + 1 else fav
+                }.toSet()
             }
 
             // Indizes in der Reihenfolge anpassen
@@ -173,13 +185,13 @@ class LeetManager(private val context: Context) {
             require(index in 0 until _leets.value.size) { "Ungültiger Index: $index" }
             val currentLeets = _leets.value.toMutableList()
             val deletedLeet  = currentLeets.removeAt(index)
-            val wasFavorite  = _favoriteIndex.value == index
+            val wasFavorite  = _favoriteIndices.value.contains(index)
             val wasLastLeet  = currentLeets.isEmpty()
 
-            when {
-                _favoriteIndex.value == index -> _favoriteIndex.value = FAV_NONE
-                _favoriteIndex.value > index  -> _favoriteIndex.value = _favoriteIndex.value - 1
-            }
+            _favoriteIndices.value = _favoriteIndices.value
+                .filter { it != index }
+                .map { fav -> if (fav > index) fav - 1 else fav }
+                .toSet()
 
             val newCurrentIndex = when {
                 currentLeets.isEmpty()                        -> 0
@@ -220,23 +232,6 @@ class LeetManager(private val context: Context) {
             saveLeets()
         }
 
-    suspend fun setFavorite(mode: Int, customIndex: Int = 0): ErrorHandler.Result<Unit> =
-        ErrorHandler.safeExecuteSuspend(context, "Failed to set favorite") {
-            val favoriteIndex = when (mode) {
-                MODE_SIMPLE   -> FAV_SIMPLE
-                MODE_EXTENDED -> FAV_EXTENDED
-                MODE_CUSTOM   -> {
-                    require(customIndex in 0 until _leets.value.size) {
-                        "Ungültiger Custom-Index: $customIndex"
-                    }
-                    customIndex
-                }
-                else -> throw IllegalArgumentException("Ungültiger Modus: $mode")
-            }
-            _favoriteIndex.value = favoriteIndex
-            saveLeets()
-        }
-
     suspend fun toggleFavorite(mode: Int, customIndex: Int = 0): ErrorHandler.Result<Boolean> =
         ErrorHandler.safeExecuteSuspend(context, "Failed to toggle favorite") {
             val targetIndex = when (mode) {
@@ -245,8 +240,12 @@ class LeetManager(private val context: Context) {
                 MODE_CUSTOM   -> customIndex
                 else          -> throw IllegalArgumentException("Ungültiger Modus: $mode")
             }
-            val isCurrentlyFavorite = _favoriteIndex.value == targetIndex
-            _favoriteIndex.value    = if (isCurrentlyFavorite) FAV_NONE else targetIndex
+            val isCurrentlyFavorite = _favoriteIndices.value.contains(targetIndex)
+            _favoriteIndices.value = if (isCurrentlyFavorite) {
+                _favoriteIndices.value - targetIndex
+            } else {
+                _favoriteIndices.value + targetIndex
+            }
             saveLeets()
             !isCurrentlyFavorite
         }
@@ -258,20 +257,31 @@ class LeetManager(private val context: Context) {
             MODE_CUSTOM   -> customIndex
             else          -> return false
         }
-        return _favoriteIndex.value == targetIndex
+        return _favoriteIndices.value.contains(targetIndex)
     }
 
-    suspend fun getFavoriteLeetInfo(): FavoriteLeetInfo? {
+    /**
+     * Liefert alle als Favorit markierten Modi, sortiert nach der aktuellen
+     * Anzeige-Reihenfolge (optionsOrder). Wird u.a. beim App-Start genutzt,
+     * um einen Startmodus vorzuschlagen (der erste Favorit in der Reihenfolge).
+     */
+    suspend fun getFavoriteLeetInfos(): List<FavoriteLeetInfo> {
         ensureLoaded()
-        return when (val favIndex = _favoriteIndex.value) {
-            FAV_SIMPLE   -> FavoriteLeetInfo(MODE_SIMPLE, -1, null)
-            FAV_EXTENDED -> FavoriteLeetInfo(MODE_EXTENDED, -1, null)
-            FAV_NONE     -> null
-            else         -> {
-                val leet = _leets.value.getOrNull(favIndex)
-                if (leet != null) FavoriteLeetInfo(MODE_CUSTOM, favIndex, leet) else null
+        val favorites = _favoriteIndices.value
+        if (favorites.isEmpty()) return emptyList()
+
+        return _optionsOrder.value
+            .filter { it in favorites }
+            .mapNotNull { favIndex ->
+                when (favIndex) {
+                    FAV_SIMPLE   -> FavoriteLeetInfo(MODE_SIMPLE, -1, null)
+                    FAV_EXTENDED -> FavoriteLeetInfo(MODE_EXTENDED, -1, null)
+                    else -> {
+                        val leet = _leets.value.getOrNull(favIndex)
+                        if (leet != null) FavoriteLeetInfo(MODE_CUSTOM, favIndex, leet) else null
+                    }
+                }
             }
-        }
     }
 
     suspend fun createLeetWithSimpleDefaults(name: String): ErrorHandler.Result<CustomLeet> =

@@ -30,8 +30,9 @@ private enum class ModiFilter { ALL, FAVORITES, CUSTOM }
 
 /**
  * Modi-Vollbildschirm (Redesign v4) — ersetzt die alte LeetSelectorBottomSheet.
- * Header (Zurück + "Modi" + "+ Neu"), Filter-Chips (Alle/Favoriten/Eigene),
+ * Header (Zurück + "Modi"), Filter-Chips (Alle/Favoriten/Eigene),
  * Modus-Liste als Karten mit Favoriten-Stern, Tabellen-Icon, Edit/Delete für Eigene.
+ * Neuer Modus wird über den FAB unten rechts erstellt.
  */
 @Composable
 fun ModiScreen(
@@ -71,16 +72,15 @@ fun ModiScreen(
                 }
             )
         } else {
-            Column(modifier = Modifier.fillMaxSize()) {
-                // Header: Zurück + "Modi" + "+ Neu"
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 18.dp, vertical = 12.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
+            Box(modifier = Modifier.fillMaxSize()) {
+                Column(modifier = Modifier.fillMaxSize()) {
+                    // Header: Zurück + "Modi"
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 18.dp, vertical = 12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
                         Surface(
                             onClick = onDismiss,
                             shape = androidx.compose.foundation.shape.CircleShape,
@@ -104,80 +104,70 @@ fun ModiScreen(
                         )
                     }
 
-                    Surface(
-                        onClick = { showLeetCreationDialog = true },
-                        shape = PillShape,
-                        color = MaterialTheme.colorScheme.secondaryContainer
+                    // Filter-Chips
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 18.dp)
+                            .padding(bottom = 12.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        Row(
-                            modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Add,
-                                contentDescription = null,
-                                modifier = Modifier.size(16.dp),
-                                tint = MaterialTheme.colorScheme.onSecondaryContainer
-                            )
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text(
-                                text = stringResource(R.string.leet_selector_new),
-                                style = MaterialTheme.typography.labelLarge,
-                                color = MaterialTheme.colorScheme.onSecondaryContainer
+                        FilterChip(
+                            label = stringResource(R.string.modi_filter_all),
+                            selected = filter == ModiFilter.ALL,
+                            onClick = { filter = ModiFilter.ALL }
+                        )
+                        FilterChip(
+                            label = stringResource(R.string.modi_filter_favorites),
+                            selected = filter == ModiFilter.FAVORITES,
+                            onClick = { filter = ModiFilter.FAVORITES }
+                        )
+                        FilterChip(
+                            label = stringResource(R.string.modi_filter_custom),
+                            selected = filter == ModiFilter.CUSTOM,
+                            onClick = { filter = ModiFilter.CUSTOM }
+                        )
+                    }
+
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize(),
+                        contentPadding = PaddingValues(start = 18.dp, end = 18.dp, top = 4.dp, bottom = 88.dp),
+                        verticalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        items(filteredOptions, key = { it.mode.toString() + "_" + it.customIndex }) { option ->
+                            ModiCard(
+                                option = option,
+                                onSelect = {
+                                    viewModel.handleIntent(MainIntent.ChangeMode(option))
+                                    onDismiss()
+                                },
+                                onToggleFavorite = { viewModel.handleIntent(MainIntent.ToggleFavorite(option)) },
+                                onEdit = {
+                                    currentEditOption = option
+                                    showLeetEditDialog = true
+                                },
+                                onDelete = { pendingDeleteOption = option },
+                                onShowTable = {
+                                    currentTableOption = option
+                                    showTranslationTableDialog = true
+                                }
                             )
                         }
                     }
                 }
 
-                // Filter-Chips
-                Row(
+                FloatingActionButton(
+                    onClick = { showLeetCreationDialog = true },
+                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 18.dp)
-                        .padding(bottom = 12.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        .align(Alignment.BottomEnd)
+                        .padding(20.dp)
                 ) {
-                    FilterChip(
-                        label = stringResource(R.string.modi_filter_all),
-                        selected = filter == ModiFilter.ALL,
-                        onClick = { filter = ModiFilter.ALL }
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = stringResource(R.string.leet_selector_new)
                     )
-                    FilterChip(
-                        label = stringResource(R.string.modi_filter_favorites),
-                        selected = filter == ModiFilter.FAVORITES,
-                        onClick = { filter = ModiFilter.FAVORITES }
-                    )
-                    FilterChip(
-                        label = stringResource(R.string.modi_filter_custom),
-                        selected = filter == ModiFilter.CUSTOM,
-                        onClick = { filter = ModiFilter.CUSTOM }
-                    )
-                }
-
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(horizontal = 18.dp, vertical = 4.dp),
-                    verticalArrangement = Arrangement.spacedBy(10.dp)
-                ) {
-                    items(filteredOptions, key = { it.mode.toString() + "_" + it.customIndex }) { option ->
-                        ModiCard(
-                            option = option,
-                            onSelect = {
-                                viewModel.handleIntent(MainIntent.ChangeMode(option))
-                                onDismiss()
-                            },
-                            onToggleFavorite = { viewModel.handleIntent(MainIntent.ToggleFavorite(option)) },
-                            onEdit = {
-                                currentEditOption = option
-                                showLeetEditDialog = true
-                            },
-                            onDelete = { pendingDeleteOption = option },
-                            onShowTable = {
-                                currentTableOption = option
-                                showTranslationTableDialog = true
-                            }
-                        )
-                    }
                 }
             }
         }
@@ -286,19 +276,17 @@ private fun ModiCard(
                 .padding(horizontal = 14.dp, vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            IconButton(onClick = onToggleFavorite, modifier = Modifier.size(28.dp)) {
-                Icon(
-                    imageVector = if (option.isFavorite) Icons.Default.Star else Icons.Default.StarBorder,
-                    contentDescription = stringResource(R.string.leet_selector_toggle_favorite),
-                    modifier = Modifier.size(18.dp),
-                    tint = if (option.isFavorite) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-
-            Spacer(modifier = Modifier.width(6.dp))
-
             Column(modifier = Modifier.weight(1f)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
+                    if (option.isFavorite) {
+                        Icon(
+                            imageVector = Icons.Default.Star,
+                            contentDescription = stringResource(R.string.content_description_favorite),
+                            modifier = Modifier.size(16.dp),
+                            tint = MaterialTheme.colorScheme.secondary
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                    }
                     Text(
                         text = option.name,
                         style = MaterialTheme.typography.bodyLarge,
@@ -331,48 +319,87 @@ private fun ModiCard(
                 )
             }
 
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                if (option.isSelected) {
-                    Box(
-                        modifier = Modifier
-                            .size(22.dp)
-                            .background(MaterialTheme.colorScheme.primary, androidx.compose.foundation.shape.CircleShape),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Check,
-                            contentDescription = stringResource(R.string.leet_selector_selected),
-                            modifier = Modifier.size(14.dp),
-                            tint = MaterialTheme.colorScheme.onPrimary
-                        )
-                    }
-                    Spacer(modifier = Modifier.width(6.dp))
-                }
+            var menuExpanded by remember { mutableStateOf(false) }
 
-                IconButton(onClick = onShowTable, modifier = Modifier.size(32.dp)) {
+            Box {
+                IconButton(onClick = { menuExpanded = true }, modifier = Modifier.size(32.dp)) {
                     Icon(
-                        imageVector = Icons.Default.TableChart,
-                        contentDescription = stringResource(R.string.leet_selector_show_table),
+                        imageVector = Icons.Default.MoreVert,
+                        contentDescription = stringResource(R.string.modi_more_options),
                         modifier = Modifier.size(18.dp),
                         tint = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
-
-                if (option.isCustom) {
-                    IconButton(onClick = onEdit, modifier = Modifier.size(32.dp)) {
-                        Icon(
-                            imageVector = Icons.Default.Edit,
-                            contentDescription = stringResource(R.string.leet_selector_edit),
-                            modifier = Modifier.size(16.dp),
-                            tint = MaterialTheme.colorScheme.primary
+                DropdownMenu(
+                    expanded = menuExpanded,
+                    onDismissRequest = { menuExpanded = false }
+                ) {
+                    DropdownMenuItem(
+                        text = { Text(stringResource(R.string.leet_selector_show_table)) },
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Default.TableChart,
+                                contentDescription = null
+                            )
+                        },
+                        onClick = {
+                            menuExpanded = false
+                            onShowTable()
+                        }
+                    )
+                    DropdownMenuItem(
+                        text = {
+                            Text(
+                                if (option.isFavorite)
+                                    stringResource(R.string.leet_selector_remove_favorite)
+                                else
+                                    stringResource(R.string.leet_selector_add_favorite)
+                            )
+                        },
+                        leadingIcon = {
+                            Icon(
+                                imageVector = if (option.isFavorite) Icons.Default.Star else Icons.Default.StarBorder,
+                                contentDescription = null,
+                                tint = if (option.isFavorite) MaterialTheme.colorScheme.secondary else LocalContentColor.current
+                            )
+                        },
+                        onClick = {
+                            menuExpanded = false
+                            onToggleFavorite()
+                        }
+                    )
+                    if (option.isCustom) {
+                        DropdownMenuItem(
+                            text = { Text(stringResource(R.string.leet_selector_edit)) },
+                            leadingIcon = {
+                                Icon(
+                                    imageVector = Icons.Default.Edit,
+                                    contentDescription = null
+                                )
+                            },
+                            onClick = {
+                                menuExpanded = false
+                                onEdit()
+                            }
                         )
-                    }
-                    IconButton(onClick = onDelete, modifier = Modifier.size(32.dp)) {
-                        Icon(
-                            imageVector = Icons.Default.Delete,
-                            contentDescription = stringResource(R.string.leet_selector_delete),
-                            modifier = Modifier.size(16.dp),
-                            tint = MaterialTheme.colorScheme.error
+                        DropdownMenuItem(
+                            text = {
+                                Text(
+                                    stringResource(R.string.leet_selector_delete),
+                                    color = MaterialTheme.colorScheme.error
+                                )
+                            },
+                            leadingIcon = {
+                                Icon(
+                                    imageVector = Icons.Default.Delete,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.error
+                                )
+                            },
+                            onClick = {
+                                menuExpanded = false
+                                onDelete()
+                            }
                         )
                     }
                 }

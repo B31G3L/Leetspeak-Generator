@@ -20,7 +20,7 @@ class LeetRepository @Inject constructor(
     val currentLeet:      StateFlow<CustomLeet?>      = leetManager.currentLeet
     val currentLeetIndex: StateFlow<Int>              = leetManager.currentLeetIndex
     val hasLeets:         StateFlow<Boolean>          = leetManager.hasLeets
-    val favoriteIndex:    StateFlow<Int>              = leetManager.favoriteIndex
+    val favoriteIndices:  StateFlow<Set<Int>>         = leetManager.favoriteIndices
     val optionsOrder:     StateFlow<List<Int>>        = leetManager.optionsOrder
 
     suspend fun createLeet(request: LeetCreationRequest): Result<LeetCreationResult> {
@@ -100,7 +100,7 @@ class LeetRepository @Inject constructor(
 
     suspend fun loadFavoriteLeet(): Result<FavoriteLeetResult> {
         return try {
-            val favoriteInfo = leetManager.getFavoriteLeetInfo()
+            val favoriteInfo = leetManager.getFavoriteLeetInfos().firstOrNull()
             val result = when {
                 favoriteInfo == null                              -> FavoriteLeetResult.simple()
                 favoriteInfo.mode == LeetManager.MODE_SIMPLE     -> FavoriteLeetResult.simple()
@@ -155,26 +155,26 @@ class LeetRepository @Inject constructor(
     }
 
     fun getLeetOptions(): Flow<List<LeetOption>> = combine(
-        leets, favoriteIndex, optionsOrder
-    ) { leets, favIdx, order ->
+        leets, favoriteIndices, optionsOrder
+    ) { leets, favIndices, order ->
         // Alle Optionen aufbauen
         val allOptions = mutableMapOf<Int, LeetOption>()
 
         allOptions[LeetManager.FAV_SIMPLE] = LeetOption.createSimple(
             context,
             isSelected = false,
-            isFavorite = favIdx == LeetManager.FAV_SIMPLE
+            isFavorite = LeetManager.FAV_SIMPLE in favIndices
         )
         allOptions[LeetManager.FAV_EXTENDED] = LeetOption.createExtended(
             context,
             isSelected = false,
-            isFavorite = favIdx == LeetManager.FAV_EXTENDED
+            isFavorite = LeetManager.FAV_EXTENDED in favIndices
         )
         leets.forEachIndexed { index, leet ->
             allOptions[index] = LeetOption.createCustom(
                 context, leet, index,
                 isSelected = false,
-                isFavorite = favIdx == index
+                isFavorite = index in favIndices
             )
         }
 

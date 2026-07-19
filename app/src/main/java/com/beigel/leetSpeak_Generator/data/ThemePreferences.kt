@@ -6,7 +6,6 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.preferencesDataStore
-import com.beigel.leetSpeak_Generator.ui.theme.AppTheme
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
@@ -16,7 +15,6 @@ class ThemePreferences(private val context: Context) {
 
     companion object {
         private val THEME_KEY = androidx.datastore.preferences.core.stringPreferencesKey("theme_preference")
-        private val APP_THEME_KEY = androidx.datastore.preferences.core.stringPreferencesKey("app_theme_preference")
         private val DEFAULT_VIEW_EXPANDED_KEY = androidx.datastore.preferences.core.booleanPreferencesKey("default_view_expanded")
         private val LANGUAGE_KEY = androidx.datastore.preferences.core.stringPreferencesKey("language_preference")
         private val HAPTIC_FEEDBACK_KEY = booleanPreferencesKey("haptic_feedback_enabled")
@@ -44,16 +42,6 @@ class ThemePreferences(private val context: Context) {
         preferences[THEME_KEY] ?: THEME_SYSTEM
     }
 
-    // App Theme (Color Scheme) Preference
-    val appTheme: Flow<AppTheme> = context.dataStore.data.map { preferences ->
-        val themeName = preferences[APP_THEME_KEY] ?: AppTheme.LEETSPEAK.name
-        try {
-            AppTheme.valueOf(themeName)
-        } catch (e: IllegalArgumentException) {
-            AppTheme.LEETSPEAK // Fallback
-        }
-    }
-
     val defaultViewExpanded: Flow<Boolean> = context.dataStore.data.map { preferences ->
         preferences[DEFAULT_VIEW_EXPANDED_KEY] ?: false
     }
@@ -77,12 +65,6 @@ class ThemePreferences(private val context: Context) {
     suspend fun setTheme(theme: String) {
         context.dataStore.edit { preferences ->
             preferences[THEME_KEY] = theme
-        }
-    }
-
-    suspend fun setAppTheme(appTheme: AppTheme) {
-        context.dataStore.edit { preferences ->
-            preferences[APP_THEME_KEY] = appTheme.name
         }
     }
 

@@ -44,10 +44,20 @@ fun OutputCard(
         containerColor = MaterialTheme.colorScheme.surface
     )
 
-    // Ausgabe-Akzentfarbe ist im Redesign immer "secondary" (Pink), unabhängig von der Richtung —
-    // die Richtung wird bereits über die Eingabekarte + den Swap-Button kommuniziert.
-    val headerTextColor = MaterialTheme.colorScheme.secondary
-    val borderColor = MaterialTheme.colorScheme.secondary
+    // Normal: secondary (Pink). Reverse-Modus: zweiter Reverse-Akzentton (Blau) — verwandt
+    // mit dem Türkis von InputCard/Badge, aber unterscheidbar von der Eingabekarte.
+    val bgColorForMode = MaterialTheme.colorScheme.background
+    val isDarkThemeForAccent = (0.299f * bgColorForMode.red + 0.587f * bgColorForMode.green + 0.114f * bgColorForMode.blue) < 0.5f
+
+    val headerTextColor = if (isReverseMode) {
+        if (isDarkThemeForAccent)
+            com.beigel.leetSpeak_Generator.ui.theme.ReverseAccentSecondaryDark
+        else
+            com.beigel.leetSpeak_Generator.ui.theme.ReverseAccentSecondaryLight
+    } else {
+        MaterialTheme.colorScheme.secondary
+    }
+    val borderColor = headerTextColor
 
     val textFieldDesc = stringResource(R.string.a11y_output_field, currentMode)
 
@@ -66,7 +76,7 @@ fun OutputCard(
         Card(
             colors = cardColors,
             shape = MaterialTheme.shapes.medium,
-            border = androidx.compose.foundation.BorderStroke(1.5.dp, MaterialTheme.colorScheme.outlineVariant)
+            border = androidx.compose.foundation.BorderStroke(1.5.dp, borderColor)
         ) {
             Column(
                 modifier = Modifier

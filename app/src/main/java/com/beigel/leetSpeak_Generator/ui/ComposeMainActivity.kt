@@ -10,6 +10,7 @@ import android.os.Bundle
 import android.os.VibrationEffect
 import android.os.Vibrator
 import androidx.activity.compose.setContent
+import androidx.activity.compose.BackHandler
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.animation.core.*
@@ -75,7 +76,6 @@ class ComposeMainActivity : AppCompatActivity() {
 
         setContent {
             val themeMode             by viewModel.themeMode.collectAsStateWithLifecycle()
-            val appTheme              by viewModel.appTheme.collectAsStateWithLifecycle()
             val isOnboardingCompleted by viewModel.isOnboardingCompleted.collectAsStateWithLifecycle()
 
             val isDarkTheme = when (themeMode) {
@@ -85,8 +85,7 @@ class ComposeMainActivity : AppCompatActivity() {
             }
 
             LeetspeakGeneratorTheme(
-                darkTheme = isDarkTheme,
-                appTheme  = appTheme
+                darkTheme = isDarkTheme
             ) {
                 if (!isOnboardingCompleted) {
                     OnboardingScreen(
@@ -180,6 +179,11 @@ fun MainScreen(
         stringResource(R.string.output_prefix) + currentModeDisplayName
     }
 
+    // Für die Wahl der Reverse-Akzentfarbe: aktuellen Modus (hell/dunkel) anhand
+    // der Hintergrundhelligkeit bestimmen, statt einen weiteren Parameter durchzureichen.
+    val bgColor = MaterialTheme.colorScheme.background
+    val isDarkTheme = (0.299f * bgColor.red + 0.587f * bgColor.green + 0.114f * bgColor.blue) < 0.5f
+
     Box(modifier = Modifier.fillMaxSize()) {
         Scaffold(
             modifier = Modifier
@@ -198,13 +202,19 @@ fun MainScreen(
                             if (isReverseMode) {
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Surface(
-                                    color = MaterialTheme.colorScheme.tertiary,
+                                    color = if (isDarkTheme)
+                                        com.beigel.leetSpeak_Generator.ui.theme.ReverseAccentDark
+                                    else
+                                        com.beigel.leetSpeak_Generator.ui.theme.ReverseAccentLight,
                                     shape = androidx.compose.foundation.shape.CircleShape
                                 ) {
                                     Text(
                                         text       = stringResource(R.string.reverse_badge),
                                         modifier   = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
-                                        color      = MaterialTheme.colorScheme.onTertiary,
+                                        color      = if (isDarkTheme)
+                                            com.beigel.leetSpeak_Generator.ui.theme.OnReverseAccentDark
+                                        else
+                                            com.beigel.leetSpeak_Generator.ui.theme.OnReverseAccentLight,
                                         fontSize   = 12.sp,
                                         fontWeight = FontWeight.Bold
                                     )
@@ -313,6 +323,12 @@ fun MainScreen(
         // Modi-Vollbildschirm als eigene Ebene ÜBER dem Scaffold (inkl. TopAppBar/BottomNav),
         // sonst würde er hinter TopAppBar/BottomPillNav versteckt liegen.
         if (showBottomSheet) {
+            // Fängt System-Zurück-Taste UND Zurück-Geste (Swipe) ab, damit sie den
+            // Modi-Screen schließen statt die Activity zu verlassen.
+            BackHandler(enabled = true) {
+                showBottomSheet = false
+            }
+
             ModiScreen(
                 viewModel = viewModel,
                 onDismiss = { showBottomSheet = false },
@@ -446,7 +462,7 @@ private fun BottomPillNav(
                 }
             }
 
-            // Modus-Segment: Punkt + Name + Chevron
+            // Modus-Segment: Name + Chevron
             val modeDesc = stringResource(R.string.a11y_mode_selector, currentMode)
             Row(
                 modifier = Modifier
@@ -458,12 +474,6 @@ private fun BottomPillNav(
                     .clickable(onClick = onModeSelectorClick),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Box(
-                    modifier = Modifier
-                        .size(8.dp)
-                        .background(MaterialTheme.colorScheme.primary, androidx.compose.foundation.shape.CircleShape)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
                 Text(
                     text = currentMode,
                     style = MaterialTheme.typography.bodyMedium,
