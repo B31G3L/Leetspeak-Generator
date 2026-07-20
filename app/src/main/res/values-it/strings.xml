@@ -29,7 +29,10 @@
     <string name="settings_widget_no_favorite">Nessun preferito selezionato</string>
     <string name="settings_widget_description">Il widget utilizza la tua modalità leet preferita</string>
     <string name="settings_about_app">Informazioni sull\'app</string>
+    <string name="settings_support">Supporto</string>
+    <string name="settings_replay_onboarding">Mostra di nuovo l\'introduzione</string>
     <string name="settings_about_description">Trasforma il testo in fantastico leetspeak con modalità e temi personalizzati.</string>
+    <string name="settings_about_more">Altro sull\'app</string>
 
     <string name="theme_system">Sistema</string>
     <string name="theme_system_desc">Segui le impostazioni di sistema</string>
@@ -117,10 +120,19 @@
     <string name="leet_selector_list_view">Vista a lista</string>
     <string name="leet_selector_toggle_favorite">Attiva/disattiva preferito</string>
     <string name="leet_selector_remove_favorite">Rimuovi dai preferiti</string>
+    <string name="leet_selector_add_favorite">Aggiungi ai preferiti</string>
     <string name="leet_selector_selected">Selezionato</string>
     <string name="leet_selector_edit">Modifica</string>
     <string name="leet_selector_show_table">Mostra tabella di traduzione</string>
+    <string name="modi_back">Indietro</string>
+    <string name="modi_screen_title">Modalità</string>
+    <string name="modi_filter_all">Tutti</string>
+    <string name="modi_filter_favorites">Preferiti</string>
+    <string name="modi_filter_custom">Personalizzati</string>
+    <string name="modi_custom_badge">Personalizzato</string>
+    <string name="modi_more_options">Altre opzioni</string>
 
+    <string name="translation_table_card_title">Tabella di traduzione</string>
     <string name="translation_table_dialog_title">Tabella di traduzione - %1$s</string>
     <string name="translation_table_close">Chiudi</string>
     <string name="translation_table_plain">Normale</string>
@@ -164,6 +176,7 @@
     <string name="about_support_message">Se ti piace l\'app, apprezzerei molto il tuo supporto! Una buona valutazione o un piccolo caffè mi aiuta molto a continuare a sviluppare.</string>
     <string name="about_support_thanks">Grazie per il tuo supporto! Ogni valutazione e ogni caffè mi motiva a sviluppare app ancora migliori. ❤️</string>
     <string name="kofi_support_short">Ko-Fi</string>
+    <string name="discord_support_short">Discord</string>
 
     <string name="about_developer_info">Sviluppatore solista con passione</string>
     <string name="about_made_with_love">Fatto con ❤️ in Germania</string>
@@ -323,6 +336,7 @@
     <string name="leet_option_custom_name">Personalizzato</string>
 
     <string name="url_kofi">https://ko-fi.com/beigel</string>
+    <string name="discord_invite_url" translatable="false">https://discord.gg/ww9DEnFUJp</string>
     <string name="url_play_store">https://play.google.com/store/apps/details?id=com.beigel.leetSpeak_Generator</string>
 
     <string name="content_description_favorite">Preferito</string>
@@ -346,12 +360,12 @@
     <string name="onboarding_skip">Salta</string>
     <string name="onboarding_next">Avanti</string>
     <string name="onboarding_start">Andiamo!</string>
-    <string name="onboarding_1_title">Trasforma il testo</string>
-    <string name="onboarding_1_desc">Converti qualsiasi testo in fantastico Leetspeak con un solo tocco.</string>
-    <string name="onboarding_2_title">Crea il tuo</string>
-    <string name="onboarding_2_desc">Crea profili Leet personalizzati con le tue mappature di caratteri.</string>
-    <string name="onboarding_3_title">Salva i tuoi preferiti</string>
-    <string name="onboarding_3_desc">Segna la tua modalità Leet preferita per un accesso rapido.</string>
+    <string name="onboarding_app_title">Trasforma il testo</string>
+    <string name="onboarding_app_desc">Converti qualsiasi testo in Leetspeak con un tocco. Semplice, Esteso o il tuo stile personalizzato — segna la tua modalità preferita per un accesso rapido a ogni avvio.</string>
+
+    <string name="onboarding_about_me_title">Creato da uno sviluppatore solista</string>
+    <string name="onboarding_about_me_desc">Ciao! 👋 Sono uno sviluppatore solista che ha creato questa app per passione per la codifica e il leetspeak. Sempre gratuita, senza pubblicità.</string>
+    <string name="onboarding_support_hint">Se ti piace l\'app, una valutazione, un caffè o unirti al Discord mi aiutano molto a continuare a svilupparla.</string>
     <string name="a11y_reverse_mode_active">Modalità inversa attiva, tocca per cambiare</string>
     <string name="a11y_reverse_mode_inactive">Modalità normale, tocca per la modalità inversa</string>
     <string name="a11y_mode_selector">Modalità attuale: %1$s. Tocca per cambiare.</string>

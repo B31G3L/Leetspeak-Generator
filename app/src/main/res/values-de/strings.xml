@@ -32,6 +32,7 @@
     <string name="settings_support">Support</string>
     <string name="settings_replay_onboarding">Einführung erneut anzeigen</string>
     <string name="settings_about_description">Verwandle Text in fantastisches Leetspeak mit benutzerdefinierten Modi und Themes.</string>
+    <string name="settings_about_more">Mehr über die App</string>
 
     <string name="theme_system">System</string>
     <string name="theme_system_desc">Systemeinstellung folgen</string>
@@ -125,9 +126,11 @@
     <string name="leet_selector_list_view">Listenansicht</string>
     <string name="leet_selector_toggle_favorite">Favorit umschalten</string>
     <string name="leet_selector_remove_favorite">Aus Favoriten entfernen</string>
+    <string name="leet_selector_add_favorite">Zu Favoriten hinzufügen</string>
     <string name="leet_selector_selected">Ausgewählt</string>
     <string name="leet_selector_edit">Bearbeiten</string>
     <string name="leet_selector_show_table">Übersetzungstabelle anzeigen</string>
+    <string name="modi_more_options">Weitere Optionen</string>
 
     <string name="translation_table_dialog_title">Übersetzungstabelle - %1$s</string>
     <string name="translation_table_card_title">Übersetzungstabelle</string>
@@ -173,6 +176,7 @@
     <string name="about_support_message">Wenn dir die App gefällt, würde ich mich sehr über deine Unterstützung freuen! Eine gute Bewertung oder ein kleiner Kaffee hilft mir sehr bei der Weiterentwicklung.</string>
     <string name="about_support_thanks">Vielen Dank für deine Unterstützung! Jede Bewertung und jeder Kaffee motiviert mich, noch bessere Apps zu entwickeln. ❤️</string>
     <string name="kofi_support_short">Ko-Fi</string>
+    <string name="discord_support_short">Discord</string>
 
     <string name="about_developer_info">Solo-Entwickler mit Leidenschaft</string>
     <string name="about_made_with_love">Mit ❤️ in Deutschland entwickelt</string>
@@ -224,6 +228,7 @@
 
     <string name="copied">Kopiert!</string>
     <string name="copy_text">Text kopieren</string>
+    <string name="char_count">%1$d Zeichen</string>
     <string name="clear">Löschen</string>
     <string name="clipboard_label">Leetspeak Text</string>
 
@@ -332,6 +337,7 @@
     <string name="leet_option_custom_name">Benutzerdefiniert</string>
 
     <string name="url_kofi">https://ko-fi.com/beigel</string>
+    <string name="discord_invite_url" translatable="false">https://discord.gg/ww9DEnFUJp</string>
     <string name="url_play_store">https://play.google.com/store/apps/details?id=com.beigel.leetSpeak_Generator</string>
 
     <string name="content_description_favorite">Favorit</string>
@@ -369,16 +375,12 @@
     <string name="onboarding_skip">Überspringen</string>
     <string name="onboarding_next">Weiter</string>
     <string name="onboarding_start">Los geht\'s!</string>
+    <string name="onboarding_app_title">Text umwandeln</string>
+    <string name="onboarding_app_desc">Verwandle jeden Text mit einem Tipp in Leetspeak. Einfach, Erweitert oder dein eigener Stil — markiere deinen Lieblingsmodus für schnellen Zugriff bei jedem Start.</string>
 
-    <string name="onboarding_1_title">Text umwandeln</string>
-    <string name="onboarding_1_desc">Verwandle jeden Text mit einem Tipp in cooles Leetspeak. Einfach, Erweitert oder dein eigener Stil.</string>
-
-    <string name="onboarding_2_title">Eigene Profile erstellen</string>
-    <string name="onboarding_2_desc">Erstelle eigene Leet-Profile mit deinen eigenen Zeichenzuordnungen. Mach es zu deinem ganz persönlichen Stil.</string>
-    <string name="char_count">%1$d zeichen</string>
-
-    <string name="onboarding_3_title">Favoriten speichern</string>
-    <string name="onboarding_3_desc">Markiere deinen Lieblings-Leet-Modus für schnellen Zugriff. Die App merkt sich deine Einstellung bei jedem Start.</string>
+    <string name="onboarding_about_me_title">Von einem Solo-Entwickler</string>
+    <string name="onboarding_about_me_desc">Hallo! 👋 Ich bin ein Solo-Entwickler, der diese App aus Leidenschaft für das Codieren und Leetspeak erstellt hat. Immer kostenlos, ohne Werbung.</string>
+    <string name="onboarding_support_hint">Wenn dir die App gefällt, hilft mir eine Bewertung, ein Kaffee oder der Discord sehr bei der Weiterentwicklung.</string>
     <string name="a11y_reverse_mode_active">Rückwärts-Modus aktiv, tippen zum Wechseln</string>
     <string name="a11y_reverse_mode_inactive">Normaler Modus, tippen für Rückwärts-Modus</string>
     <string name="a11y_mode_selector">Aktueller Modus: %1$s. Tippen zum Ändern.</string>
