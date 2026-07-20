@@ -28,6 +28,28 @@
 -keep class * implements com.google.gson.JsonSerializer
 -keep class * implements com.google.gson.JsonDeserializer
 
-# Keep CustomLeet for Gson serialization (used in LeetManager)
+# Gson nutzt Reflection über TypeToken<...>() {} (anonyme Subklassen) für generische
+# Typen (siehe LeetManager.loadLeets / HistoryPreferences.parse). Ohne diese Regeln
+# kann R8 die generische Signatur der anonymen TypeToken-Subklassen wegoptimieren,
+# wodurch Gson zur Laufzeit den falschen (Raw-)Typ deserialisiert.
+-keep class com.google.gson.reflect.TypeToken { *; }
+-keep class * extends com.google.gson.reflect.TypeToken
+
+# Modelle, die per Gson (de)serialisiert werden, müssen ihre Feldnamen behalten,
+# da Gson standardmäßig über Reflection nach den Java/Kotlin-Feldnamen matcht
+# (kein @SerializedName im Einsatz). Ohne -keep würden Felder beim Minify
+# umbenannt und bereits gespeichertes JSON ließe sich nach einem Update nicht
+# mehr korrekt einlesen (stille Datenverluste bei Custom Leets / Verlauf).
+
+# CustomLeet (LeetManager: Liste der Custom Leets, "LeetSpeakProfiles" Prefs)
 -keep class com.beigel.leetSpeak_Generator.data.CustomLeet { *; }
 -keepclassmembers class com.beigel.leetSpeak_Generator.data.CustomLeet { *; }
+
+# HistoryEntry (HistoryPreferences: Übersetzungsverlauf, DataStore)
+-keep class com.beigel.leetSpeak_Generator.data.HistoryEntry { *; }
+-keepclassmembers class com.beigel.leetSpeak_Generator.data.HistoryEntry { *; }
+
+# Gson selbst nutzt intern sun.misc.Unsafe für die Instanziierung ohne No-Arg-
+# Konstruktor; R8 warnt darüber, das ist aber unbedenklich.
+-dontwarn sun.misc.Unsafe
+-dontwarn com.google.gson.**

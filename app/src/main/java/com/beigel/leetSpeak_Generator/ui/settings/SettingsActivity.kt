@@ -584,7 +584,7 @@ fun CollapsibleSettingsSection(
                 // Expand/Collapse Button
                 IconButton(
                     onClick = onExpandToggle,
-                    modifier = Modifier.size(36.dp)
+                    modifier = Modifier.size(48.dp)
                 ) {
                     Icon(
                         imageVector = if (isExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,

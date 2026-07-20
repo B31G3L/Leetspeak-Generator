@@ -349,7 +349,7 @@ private fun ModiCard(
             var menuExpanded by remember { mutableStateOf(false) }
 
             Box {
-                IconButton(onClick = { menuExpanded = true }, modifier = Modifier.size(32.dp)) {
+                IconButton(onClick = { menuExpanded = true }, modifier = Modifier.size(48.dp)) {
                     Icon(
                         imageVector = Icons.Default.MoreVert,
                         contentDescription = stringResource(R.string.modi_more_options),
