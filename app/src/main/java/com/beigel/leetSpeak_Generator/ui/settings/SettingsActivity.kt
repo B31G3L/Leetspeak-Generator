@@ -218,6 +218,7 @@ fun SettingsScreen(
     var supportExpanded by remember { mutableStateOf(false) }
     var showAboutDialog by remember { mutableStateOf(false) }
     var hapticExpanded by remember { mutableStateOf(false) }
+    var keyboardExpanded by remember { mutableStateOf(false) }
 
     Box(
         modifier = Modifier
@@ -335,6 +336,18 @@ fun SettingsScreen(
                                 }
                             }
                         )
+                    }
+                }
+
+                item {
+                    CollapsibleSettingsSection(
+                        title = stringResource(R.string.settings_keyboard_title),
+                        icon = Icons.Default.Keyboard,
+                        isExpanded = keyboardExpanded,
+                        onExpandToggle = { keyboardExpanded = !keyboardExpanded },
+                        preview = stringResource(R.string.settings_keyboard_preview)
+                    ) {
+                        KeyboardSettings()
                     }
                 }
 
@@ -818,6 +831,41 @@ fun AboutSection(
             icon = Icons.Default.Replay,
             label = stringResource(R.string.settings_replay_onboarding),
             onClick = onReplayOnboarding
+        )
+    }
+}
+
+@Composable
+fun KeyboardSettings() {
+    val context = LocalContext.current
+
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text(
+            text = stringResource(R.string.settings_keyboard_description),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+
+        Spacer(modifier = Modifier.height(2.dp))
+
+        SupportRow(
+            icon = Icons.Default.Settings,
+            label = stringResource(R.string.settings_keyboard_enable),
+            onClick = {
+                context.startActivity(
+                    android.content.Intent(android.provider.Settings.ACTION_INPUT_METHOD_SETTINGS)
+                        .addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+                )
+            }
+        )
+
+        SupportRow(
+            icon = Icons.Default.Keyboard,
+            label = stringResource(R.string.settings_keyboard_switch),
+            onClick = {
+                val imm = context.getSystemService(android.content.Context.INPUT_METHOD_SERVICE) as android.view.inputmethod.InputMethodManager
+                imm.showInputMethodPicker()
+            }
         )
     }
 }

@@ -27,7 +27,15 @@
     <string name="settings_widget_config">Configuration du Widget</string>
     <string name="settings_widget_current_favorite">Favori actuel</string>
     <string name="settings_widget_no_favorite">Aucun favori sélectionné</string>
-    <string name="settings_widget_description">Le widget utilise votre mode leet favori</string>
+    <string name="settings_widget_description">Raccourci rapide sur l\'écran d\'accueil pour ouvrir l\'appli — traduisez directement dans n\'importe quelle appli avec le clavier Leetspeak</string>
+    <string name="widget_open_app">Ouvrir Leetspeak Generator</string>
+
+    <string name="settings_keyboard_title">Clavier Leetspeak</string>
+    <string name="settings_keyboard_preview">Tapez du leet partout</string>
+    <string name="settings_keyboard_description">Activez le clavier Leetspeak pour traduire en tapant — directement dans n\'importe quelle appli, chat ou navigateur. Plus besoin de copier-coller.</string>
+    <string name="settings_keyboard_enable">Activer dans les paramètres système</string>
+    <string name="settings_keyboard_switch">Changer de clavier maintenant</string>
+    <string name="keyboard_space_label">espace</string>
     <string name="settings_about_app">À propos de l\'application</string>
     <string name="settings_support">Support</string>
     <string name="settings_replay_onboarding">Revoir l\'introduction</string>
@@ -131,6 +139,7 @@
     <string name="modi_filter_custom">Personnalisés</string>
     <string name="modi_custom_badge">Personnalisé</string>
     <string name="modi_more_options">Plus d\'options</string>
+    <string name="modi_preview_sample_fallback">Bonjour le monde</string>
 
     <string name="translation_table_card_title">Table de traduction</string>
     <string name="translation_table_dialog_title">Table de traduction - %1$s</string>
@@ -228,6 +237,7 @@
 
     <string name="copied">Copié !</string>
     <string name="copy_text">Copier le texte</string>
+    <string name="share_text">Partager</string>
     <string name="clear">Effacer</string>
     <string name="clipboard_label">Texte Leetspeak</string>
 
@@ -352,6 +362,16 @@
     <string name="delete_leet_dialog_message">\'%1$s\' sera supprimé définitivement.</string>
     <string name="delete_leet_dialog_confirm">Supprimer</string>
     <string name="delete_leet_dialog_cancel">Annuler</string>
+
+    <string name="history_title">Historique</string>
+    <string name="history_empty">Pas encore de traductions. Vos traductions récentes apparaîtront ici.</string>
+    <string name="history_clear_all">Tout effacer</string>
+    <string name="history_clear_all_dialog_title">Effacer l\'historique ?</string>
+    <string name="history_clear_all_dialog_message">Toutes les traductions enregistrées seront définitivement supprimées.</string>
+    <string name="history_clear_all_confirm">Tout effacer</string>
+    <string name="history_delete_entry">Supprimer l\'entrée</string>
+    <string name="history_delete_dialog_title">Supprimer cette entrée ?</string>
+    <string name="history_delete_dialog_message">Cette traduction sera définitivement supprimée de l\'historique.</string>
 
     <string name="settings_haptic_title">Retour haptique</string>
     <string name="settings_haptic_desc">Vibrer lors de la copie de texte</string>

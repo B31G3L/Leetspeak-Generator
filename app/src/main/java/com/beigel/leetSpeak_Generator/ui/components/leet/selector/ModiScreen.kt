@@ -41,6 +41,10 @@ fun ModiScreen(
     modifier: Modifier = Modifier
 ) {
     val leetOptions by viewModel.leetOptions.collectAsStateWithLifecycle()
+    val inputText by viewModel.inputText.collectAsStateWithLifecycle()
+    // Fallback-Text für die Vorschau, solange noch nichts eingegeben wurde
+    val previewSampleFallback = stringResource(R.string.modi_preview_sample_fallback)
+    val previewSampleText = if (inputText.isNotBlank()) inputText else previewSampleFallback
 
     var filter by remember { mutableStateOf(ModiFilter.ALL) }
     var showLeetCreationDialog by remember { mutableStateOf(false) }
@@ -135,8 +139,12 @@ fun ModiScreen(
                         verticalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
                         items(filteredOptions, key = { it.mode.toString() + "_" + it.customIndex }) { option ->
+                            val previewText = remember(option, previewSampleText) {
+                                viewModel.generatePreview(option, previewSampleText)
+                            }
                             ModiCard(
                                 option = option,
+                                previewText = previewText,
                                 onSelect = {
                                     viewModel.handleIntent(MainIntent.ChangeMode(option))
                                     onDismiss()
@@ -250,6 +258,7 @@ private fun FilterChip(
 @Composable
 private fun ModiCard(
     option: LeetOption,
+    previewText: String,
     onSelect: () -> Unit,
     onToggleFavorite: () -> Unit,
     onEdit: () -> Unit,
@@ -327,8 +336,10 @@ private fun ModiCard(
                     }
                 }
                 Text(
-                    text = option.description,
-                    style = MaterialTheme.typography.bodySmall,
+                    text = previewText,
+                    style = MaterialTheme.typography.bodySmall.copy(
+                        fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
+                    ),
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis

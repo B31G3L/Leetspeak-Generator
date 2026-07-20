@@ -26,6 +26,7 @@ fun OutputCard(
     currentMode: String,
     animationKey: LeetTranslator.TranslationMode,
     onCopyClick: () -> Unit,
+    onShareClick: () -> Unit,
     modifier: Modifier = Modifier,
     showHeader: Boolean = true,
     isReverseMode: Boolean = false,
@@ -93,7 +94,8 @@ fun OutputCard(
                         onCopyClick      = {
                             onCopyClick()
                             showCopyFeedback = true
-                        }
+                        },
+                        onShareClick     = onShareClick
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                 }
@@ -151,6 +153,7 @@ private fun OutputCardHeader(
     translationStats: LeetTranslator.TranslationStats?,
     showCopyFeedback: Boolean,
     onCopyClick: () -> Unit,
+    onShareClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Row(
@@ -174,11 +177,24 @@ private fun OutputCardHeader(
             }
         }
 
-        CopyButton(
-            showCopyFeedback = showCopyFeedback,
-            onCopyClick      = onCopyClick,
-            tint             = headerTextColor
-        )
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            IconButton(
+                onClick  = onShareClick,
+                modifier = Modifier.size(40.dp)
+            ) {
+                Icon(
+                    imageVector        = Icons.Default.Share,
+                    contentDescription = stringResource(R.string.share_text),
+                    tint               = headerTextColor,
+                    modifier           = Modifier.size(20.dp)
+                )
+            }
+            CopyButton(
+                showCopyFeedback = showCopyFeedback,
+                onCopyClick      = onCopyClick,
+                tint             = headerTextColor
+            )
+        }
     }
 }
 

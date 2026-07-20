@@ -23,6 +23,7 @@ class UiManagerUseCase @Inject constructor(
     fun hasInput() = inputTextUseCase.hasText()
 
     fun toggleReverseMode() = reverseModeUseCase.toggleReverseMode()
+    fun setReverseMode(enabled: Boolean) = reverseModeUseCase.setReverseMode(enabled)
     fun setTranslationMode(mode: LeetTranslator.TranslationMode) =
         translationModeUseCase.setMode(mode)
 

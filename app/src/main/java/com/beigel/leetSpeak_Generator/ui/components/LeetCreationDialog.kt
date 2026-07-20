@@ -1,6 +1,7 @@
 package com.beigel.leetSpeak_Generator.ui.components
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
@@ -11,6 +12,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -18,6 +20,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import androidx.compose.ui.window.DialogWindowProvider
+import androidx.core.view.WindowCompat
 import com.beigel.leetSpeak_Generator.R
 import com.beigel.leetSpeak_Generator.data.CustomLeet
 import com.beigel.leetSpeak_Generator.presentation.intent.MainIntent
@@ -44,11 +48,31 @@ fun LeetCreationDialog(
         onDismissRequest = onDismiss,
         properties = DialogProperties(usePlatformDefaultWidth = false)
     ) {
+        // Das Dialog-Composable erzeugt ein eigenes Android-Fenster, das das
+        // Edge-to-Edge-Setup aus Theme.kt NICHT automatisch mitbekommt.
+        // Deshalb hier dieselbe Konfiguration nochmal für das Dialog-Fenster,
+        // sonst zeigt Android oben/unten die dunkle Standard-System-Leiste an.
+        val isDarkTheme = isSystemInDarkTheme()
+        val dialogView = LocalView.current
+        SideEffect {
+            val dialogWindow = (dialogView.parent as? DialogWindowProvider)?.window
+            dialogWindow?.let { window ->
+                WindowCompat.setDecorFitsSystemWindows(window, false)
+                val controller = WindowCompat.getInsetsController(window, dialogView)
+                controller.isAppearanceLightStatusBars = !isDarkTheme
+                controller.isAppearanceLightNavigationBars = !isDarkTheme
+            }
+        }
+
         Surface(
             modifier = Modifier.fillMaxSize(),
-            color = MaterialTheme.colorScheme.background
+            color = MaterialTheme.colorScheme.surface
         ) {
-            Column(modifier = Modifier.fillMaxSize()) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .windowInsetsPadding(WindowInsets.systemBars)
+            ) {
                 // Header: Zurück-Chevron + Titel
                 Row(
                     modifier = Modifier
@@ -111,7 +135,7 @@ fun LeetCreationDialog(
                 // Speichern-Button (volle Breite, unten fixiert)
                 Surface(
                     modifier = Modifier.fillMaxWidth(),
-                    color = MaterialTheme.colorScheme.background
+                    color = MaterialTheme.colorScheme.surface
                 ) {
                     val canSave = dialogState.baseName.isNotBlank()
                     Button(

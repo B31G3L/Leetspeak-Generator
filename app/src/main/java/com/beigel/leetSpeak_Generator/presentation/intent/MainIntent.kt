@@ -1,6 +1,7 @@
 package com.beigel.leetSpeak_Generator.presentation.intent
 
 import com.beigel.leetSpeak_Generator.data.CustomLeet
+import com.beigel.leetSpeak_Generator.data.HistoryEntry
 import com.beigel.leetSpeak_Generator.data.LeetOption
 
 sealed class MainIntent {
@@ -17,11 +18,15 @@ sealed class MainIntent {
     data class ReorderOptions(val fromIdentifier: Int, val toIdentifier: Int) : MainIntent()
     object UndoDeleteLeet : MainIntent()
     object CopyToClipboard : MainIntent()
+    object ShareOutput : MainIntent()
     object ClearInput : MainIntent()
     object ClearError : MainIntent()
     object ClearSuccess : MainIntent()
     object ToggleReverseMode : MainIntent()
     object CycleCaseMode : MainIntent()
+    data class UseHistoryEntry(val entry: HistoryEntry) : MainIntent()
+    data class DeleteHistoryEntry(val id: String) : MainIntent()
+    object ClearHistory : MainIntent()
 }
 
 data class MainUiState(

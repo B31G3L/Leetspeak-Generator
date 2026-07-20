@@ -74,6 +74,8 @@ class ComposeMainActivity : AppCompatActivity() {
             getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
         }
 
+        handleDeepLink(intent)
+
         setContent {
             val themeMode             by viewModel.themeMode.collectAsStateWithLifecycle()
             val isOnboardingCompleted by viewModel.isOnboardingCompleted.collectAsStateWithLifecycle()
@@ -97,6 +99,7 @@ class ComposeMainActivity : AppCompatActivity() {
                     MainScreen(
                         viewModel         = viewModel,
                         onCopyToClipboard = { text -> copyToClipboardWithFeedback(text) },
+                        onShareText       = { text -> shareText(text) },
                         onOpenSettings    = {
                             startActivity(Intent(this@ComposeMainActivity, SettingsActivity::class.java))
                         }
@@ -112,6 +115,37 @@ class ComposeMainActivity : AppCompatActivity() {
                 }
             }
         }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        handleDeepLink(intent)
+    }
+
+    /**
+     * Verarbeitet den Deeplink `leetspeak://translate?text=...` und übernimmt den
+     * mitgegebenen Text direkt als Input. Funktioniert sowohl beim Kaltstart
+     * (onCreate) als auch, wenn die App bereits läuft (onNewIntent, dank
+     * launchMode="singleTask").
+     */
+    private fun handleDeepLink(intent: Intent?) {
+        val data = intent?.data ?: return
+        if (intent.action != Intent.ACTION_VIEW) return
+        if (data.scheme != "leetspeak" || data.host != "translate") return
+
+        val text = data.getQueryParameter("text") ?: return
+        if (text.isNotBlank()) {
+            viewModel.updateInputText(text)
+        }
+    }
+
+    private fun shareText(text: String) {
+        val sendIntent = Intent(Intent.ACTION_SEND).apply {
+            type = "text/plain"
+            putExtra(Intent.EXTRA_TEXT, text)
+        }
+        startActivity(Intent.createChooser(sendIntent, getString(R.string.share_text)))
     }
 
     private fun copyToClipboardWithFeedback(text: String) {
@@ -131,6 +165,7 @@ class ComposeMainActivity : AppCompatActivity() {
 fun MainScreen(
     viewModel: MainViewModel,
     onCopyToClipboard: (String) -> Unit,
+    onShareText: (String) -> Unit,
     onOpenSettings: () -> Unit
 ) {
     val inputText              by viewModel.inputText.collectAsStateWithLifecycle()
@@ -148,8 +183,13 @@ fun MainScreen(
     val isKeyboardVisible = keyboardHeight > 100
     val hasOutput         = outputText.isNotEmpty()
 
-    var showBottomSheet by remember { mutableStateOf(false) }
-    val context         = LocalContext.current
+    var showBottomSheet  by remember { mutableStateOf(false) }
+    var showHistoryScreen by remember { mutableStateOf(false) }
+    val context          = LocalContext.current
+
+    LaunchedEffect(Unit) {
+        viewModel.shareEvent.collect { text -> onShareText(text) }
+    }
 
     val snackbarHostState  = remember { SnackbarHostState() }
     val undoLabel          = stringResource(R.string.undo)
@@ -242,6 +282,15 @@ fun MainScreen(
                             }
                         }
                     },
+                    actions = {
+                        IconButton(onClick = { showHistoryScreen = true }) {
+                            Icon(
+                                imageVector = Icons.Default.History,
+                                contentDescription = stringResource(R.string.history_title),
+                                tint = MaterialTheme.colorScheme.onBackground
+                            )
+                        }
+                    },
                     colors = TopAppBarDefaults.topAppBarColors(
                         containerColor    = MaterialTheme.colorScheme.background,
                         titleContentColor = MaterialTheme.colorScheme.onBackground
@@ -303,6 +352,9 @@ fun MainScreen(
                             onCopyToClipboard(outputText)
                             viewModel.handleIntent(MainIntent.CopyToClipboard)
                         },
+                        onShareClick = {
+                            viewModel.handleIntent(MainIntent.ShareOutput)
+                        },
                         showHeader    = true,
                         isReverseMode = isReverseMode,
                         modifier      = Modifier
@@ -337,6 +389,21 @@ fun MainScreen(
             ModiScreen(
                 viewModel = viewModel,
                 onDismiss = { showBottomSheet = false },
+                modifier = Modifier
+                    .fillMaxSize()
+                    .windowInsetsPadding(WindowInsets.systemBars)
+            )
+        }
+
+        // Verlaufs-Vollbildschirm, gleiches Muster wie der Modi-Screen oben.
+        if (showHistoryScreen) {
+            BackHandler(enabled = true) {
+                showHistoryScreen = false
+            }
+
+            com.beigel.leetSpeak_Generator.ui.components.history.HistoryScreen(
+                viewModel = viewModel,
+                onDismiss = { showHistoryScreen = false },
                 modifier = Modifier
                     .fillMaxSize()
                     .windowInsetsPadding(WindowInsets.systemBars)

@@ -23,11 +23,19 @@
         <activity
             android:name=".ui.ComposeMainActivity"
             android:exported="true"
+            android:launchMode="singleTask"
             android:windowSoftInputMode="adjustResize"
             android:theme="@style/Theme.LeetspeakGenerator">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <!-- 🔗 Deeplink: leetspeak://translate?text=hello -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="leetspeak" android:host="translate" />
             </intent-filter>
         </activity>
 
@@ -51,6 +59,34 @@
             <meta-data
                 android:name="autoStoreLocales"
                 android:value="true" />
+        </service>
+
+        <!-- 📱 LAUNCH-WIDGET: kein Übersetzungs-Widget mehr, nur ein schneller
+             Öffnen-Button fürs Homescreen -->
+        <receiver
+            android:name=".widget.LeetLaunchWidgetReceiver"
+            android:exported="true"
+            android:label="@string/widget_open_app">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/leet_launch_widget_info" />
+        </receiver>
+
+        <!-- ⌨️ LEETSPEAK-TASTATUR (IME): übersetzt live beim Tippen, in jeder App -->
+        <service
+            android:name=".keyboard.LeetKeyboardService"
+            android:exported="true"
+            android:label="@string/settings_keyboard_title"
+            android:permission="android.permission.BIND_INPUT_METHOD">
+            <intent-filter>
+                <action android:name="android.view.InputMethod" />
+            </intent-filter>
+            <meta-data
+                android:name="android.view.im"
+                android:resource="@xml/method" />
         </service>
 
     </application>

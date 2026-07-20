@@ -1,6 +1,7 @@
 package com.beigel.leetSpeak_Generator.di
 
 import android.content.Context
+import com.beigel.leetSpeak_Generator.data.HistoryPreferences
 import com.beigel.leetSpeak_Generator.data.OnboardingPreferences
 import com.beigel.leetSpeak_Generator.data.ThemePreferences
 import com.beigel.leetSpeak_Generator.repository.LeetRepository
@@ -40,4 +41,10 @@ object AppModule {
     fun provideOnboardingPreferences(
         @ApplicationContext context: Context
     ): OnboardingPreferences = OnboardingPreferences(context)
+
+    @Provides
+    @Singleton
+    fun provideHistoryPreferences(
+        @ApplicationContext context: Context
+    ): HistoryPreferences = HistoryPreferences(context)
 }

@@ -27,7 +27,15 @@
     <string name="settings_widget_config">Widget configuration</string>
     <string name="settings_widget_current_favorite">Current favorite</string>
     <string name="settings_widget_no_favorite">No favorite selected</string>
-    <string name="settings_widget_description">The widget uses your favorite leet mode</string>
+    <string name="settings_widget_description">Quick shortcut on your home screen to open the app — translate directly in any app instead using the Leetspeak keyboard</string>
+    <string name="widget_open_app">Open Leetspeak Generator</string>
+
+    <string name="settings_keyboard_title">Leetspeak Keyboard</string>
+    <string name="settings_keyboard_preview">Type leet anywhere</string>
+    <string name="settings_keyboard_description">Enable the Leetspeak keyboard to translate as you type — directly in any app, chat or browser. No copy-paste needed.</string>
+    <string name="settings_keyboard_enable">Enable in system settings</string>
+    <string name="settings_keyboard_switch">Switch keyboard now</string>
+    <string name="keyboard_space_label">space</string>
     <string name="settings_about_app">About app</string>
     <string name="settings_support">Support</string>
     <string name="settings_replay_onboarding">Show intro again</string>
@@ -130,6 +138,7 @@
     <string name="leet_selector_edit">Edit</string>
     <string name="leet_selector_show_table">Show translation table</string>
     <string name="modi_more_options">More options</string>
+    <string name="modi_preview_sample_fallback">Hello World</string>
 
     <string name="translation_table_dialog_title">Translation table - %1$s</string>
     <string name="translation_table_card_title">Translation table</string>
@@ -227,6 +236,7 @@
 
     <string name="copied">Copied!</string>
     <string name="copy_text">Copy text</string>
+    <string name="share_text">Share</string>
     <string name="clear">Clear</string>
     <string name="clipboard_label">Leetspeak Text</string>
 
@@ -352,6 +362,16 @@
     <string name="delete_leet_dialog_confirm">Delete</string>
     <string name="delete_leet_dialog_cancel">Cancel</string>
     <string name="info_active_leet_deleted">Active leet deleted, switched to Simple mode</string>
+
+    <string name="history_title">History</string>
+    <string name="history_empty">No translations yet. Your recent translations will show up here.</string>
+    <string name="history_clear_all">Clear all</string>
+    <string name="history_clear_all_dialog_title">Clear history?</string>
+    <string name="history_clear_all_dialog_message">All saved translations will be permanently deleted.</string>
+    <string name="history_clear_all_confirm">Clear all</string>
+    <string name="history_delete_entry">Delete entry</string>
+    <string name="history_delete_dialog_title">Delete entry?</string>
+    <string name="history_delete_dialog_message">This translation will be permanently removed from your history.</string>
     <string name="empty_custom_leets_title">No custom Leets yet</string>
     <string name="empty_custom_leets_hint">Tap \"New\" above to create your own translation</string>
     <string name="speech_input_start">Start voice input</string>

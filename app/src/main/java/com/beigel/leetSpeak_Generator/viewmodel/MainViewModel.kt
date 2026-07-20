@@ -5,6 +5,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.beigel.leetSpeak_Generator.R
 import com.beigel.leetSpeak_Generator.data.CustomLeet
+import com.beigel.leetSpeak_Generator.data.HistoryEntry
+import com.beigel.leetSpeak_Generator.data.HistoryPreferences
 import com.beigel.leetSpeak_Generator.data.LeetOption
 import com.beigel.leetSpeak_Generator.data.OnboardingPreferences
 import com.beigel.leetSpeak_Generator.data.ThemePreferences
@@ -31,7 +33,8 @@ class MainViewModel @Inject constructor(
     private val repository: LeetRepository,
     private val themePreferences: ThemePreferences,
     private val onboardingPreferences: OnboardingPreferences,
-    private val inAppReviewManager: InAppReviewManager
+    private val inAppReviewManager: InAppReviewManager,
+    private val historyPreferences: HistoryPreferences
 ) : ViewModel() {
 
     val inputText     = uiManager.inputText
@@ -135,6 +138,15 @@ class MainViewModel @Inject constructor(
     private val _pendingDelete = MutableStateFlow<PendingDelete?>(null)
     val pendingDelete: StateFlow<PendingDelete?> = _pendingDelete.asStateFlow()
 
+    val historyEntries: StateFlow<List<HistoryEntry>> = historyPreferences.history
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    // Einmalig zu konsumierendes Event fürs Teilen: die eigentliche Share-Sheet-Anzeige
+    // braucht einen Context/Activity, deshalb wird hier nur der zu teilende Text
+    // durchgereicht und in ComposeMainActivity per LaunchedEffect abgeholt.
+    private val _shareEvent = MutableSharedFlow<String>(extraBufferCapacity = 1)
+    val shareEvent: SharedFlow<String> = _shareEvent.asSharedFlow()
+
     init {
         initializeFavoriteLeet()
         trackAppStart()
@@ -192,11 +204,15 @@ class MainViewModel @Inject constructor(
             is MainIntent.ReorderOptions   -> reorderOptions(intent.fromIdentifier, intent.toIdentifier)
             is MainIntent.UndoDeleteLeet   -> undoDeleteLeet()
             is MainIntent.CopyToClipboard  -> copyToClipboard()
+            is MainIntent.ShareOutput      -> shareOutput()
             is MainIntent.ClearInput       -> uiManager.clearInput()
             is MainIntent.ClearError       -> uiManager.clearError()
             is MainIntent.ClearSuccess     -> uiManager.clearSuccess()
             is MainIntent.ToggleReverseMode -> toggleReverseMode()
             is MainIntent.CycleCaseMode    -> { }
+            is MainIntent.UseHistoryEntry    -> useHistoryEntry(intent.entry)
+            is MainIntent.DeleteHistoryEntry -> deleteHistoryEntry(intent.id)
+            is MainIntent.ClearHistory       -> clearHistory()
         }
     }
 
@@ -348,6 +364,7 @@ class MainViewModel @Inject constructor(
         val text = outputText.value
         if (text.isNotEmpty()) {
             uiManager.setSuccess(application.getString(R.string.success_copied_to_clipboard))
+            saveCurrentToHistory()
             if (clearInputAfterCopy.value) {
                 if (askBeforeClear.value) _showClearInputDialog.value = true
                 else uiManager.clearInput()
@@ -355,6 +372,75 @@ class MainViewModel @Inject constructor(
         } else {
             uiManager.setError(application.getString(R.string.error_no_text_to_copy))
         }
+    }
+
+    /**
+     * Löst das Teilen des Outputs aus — direkt, ohne vorher über "Kopieren" zu gehen.
+     * Der eigentliche Share-Sheet-Aufruf passiert in ComposeMainActivity (braucht Context).
+     */
+    private fun shareOutput() {
+        val text = outputText.value
+        if (text.isNotEmpty()) {
+            saveCurrentToHistory()
+            _shareEvent.tryEmit(text)
+        } else {
+            uiManager.setError(application.getString(R.string.error_no_text_to_copy))
+        }
+    }
+
+    /** Speichert die aktuelle Übersetzung (Input + Output + Modus) im Verlauf. */
+    private fun saveCurrentToHistory() {
+        val input = inputText.value
+        val output = outputText.value
+        if (input.isBlank() || output.isBlank()) return
+
+        val modeInt = when (currentMode.value) {
+            LeetTranslator.TranslationMode.SIMPLE   -> LeetManager.MODE_SIMPLE
+            LeetTranslator.TranslationMode.EXTENDED -> LeetManager.MODE_EXTENDED
+            LeetTranslator.TranslationMode.CUSTOM   -> LeetManager.MODE_CUSTOM
+        }
+
+        viewModelScope.launch {
+            historyPreferences.addEntry(
+                HistoryEntry(
+                    inputText = input,
+                    outputText = output,
+                    modeDisplayName = currentModeDisplayName.value,
+                    mode = modeInt,
+                    customLeetIndex = if (modeInt == LeetManager.MODE_CUSTOM) repository.getCurrentLeetIndex() else -1,
+                    isReverseMode = isReverseMode.value
+                )
+            )
+        }
+    }
+
+    /** Stellt einen gespeicherten Verlaufseintrag wieder her (Modus + Input). */
+    private fun useHistoryEntry(entry: HistoryEntry) {
+        viewModelScope.launch {
+            uiManager.setReverseMode(entry.isReverseMode)
+            when (entry.mode) {
+                LeetManager.MODE_SIMPLE   -> uiManager.setTranslationMode(LeetTranslator.TranslationMode.SIMPLE)
+                LeetManager.MODE_EXTENDED -> uiManager.setTranslationMode(LeetTranslator.TranslationMode.EXTENDED)
+                LeetManager.MODE_CUSTOM   -> {
+                    if (entry.customLeetIndex in leets.value.indices) {
+                        repository.setCurrentLeetIndex(entry.customLeetIndex)
+                            .onSuccess { uiManager.setTranslationMode(LeetTranslator.TranslationMode.CUSTOM) }
+                            .onFailure { uiManager.setTranslationMode(LeetTranslator.TranslationMode.SIMPLE) }
+                    } else {
+                        uiManager.setTranslationMode(LeetTranslator.TranslationMode.SIMPLE)
+                    }
+                }
+            }
+            uiManager.updateInputText(entry.inputText)
+        }
+    }
+
+    private fun deleteHistoryEntry(id: String) {
+        viewModelScope.launch { historyPreferences.removeEntry(id) }
+    }
+
+    private fun clearHistory() {
+        viewModelScope.launch { historyPreferences.clear() }
     }
 
     fun confirmClearInput(shouldClear: Boolean, dontAskAgain: Boolean) {
