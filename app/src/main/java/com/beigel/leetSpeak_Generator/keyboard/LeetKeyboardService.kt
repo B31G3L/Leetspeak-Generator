@@ -2,6 +2,7 @@ package com.beigel.leetSpeak_Generator.keyboard
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.content.res.Configuration
 import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
 import android.graphics.drawable.StateListDrawable
@@ -13,6 +14,7 @@ import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -166,10 +168,34 @@ class LeetKeyboardService : InputMethodService() {
         else null
 
     private fun currentModeName(): String = when (mode) {
-        LeetTranslator.TranslationMode.SIMPLE -> getString(R.string.leet_option_simple_name)
-        LeetTranslator.TranslationMode.EXTENDED -> getString(R.string.leet_option_extended_name)
+        LeetTranslator.TranslationMode.SIMPLE -> localizedString(R.string.leet_option_simple_name)
+        LeetTranslator.TranslationMode.EXTENDED -> localizedString(R.string.leet_option_extended_name)
         LeetTranslator.TranslationMode.CUSTOM ->
-            currentCustomLeet()?.name ?: getString(R.string.leet_option_simple_name)
+            currentCustomLeet()?.name ?: localizedString(R.string.leet_option_simple_name)
+    }
+
+    /**
+     * Löst Strings über den in der App eingestellten Sprach-Override auf, statt
+     * einfach über die System-Sprache. Die In-App-Sprachauswahl setzt
+     * [AppCompatDelegate.setApplicationLocales], was unter Android 13 automatisch
+     * für Activities greift — die Tastatur läuft aber als eigenständiger
+     * [android.app.Service], der diese Aktivitäts-spezifische Context-Anpassung
+     * nicht automatisch mitbekommt und sonst auf die Systemsprache zurückfallen
+     * würde. AppCompatDelegate.getApplicationLocales() funktioniert dagegen
+     * prozessweit auch ohne Activity, deshalb bauen wir uns hier selbst einen
+     * passend lokalisierten Context.
+     */
+    private fun localizedString(resId: Int): String {
+        val appLocales = AppCompatDelegate.getApplicationLocales()
+        val locale = if (appLocales.isEmpty) null else appLocales[0]
+        val localizedContext = if (locale != null) {
+            val config = Configuration(resources.configuration)
+            config.setLocale(locale)
+            createConfigurationContext(config)
+        } else {
+            this
+        }
+        return localizedContext.getString(resId)
     }
 
     private fun refreshModeLabel() {
@@ -396,7 +422,7 @@ class LeetKeyboardService : InputMethodService() {
         }
         val symToggle = createSpecialKey(if (isSymbolsLayer) "ABC" else "?123") { toggleSymbols() }
         val comma = createSpecialKey(",") { commitLiteral(",") }
-        val space = createSpecialKey(getString(R.string.keyboard_space_label)) { handleSpace() }.apply {
+        val space = createSpecialKey(localizedString(R.string.keyboard_space_label)) { handleSpace() }.apply {
             textSize = 13f
             setTextColor(ContextCompat.getColor(this@LeetKeyboardService, R.color.keyboard_preview_text))
             // Leertaste als durchgehende Pille (volle Rundung) — typisches Gboard-Detail.
