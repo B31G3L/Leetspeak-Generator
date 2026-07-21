@@ -11,6 +11,7 @@ import androidx.compose.animation.*
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -24,10 +25,14 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.core.os.LocaleListCompat
@@ -67,7 +72,8 @@ class SettingsActivity : AppCompatActivity() {
                     },
                     onBugReport = { sendBugReport() },
                     onFeedback = { sendFeedback() },
-                    onKofiSupport = { openKofiLink() }
+                    onKofiSupport = { openKofiLink() },
+                    onDiscordSupport = { openDiscordLink() }
                 )
             }
         }
@@ -175,6 +181,16 @@ class SettingsActivity : AppCompatActivity() {
         }
     }
 
+    private fun openDiscordLink() {
+        try {
+            val discordUrl = getString(R.string.discord_invite_url)
+            val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(discordUrl))
+            startActivity(intent)
+        } catch (e: Exception) {
+            android.widget.Toast.makeText(this, getString(R.string.discord_toast_error), android.widget.Toast.LENGTH_SHORT).show()
+        }
+    }
+
     private fun getVersionName(): String {
         return try {
             packageManager.getPackageInfo(packageName, 0).versionName ?: "Unknown"
@@ -192,7 +208,8 @@ fun SettingsScreen(
     onLanguageChanged: (String) -> Unit = {},
     onBugReport: () -> Unit = {},
     onFeedback: () -> Unit = {},
-    onKofiSupport: () -> Unit = {}
+    onKofiSupport: () -> Unit = {},
+    onDiscordSupport: () -> Unit = {}
 ) {
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
@@ -205,20 +222,16 @@ fun SettingsScreen(
     val clearInputAfterCopy by viewModel.clearInputAfterCopy.collectAsStateWithLifecycle()
     val askBeforeClear by viewModel.askBeforeClear.collectAsStateWithLifecycle()
 
-    // Review Stats
-    val reviewStats by viewModel.reviewStats.collectAsStateWithLifecycle()
     val hapticFeedbackEnabled by viewModel.hapticFeedbackEnabled
         .collectAsStateWithLifecycle()
-    // Expanded states für jede Sektion
-    var languageExpanded by remember { mutableStateOf(false) }
-    var appearanceExpanded by remember { mutableStateOf(false) }
-    var copyBehaviorExpanded by remember { mutableStateOf(false) }
-    var reviewExpanded by remember { mutableStateOf(false) }
-    var aboutExpanded by remember { mutableStateOf(false) }
-    var supportExpanded by remember { mutableStateOf(false) }
-    var showAboutDialog by remember { mutableStateOf(false) }
-    var hapticExpanded by remember { mutableStateOf(false) }
+
+    // Expanded states für jede Sektion — verwandte Themen sind zu weniger,
+    // größeren Sektionen zusammengelegt (Allgemein, Verhalten, Tastatur, Support & Info).
+    var generalExpanded by remember { mutableStateOf(false) }
+    var behaviorExpanded by remember { mutableStateOf(false) }
     var keyboardExpanded by remember { mutableStateOf(false) }
+    var supportInfoExpanded by remember { mutableStateOf(false) }
+    var showAboutDialog by remember { mutableStateOf(false) }
 
     Box(
         modifier = Modifier
@@ -268,74 +281,102 @@ fun SettingsScreen(
                     .padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                // Language Selection
+                // Allgemein: Sprache + Erscheinungsbild
                 item {
                     CollapsibleSettingsSection(
-                        title = stringResource(R.string.settings_language),
-                        icon = Icons.Default.Language,
-                        isExpanded = languageExpanded,
-                        onExpandToggle = { languageExpanded = !languageExpanded },
-                        preview = getLanguagePreview(language)
+                        title = stringResource(R.string.settings_general_title),
+                        icon = Icons.Default.Tune,
+                        isExpanded = generalExpanded,
+                        onExpandToggle = { generalExpanded = !generalExpanded },
+                        preview = "${getLanguagePreview(language)} · ${getAppearancePreview(themeMode)}"
                     ) {
-                        LanguageSelector(
-                            currentLanguage = language,
-                            onLanguageSelected = { newLanguage ->
-                                scope.launch {
-                                    viewModel.setLanguage(newLanguage)
-                                    onLanguageChanged(newLanguage)
-                                }
+                        Column(verticalArrangement = Arrangement.spacedBy(20.dp)) {
+                            Column {
+                                SettingsSubHeader(stringResource(R.string.settings_language))
+                                LanguageSelector(
+                                    currentLanguage = language,
+                                    onLanguageSelected = { newLanguage ->
+                                        scope.launch {
+                                            viewModel.setLanguage(newLanguage)
+                                            onLanguageChanged(newLanguage)
+                                        }
+                                    }
+                                )
                             }
-                        )
+                            Column {
+                                SettingsSubHeader(stringResource(R.string.settings_appearance))
+                                ThemeSelector(
+                                    currentTheme = themeMode,
+                                    onThemeSelected = { theme ->
+                                        scope.launch {
+                                            viewModel.setTheme(theme)
+                                        }
+                                    }
+                                )
+                            }
+                        }
                     }
                 }
 
-                // Theme Selection (Light/Dark)
+                // Verhalten: Kopier-Verhalten + Haptik
                 item {
                     CollapsibleSettingsSection(
-                        title = stringResource(R.string.settings_appearance),
-                        icon = Icons.Default.Palette,
-                        isExpanded = appearanceExpanded,
-                        onExpandToggle = { appearanceExpanded = !appearanceExpanded },
-                        preview = getAppearancePreview(themeMode)
-                    ) {
-                        ThemeSelector(
-                            currentTheme = themeMode,
-                            onThemeSelected = { theme ->
-                                scope.launch {
-                                    viewModel.setTheme(theme)
-                                }
-                            }
-                        )
-                    }
-                }
-
-                // Copy Behavior Section
-                item {
-                    CollapsibleSettingsSection(
-                        title = stringResource(R.string.settings_copy_behavior),
-                        icon = Icons.Default.ContentCopy,
-                        isExpanded = copyBehaviorExpanded,
-                        onExpandToggle = { copyBehaviorExpanded = !copyBehaviorExpanded },
+                        title = stringResource(R.string.settings_behavior_title),
+                        icon = Icons.Default.TouchApp,
+                        isExpanded = behaviorExpanded,
+                        onExpandToggle = { behaviorExpanded = !behaviorExpanded },
                         preview = if (clearInputAfterCopy) {
                             if (askBeforeClear) stringResource(R.string.copy_behavior_ask_clear) else stringResource(R.string.copy_behavior_auto_clear)
                         } else {
                             stringResource(R.string.copy_behavior_no_clear)
                         }
                     ) {
-                        CopyBehaviorSettings(
-                            clearInputAfterCopy = clearInputAfterCopy,
-                            askBeforeClear = askBeforeClear,
-                            onClearInputAfterCopyChanged = { value ->
-                                scope.launch {
-                                    viewModel.setClearInputAfterCopy(value)
-                                }
-                            },
-                            onAskBeforeClearChanged = { value ->
-                                scope.launch {
-                                    viewModel.setAskBeforeClear(value)
+                        Column(verticalArrangement = Arrangement.spacedBy(20.dp)) {
+                            Column {
+                                SettingsSubHeader(stringResource(R.string.settings_copy_behavior))
+                                CopyBehaviorSettings(
+                                    clearInputAfterCopy = clearInputAfterCopy,
+                                    askBeforeClear = askBeforeClear,
+                                    onClearInputAfterCopyChanged = { value ->
+                                        scope.launch {
+                                            viewModel.setClearInputAfterCopy(value)
+                                        }
+                                    },
+                                    onAskBeforeClearChanged = { value ->
+                                        scope.launch {
+                                            viewModel.setAskBeforeClear(value)
+                                        }
+                                    }
+                                )
+                            }
+                            Column {
+                                SettingsSubHeader(stringResource(R.string.settings_haptic_title))
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment     = Alignment.CenterVertically
+                                ) {
+                                    Text(
+                                        text  = stringResource(R.string.settings_haptic_desc),
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        modifier = Modifier.weight(1f)
+                                    )
+                                    Switch(
+                                        checked         = hapticFeedbackEnabled,
+                                        onCheckedChange = { value ->
+                                            scope.launch {
+                                                viewModel.setHapticFeedbackEnabled(value)
+                                            }
+                                        },
+                                        colors = SwitchDefaults.colors(
+                                            checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
+                                            checkedTrackColor = MaterialTheme.colorScheme.primary
+                                        )
+                                    )
                                 }
                             }
-                        )
+                        }
                     }
                 }
 
@@ -351,87 +392,36 @@ fun SettingsScreen(
                     }
                 }
 
+                // Support & Info: Bug Report, Feedback, Ko-fi, Discord, App-Infos, Onboarding erneut anzeigen
                 item {
                     CollapsibleSettingsSection(
-                        title           = stringResource(R.string.settings_haptic_title),
-                        icon            = Icons.Default.Vibration,
-                        isExpanded      = hapticExpanded,
-                        onExpandToggle  = { hapticExpanded = !hapticExpanded },
-                        preview         = if (hapticFeedbackEnabled)
-                            stringResource(R.string.settings_haptic_on)
-                        else
-                            stringResource(R.string.settings_haptic_off)
-                    ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 8.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment     = Alignment.CenterVertically
-                        ) {
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text(
-                                    text       = stringResource(R.string.settings_haptic_title),
-                                    style      = MaterialTheme.typography.bodyLarge,
-                                    fontWeight = FontWeight.Medium
-                                )
-                                Text(
-                                    text  = stringResource(R.string.settings_haptic_desc),
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
-                            Switch(
-                                checked         = hapticFeedbackEnabled,
-                                onCheckedChange = { value ->
-                                    scope.launch {
-                                        viewModel.setHapticFeedbackEnabled(value)
-                                    }
-                                },
-                                colors = SwitchDefaults.colors(
-                                    checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
-                                    checkedTrackColor = MaterialTheme.colorScheme.primary
-                                )
-                            )
-                        }
-                    }
-                }
-
-                // Support Section (Redesign v4)
-                item {
-                    CollapsibleSettingsSection(
-                        title = stringResource(R.string.settings_support),
+                        title = stringResource(R.string.settings_support_info_title),
                         icon = Icons.Default.HelpOutline,
-                        isExpanded = supportExpanded,
-                        onExpandToggle = { supportExpanded = !supportExpanded },
-                        preview = stringResource(R.string.settings_support)
-                    ) {
-                        SupportSettings(
-                            onBugReport = onBugReport,
-                            onFeedback = onFeedback,
-                            onKofiSupport = onKofiSupport
-                        )
-                    }
-                }
-
-                // About Section
-                item {
-                    CollapsibleSettingsSection(
-                        title = stringResource(R.string.settings_about_app),
-                        icon = Icons.Default.Info,
-                        isExpanded = aboutExpanded,
-                        onExpandToggle = { aboutExpanded = !aboutExpanded },
+                        isExpanded = supportInfoExpanded,
+                        onExpandToggle = { supportInfoExpanded = !supportInfoExpanded },
                         preview = stringResource(R.string.app_name)
                     ) {
-                        AboutSection(
-                            onReplayOnboarding = {
-                                scope.launch {
-                                    viewModel.resetOnboarding()
-                                    onBackPressed()
-                                }
-                            },
-                            onShowFullAbout = { showAboutDialog = true }
-                        )
+                        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                            SupportSettings(
+                                onBugReport = onBugReport,
+                                onFeedback = onFeedback,
+                                onKofiSupport = onKofiSupport,
+                                onDiscordSupport = onDiscordSupport
+                            )
+                            HorizontalDivider(
+                                modifier = Modifier.padding(vertical = 6.dp),
+                                color = MaterialTheme.colorScheme.outlineVariant
+                            )
+                            AboutSection(
+                                onReplayOnboarding = {
+                                    scope.launch {
+                                        viewModel.resetOnboarding()
+                                        onBackPressed()
+                                    }
+                                },
+                                onShowFullAbout = { showAboutDialog = true }
+                            )
+                        }
                     }
                 }
             }
@@ -447,7 +437,8 @@ fun SettingsScreen(
 private fun SupportSettings(
     onBugReport: () -> Unit,
     onFeedback: () -> Unit,
-    onKofiSupport: () -> Unit
+    onKofiSupport: () -> Unit,
+    onDiscordSupport: () -> Unit
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
         SupportRow(
@@ -465,7 +456,24 @@ private fun SupportSettings(
             label = stringResource(R.string.kofi_support),
             onClick = onKofiSupport
         )
+        SupportRow(
+            icon = Icons.Default.Forum,
+            label = stringResource(R.string.discord_support),
+            onClick = onDiscordSupport
+        )
     }
+}
+
+/** Kleine Zwischenüberschrift für zusammengelegte Settings-Sektionen. */
+@Composable
+private fun SettingsSubHeader(text: String) {
+    Text(
+        text = text,
+        style = MaterialTheme.typography.labelLarge,
+        fontWeight = FontWeight.SemiBold,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        modifier = Modifier.padding(bottom = 8.dp)
+    )
 }
 
 @Composable
@@ -531,10 +539,13 @@ fun CollapsibleSettingsSection(
         Column(
             modifier = Modifier.padding(16.dp)
         ) {
-            // Header mit Expand/Collapse
+            // Header mit Expand/Collapse — komplette Zeile klickbar, nicht nur der Pfeil
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .clip(MaterialTheme.shapes.small)
+                    .clickable(onClick = onExpandToggle)
+                    .semantics { role = Role.Button }
                     .padding(bottom = if (isExpanded) 12.dp else 0.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
@@ -581,14 +592,15 @@ fun CollapsibleSettingsSection(
                     }
                 }
 
-                // Expand/Collapse Button
-                IconButton(
-                    onClick = onExpandToggle,
-                    modifier = Modifier.size(48.dp)
+                // Reines Anzeige-Icon — der Klick wird schon von der ganzen Row oben behandelt,
+                // kein eigener IconButton mehr nötig (und vermeidet verschachtelte Touch-Targets).
+                Box(
+                    modifier = Modifier.size(48.dp),
+                    contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         imageVector = if (isExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
-                        contentDescription = if (isExpanded) stringResource(R.string.collapse) else stringResource(R.string.expand),
+                        contentDescription = null,
                         tint = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }

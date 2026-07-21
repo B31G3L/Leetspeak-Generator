@@ -193,10 +193,16 @@ class LeetRepository @Inject constructor(
     fun isFavorite(mode: Int, customIndex: Int = 0): Boolean =
         leetManager.isFavorite(mode, customIndex)
 
-    fun getCurrentLeet(): CustomLeet? = currentLeet.value
-    fun getCurrentLeetIndex(): Int    = currentLeetIndex.value
+    // Bewusst NICHT "getCurrentLeet()"/"getCurrentLeetIndex()"/"getLeets()" genannt:
+    // das würde auf JVM-Ebene dieselbe Signatur wie der generierte Getter der
+    // gleichnamigen StateFlow-Property erzeugen (nur der Rückgabetyp unterscheidet
+    // sich). Kotlin lässt das zwar kompilieren, aber Test-Mocking-Frameworks wie
+    // mockk kommen beim Property-Stubbing dabei durcheinander ("Missing mocked
+    // calls inside every { ... } block").
+    fun getCurrentLeetValue(): CustomLeet? = currentLeet.value
+    fun getCurrentLeetIndexValue(): Int = currentLeetIndex.value
     fun hasLeets(): Boolean           = hasLeets.value
-    fun getLeets(): List<CustomLeet>  = leets.value
+    fun getLeetsValue(): List<CustomLeet> = leets.value
     fun cleanup()                     = leetManager.cleanup()
 
     data class LeetCreationRequest(val name: String, val translations: Map<String, String>)

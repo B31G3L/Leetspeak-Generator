@@ -13,6 +13,9 @@
     <string name="language_italian">Italienisch</string>
     <string name="language_italian_desc">Italienisch (Italien)</string>
     <string name="settings_language">Sprache</string>
+    <string name="settings_general_title">Allgemein</string>
+    <string name="settings_behavior_title">Verhalten</string>
+    <string name="settings_support_info_title">Support &amp; Über die App</string>
 
     <string name="settings_title">Einstellungen</string>
     <string name="settings_back">Zurück</string>
@@ -173,6 +176,8 @@
     <string name="custom_leet_description">Benutzerdefinierte Zeichenzuordnungen</string>
 
     <string name="kofi_support">Unterstützen auf Ko-Fi</string>
+    <string name="discord_support">Unserem Discord beitreten</string>
+    <string name="discord_toast_error">Discord-Link konnte nicht geöffnet werden</string>
     <string name="kofi_description">Unterstütze den Entwickler</string>
     <string name="kofi_toast_error">Ko-Fi-Link konnte nicht geöffnet werden</string>
     <string name="kofi_toast_thanks">Vielen Dank für deine Unterstützung! ☕</string>
@@ -401,6 +406,16 @@
     <string name="onboarding_about_me_title">Von einem Solo-Entwickler</string>
     <string name="onboarding_about_me_desc">Hallo! 👋 Ich bin ein Solo-Entwickler, der diese App aus Leidenschaft für das Codieren und Leetspeak erstellt hat. Immer kostenlos, ohne Werbung.</string>
     <string name="onboarding_support_hint">Wenn dir die App gefällt, hilft mir eine Bewertung, ein Kaffee oder der Discord sehr bei der Weiterentwicklung.</string>
+
+    <string name="onboarding_whatsnew_title">Neu in diesem Update</string>
+    <string name="onboarding_whatsnew_keyboard_title">Leetspeak-Tastatur</string>
+    <string name="onboarding_whatsnew_keyboard_desc">Übersetze live beim Tippen — direkt in jeder App, Chat oder Browser.</string>
+    <string name="onboarding_whatsnew_history_title">Verlauf</string>
+    <string name="onboarding_whatsnew_history_desc">Deine letzten Übersetzungen werden automatisch gespeichert und lassen sich jederzeit wiederverwenden.</string>
+    <string name="onboarding_whatsnew_share_title">Teilen</string>
+    <string name="onboarding_whatsnew_share_desc">Teile deine Übersetzung direkt, ohne Umweg über Kopieren.</string>
+    <string name="onboarding_whatsnew_widget_title">Homescreen-Widget</string>
+    <string name="onboarding_whatsnew_widget_desc">Ein schneller Shortcut, um die App direkt vom Homescreen zu öffnen.</string>
     <string name="a11y_reverse_mode_active">Rückwärts-Modus aktiv, tippen zum Wechseln</string>
     <string name="a11y_reverse_mode_inactive">Normaler Modus, tippen für Rückwärts-Modus</string>
     <string name="a11y_mode_selector">Aktueller Modus: %1$s. Tippen zum Ändern.</string>

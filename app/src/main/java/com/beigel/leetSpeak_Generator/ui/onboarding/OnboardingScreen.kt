@@ -1,5 +1,7 @@
 package com.beigel.leetSpeak_Generator.ui.onboarding
 
+import android.content.Intent
+import android.provider.Settings
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.*
 import androidx.compose.animation.fadeIn
@@ -17,6 +19,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -26,11 +29,15 @@ import com.beigel.leetSpeak_Generator.R
 import kotlinx.coroutines.launch
 
 /**
- * Onboarding (Redesign v4b): 2-Schritt-Intro, Vollbild, ohne Bottom-Nav.
+ * Onboarding (Redesign v4b + Update-Hinweise): 3-Schritt-Intro, Vollbild, ohne Bottom-Nav.
  * Seite 1: Über die App (zusammengefasste Funktionsübersicht).
- * Seite 2: Über mich (Solo-Entwickler) + Bewerten / Ko-Fi / Discord.
+ * Seite 2: Neu in diesem Update (Tastatur, Verlauf, Teilen, Widget) + Tastatur-Aktivierung.
+ * Seite 3: Über mich (Solo-Entwickler) + Bewerten / Ko-Fi / Discord.
  * 96x96dp abgerundete Icon-Kachel (28dp Radius, primaryContainer), Step-Dots
  * (aktiv = 20dp Pill, inaktiv = 6dp Kreis), volle-Breite CTA-Button (50dp, 16dp Radius).
+ *
+ * Wird nicht mehr nur bei der ersten Installation gezeigt, sondern auch nach
+ * Updates mit neuen Features erneut (siehe OnboardingPreferences.CURRENT_ONBOARDING_VERSION).
  */
 @OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
 @Composable
@@ -40,13 +47,14 @@ fun OnboardingScreen(
     val scope = rememberCoroutineScope()
     val uriHandler = LocalUriHandler.current
 
-    val pageCount = 2
+    val pageCount = 3
     val pagerState = rememberPagerState(pageCount = { pageCount })
     val isLastPage = pagerState.currentPage == pageCount - 1
 
     val playStoreUrl = stringResource(R.string.url_play_store)
     val kofiUrl = stringResource(R.string.url_kofi)
     val discordUrl = stringResource(R.string.discord_invite_url)
+    val context = LocalContext.current
 
     Box(
         modifier = Modifier
@@ -80,10 +88,18 @@ fun OnboardingScreen(
                     .weight(1f)
             ) { pageIndex ->
                 val isActive = pagerState.currentPage == pageIndex
-                if (pageIndex == 0) {
-                    OnboardingAppPage(isActive = isActive)
-                } else {
-                    OnboardingAboutMePage(
+                when (pageIndex) {
+                    0 -> OnboardingAppPage(isActive = isActive)
+                    1 -> OnboardingWhatsNewPage(
+                        isActive = isActive,
+                        onEnableKeyboardClick = {
+                            context.startActivity(
+                                Intent(Settings.ACTION_INPUT_METHOD_SETTINGS)
+                                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                            )
+                        }
+                    )
+                    else -> OnboardingAboutMePage(
                         isActive = isActive,
                         onRateClick = { uriHandler.openUri(playStoreUrl) },
                         onKofiClick = { uriHandler.openUri(kofiUrl) },
@@ -217,6 +233,152 @@ private fun OnboardingAppPage(isActive: Boolean) {
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
+        }
+    }
+}
+
+@Composable
+private fun OnboardingWhatsNewPage(
+    isActive: Boolean,
+    onEnableKeyboardClick: () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = 32.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Surface(
+            modifier = Modifier.size(96.dp),
+            color = MaterialTheme.colorScheme.tertiaryContainer,
+            shape = RoundedCornerShape(28.dp)
+        ) {
+            Box(contentAlignment = Alignment.Center) {
+                Icon(
+                    imageVector = Icons.Default.AutoAwesome,
+                    contentDescription = null,
+                    modifier = Modifier.size(40.dp),
+                    tint = MaterialTheme.colorScheme.tertiary
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(40.dp))
+
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            AnimatedVisibility(
+                visible = isActive,
+                enter = fadeIn(tween(400)) + slideInVertically(
+                    animationSpec = tween(400),
+                    initialOffsetY = { it / 4 }
+                )
+            ) {
+                Text(
+                    text = stringResource(R.string.onboarding_whatsnew_title),
+                    style = MaterialTheme.typography.titleLarge,
+                    textAlign = TextAlign.Center,
+                    color = MaterialTheme.colorScheme.onBackground
+                )
+            }
+
+            Spacer(modifier = Modifier.height(14.dp))
+
+            AnimatedVisibility(
+                visible = isActive,
+                enter = fadeIn(tween(500, delayMillis = 100)) + slideInVertically(
+                    animationSpec = tween(500, delayMillis = 100),
+                    initialOffsetY = { it / 4 }
+                )
+            ) {
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(14.dp),
+                    modifier = Modifier.padding(bottom = 4.dp)
+                ) {
+                    OnboardingFeatureRow(
+                        icon = Icons.Default.Keyboard,
+                        title = stringResource(R.string.onboarding_whatsnew_keyboard_title),
+                        description = stringResource(R.string.onboarding_whatsnew_keyboard_desc)
+                    )
+                    OnboardingFeatureRow(
+                        icon = Icons.Default.History,
+                        title = stringResource(R.string.onboarding_whatsnew_history_title),
+                        description = stringResource(R.string.onboarding_whatsnew_history_desc)
+                    )
+                    OnboardingFeatureRow(
+                        icon = Icons.Default.Share,
+                        title = stringResource(R.string.onboarding_whatsnew_share_title),
+                        description = stringResource(R.string.onboarding_whatsnew_share_desc)
+                    )
+                    OnboardingFeatureRow(
+                        icon = Icons.Default.Widgets,
+                        title = stringResource(R.string.onboarding_whatsnew_widget_title),
+                        description = stringResource(R.string.onboarding_whatsnew_widget_desc)
+                    )
+                }
+            }
+
+            AnimatedVisibility(
+                visible = isActive,
+                enter = fadeIn(tween(600, delayMillis = 150)) + slideInVertically(
+                    animationSpec = tween(600, delayMillis = 150),
+                    initialOffsetY = { it / 4 }
+                )
+            ) {
+                OutlinedButton(
+                    onClick = onEnableKeyboardClick,
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Keyboard,
+                        contentDescription = null,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = stringResource(R.string.settings_keyboard_enable),
+                        style = MaterialTheme.typography.labelLarge
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun OnboardingFeatureRow(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    title: String,
+    description: String
+) {
+    Row(verticalAlignment = Alignment.Top) {
+        Surface(
+            modifier = Modifier.size(36.dp),
+            color = MaterialTheme.colorScheme.surfaceVariant,
+            shape = RoundedCornerShape(12.dp)
+        ) {
+            Box(contentAlignment = Alignment.Center) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    modifier = Modifier.size(18.dp),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+        Spacer(modifier = Modifier.width(12.dp))
+        Column {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onBackground
+            )
+            Text(
+                text = description,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
         }
     }
 }

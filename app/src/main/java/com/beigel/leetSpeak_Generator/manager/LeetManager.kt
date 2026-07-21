@@ -112,6 +112,15 @@ class LeetManager(private val context: Context) {
 
     private suspend fun ensureLoaded() = _isLoaded.await()
 
+    /**
+     * Öffentlicher Zugang, um explizit auf den (asynchronen) Ladevorgang aus
+     * den SharedPreferences zu warten. Für die Haupt-App meist nicht nötig,
+     * da bis zur ersten Interaktion i.d.R. genug Zeit vergeht — aber die
+     * Leetspeak-Tastatur (IME) kann direkt nach dem Erstellen aufgerufen
+     * werden, bevor der Ladevorgang fertig ist.
+     */
+    suspend fun awaitLoaded() = ensureLoaded()
+
     private suspend fun saveLeets() = withContext(Dispatchers.IO) {
         prefs.edit()
             .putString(LEETS_KEY, gson.toJson(_leets.value))

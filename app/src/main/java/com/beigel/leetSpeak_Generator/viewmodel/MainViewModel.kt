@@ -37,6 +37,11 @@ class MainViewModel @Inject constructor(
     private val historyPreferences: HistoryPreferences
 ) : ViewModel() {
 
+    companion object {
+        /** Wartezeit ohne Änderung, bevor automatisch in den Verlauf gespeichert wird. */
+        private const val AUTO_SAVE_DEBOUNCE_MS = 2000L
+    }
+
     val inputText     = uiManager.inputText
     val isReverseMode = uiManager.isReverseMode
     val currentMode   = uiManager.currentMode
@@ -150,6 +155,27 @@ class MainViewModel @Inject constructor(
     init {
         initializeFavoriteLeet()
         trackAppStart()
+        autoSaveToHistory()
+    }
+
+    /**
+     * Speichert automatisch in den Verlauf, sobald 2 Sekunden lang nichts mehr
+     * getippt/geändert wurde — zusätzlich zum expliziten Speichern bei Kopieren/
+     * Teilen, da nicht jede Übersetzung am Ende kopiert oder geteilt wird.
+     * Läuft im Hintergrund über die gesamte Lebensdauer des ViewModels; die
+     * Dedupe-Logik in HistoryPreferences.addEntry() verhindert doppelte
+     * Einträge, falls zusätzlich noch kopiert/geteilt wird.
+     */
+    private fun autoSaveToHistory() {
+        viewModelScope.launch {
+            combine(inputText, outputText) { input, output -> input to output }
+                .debounce(AUTO_SAVE_DEBOUNCE_MS)
+                .collect { (input, output) ->
+                    if (input.isNotBlank() && output.isNotBlank()) {
+                        saveCurrentToHistory()
+                    }
+                }
+        }
     }
 
     private fun trackAppStart() {
@@ -282,7 +308,7 @@ class MainViewModel @Inject constructor(
     private fun deleteLeet(index: Int) {
         viewModelScope.launch {
             val wasActive = currentMode.value == LeetTranslator.TranslationMode.CUSTOM
-                    && repository.getCurrentLeetIndex() == index
+                    && repository.getCurrentLeetIndexValue() == index
 
             uiManager.setLoading(true)
             leetManager.deleteLeet(index)
@@ -407,7 +433,7 @@ class MainViewModel @Inject constructor(
                     outputText = output,
                     modeDisplayName = currentModeDisplayName.value,
                     mode = modeInt,
-                    customLeetIndex = if (modeInt == LeetManager.MODE_CUSTOM) repository.getCurrentLeetIndex() else -1,
+                    customLeetIndex = if (modeInt == LeetManager.MODE_CUSTOM) repository.getCurrentLeetIndexValue() else -1,
                     isReverseMode = isReverseMode.value
                 )
             )

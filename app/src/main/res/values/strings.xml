@@ -13,6 +13,9 @@
     <string name="language_italian">Italian</string>
     <string name="language_italian_desc">Italiano (Italia)</string>
     <string name="settings_language">Language</string>
+    <string name="settings_general_title">General</string>
+    <string name="settings_behavior_title">Behavior</string>
+    <string name="settings_support_info_title">Support &amp; About</string>
 
     <string name="settings_title">Settings</string>
     <string name="settings_back">Back</string>
@@ -172,6 +175,8 @@
     <string name="custom_leet_description">Custom character mappings</string>
 
     <string name="kofi_support">Support on Ko-Fi</string>
+    <string name="discord_support">Join our Discord</string>
+    <string name="discord_toast_error">Could not open Discord link</string>
     <string name="kofi_description">Support the developer</string>
     <string name="kofi_toast_error">Could not open Ko-Fi link</string>
     <string name="kofi_toast_thanks">Thank you for your support! ☕</string>
@@ -398,6 +403,16 @@
     <string name="onboarding_about_me_title">Made by a solo developer</string>
     <string name="onboarding_about_me_desc">Hi! 👋 I\'m a solo developer who built this app out of passion for coding and leetspeak. It\'s always free, no ads.</string>
     <string name="onboarding_support_hint">If you like the app, a rating, a coffee, or joining the Discord helps me a lot to keep developing.</string>
+
+    <string name="onboarding_whatsnew_title">New in this update</string>
+    <string name="onboarding_whatsnew_keyboard_title">Leetspeak keyboard</string>
+    <string name="onboarding_whatsnew_keyboard_desc">Translate live as you type — directly in any app, chat or browser.</string>
+    <string name="onboarding_whatsnew_history_title">History</string>
+    <string name="onboarding_whatsnew_history_desc">Your last translations are saved automatically so you can reuse them anytime.</string>
+    <string name="onboarding_whatsnew_share_title">Share</string>
+    <string name="onboarding_whatsnew_share_desc">Share your translation directly, without a detour through copy.</string>
+    <string name="onboarding_whatsnew_widget_title">Home screen widget</string>
+    <string name="onboarding_whatsnew_widget_desc">A quick shortcut to open the app straight from your home screen.</string>
     <string name="a11y_reverse_mode_active">Reverse mode active, tap to switch to normal mode</string>
     <string name="a11y_reverse_mode_inactive">Normal mode, tap to switch to reverse mode</string>
     <string name="a11y_mode_selector">Current mode: %1$s. Tap to change.</string>

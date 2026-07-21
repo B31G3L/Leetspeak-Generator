@@ -9,7 +9,7 @@ plugins {
 
 android {
     namespace 'com.beigel.leetSpeak_Generator'
-    compileSdk 35
+    compileSdk 36
 
     buildFeatures {
         compose true
@@ -27,7 +27,7 @@ android {
     defaultConfig {
         applicationId "com.beigel.leetSpeak_Generator"
         minSdk 27
-        targetSdk 35
+        targetSdk 36
         versionCode 1501337018
         versionName "1337.018"
 
@@ -40,6 +40,7 @@ android {
     buildTypes {
         release {
             minifyEnabled true
+            shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             debuggable false
         }

@@ -32,8 +32,8 @@ fun LeetspeakGeneratorTheme(
         SideEffect {
             val activity = view.context as? Activity
             activity?.let {
-                // ✅ NEUE METHODE - Android 15+ kompatibel
-                EdgeToEdgeHelper.setupEdgeToEdge(it, view, darkTheme)
+                // ✅ enableEdgeToEdge() — Android 15+ kompatibel, ohne veraltete APIs
+                EdgeToEdgeHelper.setupEdgeToEdge(it, darkTheme)
             }
         }
     }

@@ -3,6 +3,8 @@ package com.beigel.leetSpeak_Generator.keyboard
 import android.content.Context
 import android.content.SharedPreferences
 import android.graphics.Typeface
+import android.graphics.drawable.GradientDrawable
+import android.graphics.drawable.StateListDrawable
 import android.inputmethodservice.InputMethodService
 import android.util.TypedValue
 import android.view.Gravity
@@ -12,10 +14,17 @@ import android.view.inputmethod.EditorInfo
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.core.content.ContextCompat
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import com.beigel.leetSpeak_Generator.R
 import com.beigel.leetSpeak_Generator.data.CustomLeet
 import com.beigel.leetSpeak_Generator.manager.LeetManager
 import com.beigel.leetSpeak_Generator.translation.LeetTranslator
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
 
 /**
  * Eigenständige Leetspeak-Tastatur (IME). Übersetzt jeden getippten Buchstaben
@@ -31,10 +40,13 @@ class LeetKeyboardService : InputMethodService() {
 
     private lateinit var leetManager: LeetManager
     private lateinit var prefs: SharedPreferences
+    private val serviceScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
 
     private var mode: LeetTranslator.TranslationMode = LeetTranslator.TranslationMode.SIMPLE
     private var customIndex: Int = -1
     private var isShiftOn = false
+    private var isCapsLock = false
+    private var lastShiftTapTime = 0L
     private var isSymbolsLayer = false
 
     private var modeLabelView: TextView? = null
@@ -48,6 +60,8 @@ class LeetKeyboardService : InputMethodService() {
         private const val MODE_SIMPLE_INT = 0
         private const val MODE_EXTENDED_INT = 1
         private const val MODE_CUSTOM_INT = 2
+
+        private const val DOUBLE_TAP_MS = 350L
 
         private const val ROW1 = "qwertyuiop"
         private const val ROW2 = "asdfghjkl"
@@ -63,6 +77,22 @@ class LeetKeyboardService : InputMethodService() {
         leetManager = LeetManager(applicationContext)
         prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         loadState()
+
+        // LeetManager lädt die Custom Leets asynchron aus den SharedPreferences.
+        // Falls die Tastatur schneller angezeigt wird als dieser Ladevorgang
+        // fertig ist, wären Custom Leets in der Modus-Auswahl unsichtbar.
+        // Deshalb hier explizit warten und danach — falls die Tastatur zu dem
+        // Zeitpunkt schon sichtbar ist — Modus-Anzeige und Tasten auffrischen.
+        serviceScope.launch {
+            leetManager.awaitLoaded()
+            refreshModeLabel()
+            rebuildKeys()
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        serviceScope.cancel()
     }
 
     private fun loadState() {
@@ -99,6 +129,7 @@ class LeetKeyboardService : InputMethodService() {
             saveState()
         }
         isShiftOn = false
+        isCapsLock = false
         isSymbolsLayer = false
         refreshModeLabel()
         rebuildKeys()
@@ -150,10 +181,12 @@ class LeetKeyboardService : InputMethodService() {
     // ---------------------------------------------------------------------
 
     private fun commitChar(char: Char) {
-        val effective = if (isShiftOn) char.uppercaseChar() else char.lowercaseChar()
+        val effective = if (isShiftOn || isCapsLock) char.uppercaseChar() else char.lowercaseChar()
         val translated = LeetTranslator.translateChar(effective, mode, currentCustomLeet())
         currentInputConnection?.commitText(translated, 1)
-        if (isShiftOn) {
+        // Einmaliger Shift (nicht Caps-Lock) schaltet sich nach einem Zeichen wieder ab —
+        // genau wie bei Gboard.
+        if (isShiftOn && !isCapsLock) {
             isShiftOn = false
             rebuildKeys()
         }
@@ -182,8 +215,30 @@ class LeetKeyboardService : InputMethodService() {
         }
     }
 
-    private fun toggleShift() {
-        isShiftOn = !isShiftOn
+    /**
+     * Gboard-typisches Shift-Verhalten:
+     * - Einzeltipp: einmalige Großschreibung fürs nächste Zeichen
+     * - Doppeltipp (innerhalb 350ms): Caps-Lock an/aus
+     * - Tipp bei aktivem Caps-Lock: schaltet Caps-Lock wieder aus
+     */
+    private fun handleShiftTap() {
+        val now = System.currentTimeMillis()
+        val isDoubleTap = now - lastShiftTapTime < DOUBLE_TAP_MS
+        lastShiftTapTime = now
+
+        when {
+            isCapsLock -> {
+                isCapsLock = false
+                isShiftOn = false
+            }
+            isDoubleTap -> {
+                isCapsLock = true
+                isShiftOn = true
+            }
+            else -> {
+                isShiftOn = !isShiftOn
+            }
+        }
         rebuildKeys()
     }
 
@@ -208,19 +263,56 @@ class LeetKeyboardService : InputMethodService() {
             setMargins(m, m, m, m)
         }
 
+    /**
+     * Baut eine abgerundete "Tastenkappe" im Gboard-Stil: normaler Zustand in
+     * [normalColor], beim Antippen kurz heller/dunkler eingefärbt in
+     * [pressedColor] für sofortiges Touch-Feedback — genau wie bei Gboard, wo
+     * jede Taste beim Drücken sichtbar aufleuchtet.
+     */
+    private fun keyBackground(normalColorRes: Int, pressedColorRes: Int, radiusDp: Int = 6): StateListDrawable {
+        val radius = dp(radiusDp).toFloat()
+        val normal = GradientDrawable().apply {
+            shape = GradientDrawable.RECTANGLE
+            cornerRadius = radius
+            setColor(ContextCompat.getColor(this@LeetKeyboardService, normalColorRes))
+        }
+        val pressed = GradientDrawable().apply {
+            shape = GradientDrawable.RECTANGLE
+            cornerRadius = radius
+            setColor(ContextCompat.getColor(this@LeetKeyboardService, pressedColorRes))
+        }
+        return StateListDrawable().apply {
+            addState(intArrayOf(android.R.attr.state_pressed), pressed)
+            addState(intArrayOf(), normal)
+        }
+    }
+
     private fun buildKeyboard(): View {
         val root = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             setBackgroundColor(ContextCompat.getColor(this@LeetKeyboardService, R.color.keyboard_background))
-            setPadding(dp(6), dp(6), dp(6), dp(6))
+            setPadding(dp(8), dp(8), dp(8), dp(8))
+        }
+
+        // Ohne das hier zeichnet Android die Tastatur bis unter die System-
+        // Navigationsleiste/Geste-Leiste (Edge-to-Edge ist inzwischen Standard),
+        // wodurch die unterste Tastenreihe teilweise dahinter verschwindet.
+        // Zusätzlich zum reinen Inset-Wert noch etwas Puffer drauf, damit genug
+        // Abstand zu den System-Icons (Einklappen-Pfeil, Tastatur-wechseln-Globus)
+        // bleibt, die Android dort selbst einblendet.
+        ViewCompat.setOnApplyWindowInsetsListener(root) { view, insets ->
+            val navBarInset = insets.getInsets(WindowInsetsCompat.Type.navigationBars()).bottom
+            val extraBuffer = dp(20)
+            view.setPadding(dp(8), dp(8), dp(8), dp(8) + navBarInset + extraBuffer)
+            insets
         }
 
         // Modus-Auswahl-Leiste: ‹ Modusname ›
         val modeRow = LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER_VERTICAL
-            layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(40)).apply {
-                bottomMargin = dp(4)
+            layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(46)).apply {
+                bottomMargin = dp(6)
             }
         }
         val prevButton = createSpecialKey("‹") { cycleMode(forward = false) }
@@ -269,17 +361,17 @@ class LeetKeyboardService : InputMethodService() {
         } else {
             container.addView(buildLetterRow(ROW1))
             container.addView(buildLetterRow(ROW2, sideInsetWeight = 0.5f))
-            val shiftKey = createSpecialKey("⇧") { toggleShift() }.apply {
-                setBackgroundColor(
-                    ContextCompat.getColor(
-                        this@LeetKeyboardService,
-                        if (isShiftOn) R.color.keyboard_accent else R.color.keyboard_key_special_bg
-                    )
+            val shiftKey = createSpecialKey(if (isCapsLock) "⇪" else "⇧") { handleShiftTap() }.apply {
+                textSize = 20f
+                val isActive = isShiftOn || isCapsLock
+                background = keyBackground(
+                    if (isActive) R.color.keyboard_accent else R.color.keyboard_key_special_bg,
+                    if (isActive) R.color.keyboard_accent else R.color.keyboard_key_pressed_bg
                 )
                 setTextColor(
                     ContextCompat.getColor(
                         this@LeetKeyboardService,
-                        if (isShiftOn) R.color.keyboard_accent_text else R.color.keyboard_key_special_text
+                        if (isActive) R.color.keyboard_accent_text else R.color.keyboard_key_special_text
                     )
                 )
             }
@@ -298,16 +390,22 @@ class LeetKeyboardService : InputMethodService() {
         // Untere Reihe: 123/ABC-Umschalter, Komma, Leertaste, Punkt, Enter
         val bottomRow = LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
-            layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(46)).apply {
-                topMargin = dp(4)
+            layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(56)).apply {
+                topMargin = dp(6)
             }
         }
         val symToggle = createSpecialKey(if (isSymbolsLayer) "ABC" else "?123") { toggleSymbols() }
-        val comma = createKey(",") { commitLiteral(",") }
-        val space = createSpecialKey(getString(R.string.keyboard_space_label)) { handleSpace() }
-        val dot = createKey(".") { commitLiteral(".") }
+        val comma = createSpecialKey(",") { commitLiteral(",") }
+        val space = createSpecialKey(getString(R.string.keyboard_space_label)) { handleSpace() }.apply {
+            textSize = 13f
+            setTextColor(ContextCompat.getColor(this@LeetKeyboardService, R.color.keyboard_preview_text))
+            // Leertaste als durchgehende Pille (volle Rundung) — typisches Gboard-Detail.
+            background = keyBackground(R.color.keyboard_key_special_bg, R.color.keyboard_key_pressed_bg, radiusDp = 20)
+        }
+        val dot = createSpecialKey(".") { commitLiteral(".") }
         val enter = createSpecialKey("⏎") { handleEnter() }.apply {
-            setBackgroundColor(ContextCompat.getColor(this@LeetKeyboardService, R.color.keyboard_accent))
+            textSize = 20f
+            background = keyBackground(R.color.keyboard_accent, R.color.keyboard_accent)
             setTextColor(ContextCompat.getColor(this@LeetKeyboardService, R.color.keyboard_accent_text))
         }
 
@@ -319,19 +417,23 @@ class LeetKeyboardService : InputMethodService() {
         container.addView(bottomRow)
     }
 
+    /** Zeigt Buchstaben groß an, wenn Shift oder Caps-Lock aktiv ist — wie bei Gboard. */
+    private fun letterLabel(c: Char): String =
+        if (isShiftOn || isCapsLock) c.uppercaseChar().toString() else c.toString()
+
     /** Reihe aus reinen Buchstabentasten (werden live übersetzt). */
     private fun buildLetterRow(chars: String, sideInsetWeight: Float = 0f): LinearLayout {
         return LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
-            layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(46)).apply {
-                topMargin = dp(4)
+            layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(56)).apply {
+                topMargin = dp(6)
             }
             if (sideInsetWeight > 0f) {
                 addView(View(this@LeetKeyboardService), LinearLayout.LayoutParams(0, 0, sideInsetWeight))
             }
             for (c in chars) {
                 addView(
-                    createKey(c.toString()) { commitChar(c) },
+                    createKey(letterLabel(c)) { commitChar(c) },
                     keyParams(1f)
                 )
             }
@@ -345,8 +447,8 @@ class LeetKeyboardService : InputMethodService() {
     private fun buildLiteralRow(chars: String): LinearLayout {
         return LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
-            layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(46)).apply {
-                topMargin = dp(4)
+            layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(56)).apply {
+                topMargin = dp(6)
             }
             for (c in chars) {
                 addView(
@@ -368,15 +470,15 @@ class LeetKeyboardService : InputMethodService() {
     ): LinearLayout {
         return LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
-            layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(46)).apply {
-                topMargin = dp(4)
+            layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(56)).apply {
+                topMargin = dp(6)
             }
             addView(left, keyParams(leftWeight))
             for (c in middleChars) {
                 val key = if (middleIsLiteral) {
                     createKey(c.toString()) { commitLiteral(c.toString()) }
                 } else {
-                    createKey(c.toString()) { commitChar(c) }
+                    createKey(letterLabel(c)) { commitChar(c) }
                 }
                 addView(key, keyParams(1f))
             }
@@ -387,9 +489,11 @@ class LeetKeyboardService : InputMethodService() {
     private fun createKey(label: String, onClick: () -> Unit): TextView = TextView(this).apply {
         text = label
         gravity = Gravity.CENTER
-        textSize = 18f
+        textSize = 20f
         setTextColor(ContextCompat.getColor(this@LeetKeyboardService, R.color.keyboard_key_text))
-        setBackgroundColor(ContextCompat.getColor(this@LeetKeyboardService, R.color.keyboard_key_bg))
+        // Wie beim Original-Keyboard: Buchstaben schweben ohne sichtbare Box,
+        // nur beim Antippen leuchtet die Taste kurz auf.
+        background = keyBackground(android.R.color.transparent, R.color.keyboard_key_pressed_bg)
         isClickable = true
         isFocusable = true
         includeFontPadding = false
@@ -401,7 +505,7 @@ class LeetKeyboardService : InputMethodService() {
         gravity = Gravity.CENTER
         textSize = 16f
         setTextColor(ContextCompat.getColor(this@LeetKeyboardService, R.color.keyboard_key_special_text))
-        setBackgroundColor(ContextCompat.getColor(this@LeetKeyboardService, R.color.keyboard_key_special_bg))
+        background = keyBackground(R.color.keyboard_key_special_bg, R.color.keyboard_key_pressed_bg)
         isClickable = true
         isFocusable = true
         includeFontPadding = false

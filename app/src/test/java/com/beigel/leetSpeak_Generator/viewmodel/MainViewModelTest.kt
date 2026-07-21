@@ -1,6 +1,7 @@
 package com.beigel.leetSpeak_Generator.viewmodel
 
 import android.app.Application
+import app.cash.turbine.test
 import com.beigel.leetSpeak_Generator.data.HistoryEntry
 import com.beigel.leetSpeak_Generator.data.HistoryPreferences
 import com.beigel.leetSpeak_Generator.data.LeetOption
@@ -34,7 +35,6 @@ import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
@@ -137,18 +137,25 @@ class MainViewModelTest {
 
     @Test
     fun `updateInputText updates inputText and outputText reflects real translation`() = runTest(testDispatcher) {
-        viewModel.handleIntent(MainIntent.UpdateInput("HELLO"))
-        testDispatcher.scheduler.advanceUntilIdle()
+        viewModel.outputText.test {
+            awaitItem() // initialer Wert ""
+            viewModel.handleIntent(MainIntent.UpdateInput("HELLO"))
+            assertThat(awaitItem()).isEqualTo("#3LL0")
+            cancelAndIgnoreRemainingEvents()
+        }
 
         assertThat(viewModel.inputText.value).isEqualTo("HELLO")
-        assertThat(viewModel.outputText.value).isEqualTo("#3LL0")
     }
 
     @Test
     fun `toggleReverseMode moves current output into input when output is not empty`() = runTest(testDispatcher) {
-        viewModel.handleIntent(MainIntent.UpdateInput("HELLO"))
-        testDispatcher.scheduler.advanceUntilIdle()
-        val translatedOutput = viewModel.outputText.value
+        var translatedOutput = ""
+        viewModel.outputText.test {
+            awaitItem()
+            viewModel.handleIntent(MainIntent.UpdateInput("HELLO"))
+            translatedOutput = awaitItem()
+            cancelAndIgnoreRemainingEvents()
+        }
 
         viewModel.handleIntent(MainIntent.ToggleReverseMode)
         testDispatcher.scheduler.advanceUntilIdle()
@@ -179,8 +186,12 @@ class MainViewModelTest {
 
     @Test
     fun `copyToClipboard with content sets success and saves a history entry`() = runTest(testDispatcher) {
-        viewModel.handleIntent(MainIntent.UpdateInput("HI"))
-        testDispatcher.scheduler.advanceUntilIdle()
+        viewModel.outputText.test {
+            awaitItem()
+            viewModel.handleIntent(MainIntent.UpdateInput("HI"))
+            awaitItem() // "#1"
+            cancelAndIgnoreRemainingEvents()
+        }
 
         viewModel.handleIntent(MainIntent.CopyToClipboard)
         testDispatcher.scheduler.advanceUntilIdle()
@@ -191,20 +202,25 @@ class MainViewModelTest {
 
     @Test
     fun `shareOutput with content emits the output via shareEvent and saves history`() = runTest(testDispatcher) {
-        viewModel.handleIntent(MainIntent.UpdateInput("HI"))
-        testDispatcher.scheduler.advanceUntilIdle()
-        val expectedOutput = viewModel.outputText.value
+        var expectedOutput = ""
+        viewModel.outputText.test {
+            awaitItem()
+            viewModel.handleIntent(MainIntent.UpdateInput("HI"))
+            expectedOutput = awaitItem()
+            cancelAndIgnoreRemainingEvents()
+        }
 
-        val collected = mutableListOf<String>()
-        val job = launch { viewModel.shareEvent.collect { collected.add(it) } }
-        testDispatcher.scheduler.advanceUntilIdle()
+        viewModel.shareEvent.test {
+            viewModel.handleIntent(MainIntent.ShareOutput)
+            assertThat(awaitItem()).isEqualTo(expectedOutput)
+            cancelAndIgnoreRemainingEvents()
+        }
 
-        viewModel.handleIntent(MainIntent.ShareOutput)
+        // shareOutput() speichert den Verlaufseintrag über einen eigenen
+        // viewModelScope.launch{} — der läuft nicht zwingend schon vollständig
+        // durch, nur weil das shareEvent bereits emittiert wurde.
         testDispatcher.scheduler.advanceUntilIdle()
-
-        assertThat(collected).containsExactly(expectedOutput)
         coVerify(exactly = 1) { historyPreferences.addEntry(any()) }
-        job.cancel()
     }
 
     @Test
@@ -213,6 +229,40 @@ class MainViewModelTest {
         testDispatcher.scheduler.advanceUntilIdle()
 
         assertThat(viewModel.uiState.value.errorMessage).isNotNull()
+        coVerify(exactly = 0) { historyPreferences.addEntry(any()) }
+    }
+
+    // ─── Automatisches Speichern (Debounce) ────────────────────────────────────
+
+    @Test
+    fun `auto-saves to history after a pause in typing, even without copy or share`() = runTest(testDispatcher) {
+        viewModel.outputText.test {
+            awaitItem()
+            viewModel.handleIntent(MainIntent.UpdateInput("HI"))
+            awaitItem() // "#1"
+            cancelAndIgnoreRemainingEvents()
+        }
+
+        // 2 Sekunden Pause abwarten -> Debounce löst aus
+        testDispatcher.scheduler.advanceTimeBy(2100)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        coVerify(exactly = 1) { historyPreferences.addEntry(any()) }
+    }
+
+    @Test
+    fun `does not auto-save before the debounce pause has elapsed`() = runTest(testDispatcher) {
+        viewModel.outputText.test {
+            awaitItem()
+            viewModel.handleIntent(MainIntent.UpdateInput("HI"))
+            awaitItem()
+            cancelAndIgnoreRemainingEvents()
+        }
+
+        // Erst 500ms vergangen -> die 2-Sekunden-Pause ist noch nicht erreicht
+        testDispatcher.scheduler.advanceTimeBy(500)
+        testDispatcher.scheduler.runCurrent()
+
         coVerify(exactly = 0) { historyPreferences.addEntry(any()) }
     }
 

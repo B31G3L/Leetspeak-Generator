@@ -1,47 +1,46 @@
 package com.beigel.leetSpeak_Generator.ui.theme
 
 import android.app.Activity
-import android.os.Build
-import android.view.View
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
-import androidx.core.view.WindowCompat
+import android.graphics.Color as AndroidColor
+import androidx.activity.ComponentActivity
+import androidx.activity.SystemBarStyle
+import androidx.activity.enableEdgeToEdge
 
 /**
- * Helper für Edge-to-Edge Display (Android 15+ kompatibel)
+ * Helper für Edge-to-Edge Display (Android 15+ kompatibel).
+ *
+ * Nutzt bewusst die offizielle androidx.activity.enableEdgeToEdge()-API statt
+ * manuell WindowCompat + Window.statusBarColor/navigationBarColor zu setzen.
+ * Die alten Setter sind ab Android 15 als veraltet markiert — selbst wenn ihr
+ * Aufruf per SDK-Versionsabfrage abgesichert ist, taucht das Symbol trotzdem
+ * im kompilierten Code auf und wird von Play Console's statischer Analyse
+ * ("Nicht mehr unterstützte APIs für randlose Anzeige") angemeckert.
+ * enableEdgeToEdge() deckt alle Android-Versionen offiziell und ohne diese
+ * veralteten Aufrufe ab.
  */
 object EdgeToEdgeHelper {
 
     /**
-     * Konfiguriert Edge-to-Edge für moderne Android-Versionen
+     * Konfiguriert Edge-to-Edge für moderne Android-Versionen.
      */
     fun setupEdgeToEdge(
         activity: Activity,
-        view: View,
         isDarkTheme: Boolean
     ) {
-        // Edge-to-Edge aktivieren
-        WindowCompat.setDecorFitsSystemWindows(activity.window, false)
+        val componentActivity = activity as? ComponentActivity ?: return
 
-        // System Bars Controller
-        val windowInsetsController = WindowCompat.getInsetsController(
-            activity.window,
-            view
-        )
-
-        // Light/Dark Status Bar
-        windowInsetsController.isAppearanceLightStatusBars = !isDarkTheme
-        windowInsetsController.isAppearanceLightNavigationBars = !isDarkTheme
-
-        // Für Android 15+: Nur Controller verwenden, keine direkten Farben
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.VANILLA_ICE_CREAM) {
-            // Nur für ältere Versionen die Farben setzen
-            @Suppress("DEPRECATION")
-            activity.window.statusBarColor = Color.Transparent.toArgb()
-
-            @Suppress("DEPRECATION")
-            activity.window.navigationBarColor = Color.Transparent.toArgb()
+        // Dunkles Theme -> helle (weiße) Status-/Navigationsleisten-Icons,
+        // helles Theme -> dunkle Icons. Scrim transparent, da wir selbst per
+        // Insets-Padding in den Screens/der Tastatur für ausreichend Kontrast sorgen.
+        val style = if (isDarkTheme) {
+            SystemBarStyle.dark(AndroidColor.TRANSPARENT)
+        } else {
+            SystemBarStyle.light(AndroidColor.TRANSPARENT, AndroidColor.TRANSPARENT)
         }
-        // Android 15+ verwendet automatisch transparente System Bars
+
+        componentActivity.enableEdgeToEdge(
+            statusBarStyle = style,
+            navigationBarStyle = style
+        )
     }
 }
