@@ -72,8 +72,7 @@ class SettingsActivity : AppCompatActivity() {
                     },
                     onBugReport = { sendBugReport() },
                     onFeedback = { sendFeedback() },
-                    onKofiSupport = { openKofiLink() },
-                    onDiscordSupport = { openDiscordLink() }
+                    onKofiSupport = { openKofiLink() }
                 )
             }
         }
@@ -181,16 +180,6 @@ class SettingsActivity : AppCompatActivity() {
         }
     }
 
-    private fun openDiscordLink() {
-        try {
-            val discordUrl = getString(R.string.discord_invite_url)
-            val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(discordUrl))
-            startActivity(intent)
-        } catch (e: Exception) {
-            android.widget.Toast.makeText(this, getString(R.string.discord_toast_error), android.widget.Toast.LENGTH_SHORT).show()
-        }
-    }
-
     private fun getVersionName(): String {
         return try {
             packageManager.getPackageInfo(packageName, 0).versionName ?: "Unknown"
@@ -208,8 +197,7 @@ fun SettingsScreen(
     onLanguageChanged: (String) -> Unit = {},
     onBugReport: () -> Unit = {},
     onFeedback: () -> Unit = {},
-    onKofiSupport: () -> Unit = {},
-    onDiscordSupport: () -> Unit = {}
+    onKofiSupport: () -> Unit = {}
 ) {
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
@@ -392,7 +380,7 @@ fun SettingsScreen(
                     }
                 }
 
-                // Support & Info: Bug Report, Feedback, Ko-fi, Discord, App-Infos, Onboarding erneut anzeigen
+                // Support & Info: Bug Report, Feedback, Ko-fi, App-Infos, Onboarding erneut anzeigen
                 item {
                     CollapsibleSettingsSection(
                         title = stringResource(R.string.settings_support_info_title),
@@ -405,8 +393,7 @@ fun SettingsScreen(
                             SupportSettings(
                                 onBugReport = onBugReport,
                                 onFeedback = onFeedback,
-                                onKofiSupport = onKofiSupport,
-                                onDiscordSupport = onDiscordSupport
+                                onKofiSupport = onKofiSupport
                             )
                             HorizontalDivider(
                                 modifier = Modifier.padding(vertical = 6.dp),
@@ -437,8 +424,7 @@ fun SettingsScreen(
 private fun SupportSettings(
     onBugReport: () -> Unit,
     onFeedback: () -> Unit,
-    onKofiSupport: () -> Unit,
-    onDiscordSupport: () -> Unit
+    onKofiSupport: () -> Unit
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
         SupportRow(
@@ -455,11 +441,6 @@ private fun SupportSettings(
             icon = Icons.Default.LocalCafe,
             label = stringResource(R.string.kofi_support),
             onClick = onKofiSupport
-        )
-        SupportRow(
-            icon = Icons.Default.Forum,
-            label = stringResource(R.string.discord_support),
-            onClick = onDiscordSupport
         )
     }
 }

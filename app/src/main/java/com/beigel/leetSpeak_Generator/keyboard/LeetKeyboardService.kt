@@ -9,14 +9,17 @@ import android.graphics.drawable.StateListDrawable
 import android.inputmethodservice.InputMethodService
 import android.util.TypedValue
 import android.view.Gravity
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import android.widget.LinearLayout
+import android.widget.PopupWindow
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
+import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import com.beigel.leetSpeak_Generator.R
 import com.beigel.leetSpeak_Generator.data.CustomLeet
@@ -71,7 +74,24 @@ class LeetKeyboardService : InputMethodService() {
 
         private const val SYM_ROW1 = "1234567890"
         private const val SYM_ROW2 = "@#\$_&-+()/"
-        private const val SYM_ROW3 = "*\"':;!"
+        private const val SYM_ROW3 = "*\"':;!?"
+
+        /** Long-Press-Varianten für Umlaute/Akzente, analog zu Gboard. Deckt DE
+         * (ä ö ü ß) sowie Akzentzeichen für die übrigen App-Sprachen FR/ES/IT ab. */
+        private val ACCENT_VARIANTS: Map<Char, String> = mapOf(
+            'a' to "äàáâã",
+            'e' to "éèêë",
+            'i' to "íìîï",
+            'o' to "öòóôõ",
+            'u' to "üùúû",
+            's' to "ß",
+            'c' to "çć",
+            'n' to "ñ"
+        )
+
+        private const val LONG_PRESS_MS = 350L
+        private const val REPEAT_INITIAL_DELAY_MS = 400L
+        private const val REPEAT_INTERVAL_MS = 50L
     }
 
     override fun onCreate() {
@@ -122,22 +142,58 @@ class LeetKeyboardService : InputMethodService() {
 
     override fun onStartInputView(info: EditorInfo?, restarting: Boolean) {
         super.onStartInputView(info, restarting)
-        // Falls Custom Leets zwischenzeitlich in der Haupt-App gelöscht wurden:
-        // Index gegen die aktuelle Liste absichern, sonst zurück auf Simple.
-        val leets = leetManager.leets.value
-        if (mode == LeetTranslator.TranslationMode.CUSTOM && customIndex !in leets.indices) {
-            mode = LeetTranslator.TranslationMode.SIMPLE
-            customIndex = -1
-            saveState()
-        }
+        applyNavigationBarIconAppearance()
         isShiftOn = false
         isCapsLock = false
         isSymbolsLayer = false
-        refreshModeLabel()
-        rebuildKeys()
+
+        // Bei jedem Öffnen der Tastatur frisch aus den SharedPreferences laden:
+        // Die App und die Tastatur halten getrennte LeetManager-Instanzen, die
+        // sich nicht automatisch über neue/geänderte/gelöschte Custom Leets
+        // informieren (siehe LeetManager.reload()). Ohne das hier würden neu
+        // erstellte Leets erst nach einem Neustart der Tastatur auftauchen.
+        serviceScope.launch {
+            leetManager.reload()
+            // Falls Custom Leets zwischenzeitlich in der Haupt-App gelöscht wurden:
+            // Index gegen die aktuelle Liste absichern, sonst zurück auf Simple.
+            val leets = leetManager.leets.value
+            if (mode == LeetTranslator.TranslationMode.CUSTOM && customIndex !in leets.indices) {
+                mode = LeetTranslator.TranslationMode.SIMPLE
+                customIndex = -1
+                saveState()
+            }
+            refreshModeLabel()
+            rebuildKeys()
+        }
     }
 
     override fun onEvaluateFullscreenMode(): Boolean = false
+
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        // Falls der System-Dark-Mode bei offener Tastatur umgeschaltet wird,
+        // sonst würden die System-Icons (Pfeil/Globus) auf falschem Kontrast bleiben.
+        applyNavigationBarIconAppearance()
+    }
+
+    /**
+     * Sagt dem System, ob die vom OS selbst gezeichneten Icons in der
+     * Navigationsleiste (Einklappen-Pfeil, Tastatur-wechseln-Globus) hell
+     * oder dunkel sein sollen. Ohne das übernimmt Android eine Standard-
+     * Annahme, die im Light Mode zu hellen (kaum sichtbaren) Icons auf dem
+     * hellen Tastatur-Hintergrund führt. [keyboard_background] hat eigene
+     * values-night-Farben, die dem System-Dark-Mode folgen — also richten wir
+     * uns nach genau diesem Flag statt nach einem eigenen App-Theme-Override,
+     * da die Tastatur (anders als die Activities) keinen Zugriff auf die in
+     * ThemePreferences gespeicherte manuelle Theme-Wahl hat.
+     */
+    private fun applyNavigationBarIconAppearance() {
+        val dialogWindow = window?.window ?: return
+        val isNightMode = (resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) ==
+            Configuration.UI_MODE_NIGHT_YES
+        val controller = WindowCompat.getInsetsController(dialogWindow, dialogWindow.decorView)
+        controller.isAppearanceLightNavigationBars = !isNightMode
+    }
 
     // ---------------------------------------------------------------------
     // Modus-Auswahl (Simple → Extended → Custom Leets → zurück zu Simple)
@@ -380,7 +436,7 @@ class LeetKeyboardService : InputMethodService() {
                     leftWeight = 1.5f,
                     middleChars = SYM_ROW3,
                     middleIsLiteral = true,
-                    right = createSpecialKey("⌫") { handleBackspace() },
+                    right = createRepeatingSpecialKey("⌫") { handleBackspace() },
                     rightWeight = 1.5f
                 )
             )
@@ -407,7 +463,7 @@ class LeetKeyboardService : InputMethodService() {
                     leftWeight = 1.5f,
                     middleChars = ROW3,
                     middleIsLiteral = false,
-                    right = createSpecialKey("⌫") { handleBackspace() },
+                    right = createRepeatingSpecialKey("⌫") { handleBackspace() },
                     rightWeight = 1.5f
                 )
             )
@@ -458,10 +514,7 @@ class LeetKeyboardService : InputMethodService() {
                 addView(View(this@LeetKeyboardService), LinearLayout.LayoutParams(0, 0, sideInsetWeight))
             }
             for (c in chars) {
-                addView(
-                    createKey(letterLabel(c)) { commitChar(c) },
-                    keyParams(1f)
-                )
+                addView(createLetterKey(c), keyParams(1f))
             }
             if (sideInsetWeight > 0f) {
                 addView(View(this@LeetKeyboardService), LinearLayout.LayoutParams(0, 0, sideInsetWeight))
@@ -504,7 +557,7 @@ class LeetKeyboardService : InputMethodService() {
                 val key = if (middleIsLiteral) {
                     createKey(c.toString()) { commitLiteral(c.toString()) }
                 } else {
-                    createKey(letterLabel(c)) { commitChar(c) }
+                    createLetterKey(c)
                 }
                 addView(key, keyParams(1f))
             }
@@ -536,5 +589,187 @@ class LeetKeyboardService : InputMethodService() {
         isFocusable = true
         includeFontPadding = false
         setOnClickListener { onClick() }
+    }
+
+    // ---------------------------------------------------------------------
+    // Buchstabentaste mit Long-Press-Popup für Umlaute/Akzente (ä ö ü ß é ñ …)
+    // ---------------------------------------------------------------------
+
+    /**
+     * Buchstabentaste, die bei normalem Tap [commitChar] auslöst. Ist für den
+     * Buchstaben eine Akzent-Variante in [ACCENT_VARIANTS] hinterlegt, öffnet
+     * ein Long-Press (analog zu Gboard) ein Auswahl-Popup über der Taste;
+     * Ziehen zu einer Variante und Loslassen committet diese, Loslassen
+     * außerhalb des Popups bricht ab.
+     */
+    private fun createLetterKey(c: Char): TextView {
+        val key = TextView(this).apply {
+            text = letterLabel(c)
+            gravity = Gravity.CENTER
+            textSize = 20f
+            setTextColor(ContextCompat.getColor(this@LeetKeyboardService, R.color.keyboard_key_text))
+            background = keyBackground(android.R.color.transparent, R.color.keyboard_key_pressed_bg)
+            isClickable = true
+            isFocusable = true
+            includeFontPadding = false
+        }
+
+        val variants = ACCENT_VARIANTS[c.lowercaseChar()]
+        if (variants.isNullOrEmpty()) {
+            key.setOnClickListener { commitChar(c) }
+            return key
+        }
+
+        attachAccentPopup(key, c, variants)
+        return key
+    }
+
+    private fun attachAccentPopup(key: TextView, baseChar: Char, variants: String) {
+        var popup: PopupWindow? = null
+        var itemViews: List<TextView> = emptyList()
+        var highlightedIndex = -1
+        var longPressFired = false
+        var popupLeftOnScreen = 0
+        var popupItemWidth = 0
+
+        fun setHighlight(index: Int) {
+            if (index == highlightedIndex) return
+            itemViews.getOrNull(highlightedIndex)?.setBackgroundColor(
+                ContextCompat.getColor(this@LeetKeyboardService, R.color.keyboard_key_special_bg)
+            )
+            itemViews.getOrNull(index)?.setBackgroundColor(
+                ContextCompat.getColor(this@LeetKeyboardService, R.color.keyboard_accent)
+            )
+            highlightedIndex = index
+        }
+
+        fun dismissPopup() {
+            popup?.dismiss()
+            popup = null
+            itemViews = emptyList()
+            highlightedIndex = -1
+        }
+
+        val longPressRunnable = Runnable {
+            longPressFired = true
+            key.isPressed = false
+
+            val row = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL }
+            val views = variants.map { variantChar ->
+                TextView(this).apply {
+                    text = variantChar.toString()
+                    gravity = Gravity.CENTER
+                    textSize = 20f
+                    setTextColor(ContextCompat.getColor(this@LeetKeyboardService, R.color.keyboard_key_special_text))
+                    setBackgroundColor(ContextCompat.getColor(this@LeetKeyboardService, R.color.keyboard_key_special_bg))
+                    setPadding(dp(14), dp(10), dp(14), dp(10))
+                    row.addView(this)
+                }
+            }
+            itemViews = views
+
+            row.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED)
+            val popupWidth = row.measuredWidth
+            val popupHeight = row.measuredHeight
+
+            val newPopup = PopupWindow(row, popupWidth, popupHeight, false).apply {
+                isTouchable = false
+                isOutsideTouchable = false
+                elevation = dp(6).toFloat()
+            }
+            popup = newPopup
+
+            val loc = IntArray(2)
+            key.getLocationOnScreen(loc)
+            val x = (loc[0] + key.width / 2 - popupWidth / 2).coerceAtLeast(0)
+            val y = loc[1] - popupHeight - dp(4)
+            newPopup.showAtLocation(key.rootView, Gravity.NO_GRAVITY, x, y)
+
+            popupLeftOnScreen = x
+            popupItemWidth = if (views.isNotEmpty()) popupWidth / views.size else popupWidth
+        }
+
+        key.setOnTouchListener { _, event ->
+            when (event.actionMasked) {
+                MotionEvent.ACTION_DOWN -> {
+                    longPressFired = false
+                    key.isPressed = true
+                    key.postDelayed(longPressRunnable, LONG_PRESS_MS)
+                    true
+                }
+                MotionEvent.ACTION_MOVE -> {
+                    if (longPressFired && popup != null && popupItemWidth > 0) {
+                        val relativeX = event.rawX - popupLeftOnScreen
+                        val index = (relativeX / popupItemWidth).toInt()
+                        if (index in variants.indices) {
+                            setHighlight(index)
+                        } else {
+                            setHighlight(-1)
+                        }
+                    }
+                    true
+                }
+                MotionEvent.ACTION_UP -> {
+                    key.removeCallbacks(longPressRunnable)
+                    key.isPressed = false
+                    if (longPressFired) {
+                        val index = highlightedIndex
+                        dismissPopup()
+                        if (index in variants.indices) {
+                            commitChar(variants[index])
+                        }
+                        // Loslassen außerhalb aller Varianten: Eingabe wird abgebrochen,
+                        // kein Zeichen committet (Standardverhalten von Akzent-Popups).
+                    } else {
+                        commitChar(baseChar)
+                    }
+                    true
+                }
+                MotionEvent.ACTION_CANCEL -> {
+                    key.removeCallbacks(longPressRunnable)
+                    key.isPressed = false
+                    dismissPopup()
+                    true
+                }
+                else -> false
+            }
+        }
+    }
+
+    // ---------------------------------------------------------------------
+    // Spezialtaste mit Key-Repeat bei gedrückt gehalten (z. B. Backspace) —
+    // wie bei Gboard: erster Tastendruck sofort, danach wiederholtes Auslösen
+    // nach kurzer Anfangsverzögerung, solange die Taste gehalten wird.
+    // ---------------------------------------------------------------------
+
+    private fun createRepeatingSpecialKey(label: String, action: () -> Unit): TextView {
+        val key = createSpecialKey(label) {}
+
+        val repeatRunnable = object : Runnable {
+            override fun run() {
+                action()
+                key.postDelayed(this, REPEAT_INTERVAL_MS)
+            }
+        }
+        val startRepeatRunnable = Runnable { key.post(repeatRunnable) }
+
+        key.setOnTouchListener { _, event ->
+            when (event.actionMasked) {
+                MotionEvent.ACTION_DOWN -> {
+                    key.isPressed = true
+                    action()
+                    key.postDelayed(startRepeatRunnable, REPEAT_INITIAL_DELAY_MS)
+                    true
+                }
+                MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                    key.isPressed = false
+                    key.removeCallbacks(startRepeatRunnable)
+                    key.removeCallbacks(repeatRunnable)
+                    true
+                }
+                else -> false
+            }
+        }
+        return key
     }
 }

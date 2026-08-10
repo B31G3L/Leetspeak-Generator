@@ -176,8 +176,6 @@
     <string name="custom_leet_description">Benutzerdefinierte Zeichenzuordnungen</string>
 
     <string name="kofi_support">Unterstützen auf Ko-Fi</string>
-    <string name="discord_support">Unserem Discord beitreten</string>
-    <string name="discord_toast_error">Discord-Link konnte nicht geöffnet werden</string>
     <string name="kofi_description">Unterstütze den Entwickler</string>
     <string name="kofi_toast_error">Ko-Fi-Link konnte nicht geöffnet werden</string>
     <string name="kofi_toast_thanks">Vielen Dank für deine Unterstützung! ☕</string>
@@ -190,7 +188,6 @@
     <string name="about_support_message">Wenn dir die App gefällt, würde ich mich sehr über deine Unterstützung freuen! Eine gute Bewertung oder ein kleiner Kaffee hilft mir sehr bei der Weiterentwicklung.</string>
     <string name="about_support_thanks">Vielen Dank für deine Unterstützung! Jede Bewertung und jeder Kaffee motiviert mich, noch bessere Apps zu entwickeln. ❤️</string>
     <string name="kofi_support_short">Ko-Fi</string>
-    <string name="discord_support_short">Discord</string>
 
     <string name="about_developer_info">Solo-Entwickler mit Leidenschaft</string>
     <string name="about_made_with_love">Mit ❤️ in Deutschland entwickelt</string>
@@ -352,7 +349,6 @@
     <string name="leet_option_custom_name">Benutzerdefiniert</string>
 
     <string name="url_kofi">https://ko-fi.com/beigel</string>
-    <string name="discord_invite_url" translatable="false">https://discord.gg/ww9DEnFUJp</string>
     <string name="url_play_store">https://play.google.com/store/apps/details?id=com.beigel.leetSpeak_Generator</string>
 
     <string name="content_description_favorite">Favorit</string>
@@ -405,7 +401,7 @@
 
     <string name="onboarding_about_me_title">Von einem Solo-Entwickler</string>
     <string name="onboarding_about_me_desc">Hallo! 👋 Ich bin ein Solo-Entwickler, der diese App aus Leidenschaft für das Codieren und Leetspeak erstellt hat. Immer kostenlos, ohne Werbung.</string>
-    <string name="onboarding_support_hint">Wenn dir die App gefällt, hilft mir eine Bewertung, ein Kaffee oder der Discord sehr bei der Weiterentwicklung.</string>
+    <string name="onboarding_support_hint">Wenn dir die App gefällt, hilft mir eine Bewertung oder ein Kaffee sehr bei der Weiterentwicklung.</string>
 
     <string name="onboarding_whatsnew_title">Neu in diesem Update</string>
     <string name="onboarding_whatsnew_keyboard_title">Leetspeak-Tastatur</string>

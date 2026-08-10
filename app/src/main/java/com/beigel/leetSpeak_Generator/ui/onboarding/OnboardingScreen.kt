@@ -32,7 +32,7 @@ import kotlinx.coroutines.launch
  * Onboarding (Redesign v4b + Update-Hinweise): 3-Schritt-Intro, Vollbild, ohne Bottom-Nav.
  * Seite 1: Über die App (zusammengefasste Funktionsübersicht).
  * Seite 2: Neu in diesem Update (Tastatur, Verlauf, Teilen, Widget) + Tastatur-Aktivierung.
- * Seite 3: Über mich (Solo-Entwickler) + Bewerten / Ko-Fi / Discord.
+ * Seite 3: Über mich (Solo-Entwickler) + Bewerten / Ko-Fi.
  * 96x96dp abgerundete Icon-Kachel (28dp Radius, primaryContainer), Step-Dots
  * (aktiv = 20dp Pill, inaktiv = 6dp Kreis), volle-Breite CTA-Button (50dp, 16dp Radius).
  *
@@ -53,7 +53,6 @@ fun OnboardingScreen(
 
     val playStoreUrl = stringResource(R.string.url_play_store)
     val kofiUrl = stringResource(R.string.url_kofi)
-    val discordUrl = stringResource(R.string.discord_invite_url)
     val context = LocalContext.current
 
     Box(
@@ -102,8 +101,7 @@ fun OnboardingScreen(
                     else -> OnboardingAboutMePage(
                         isActive = isActive,
                         onRateClick = { uriHandler.openUri(playStoreUrl) },
-                        onKofiClick = { uriHandler.openUri(kofiUrl) },
-                        onDiscordClick = { uriHandler.openUri(discordUrl) }
+                        onKofiClick = { uriHandler.openUri(kofiUrl) }
                     )
                 }
             }
@@ -387,8 +385,7 @@ private fun OnboardingFeatureRow(
 private fun OnboardingAboutMePage(
     isActive: Boolean,
     onRateClick: () -> Unit,
-    onKofiClick: () -> Unit,
-    onDiscordClick: () -> Unit
+    onKofiClick: () -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -483,13 +480,6 @@ private fun OnboardingAboutMePage(
                             containerColor = MaterialTheme.colorScheme.tertiary,
                             contentColor = MaterialTheme.colorScheme.onTertiary,
                             onClick = onKofiClick
-                        )
-                        OnboardingLinkButton(
-                            icon = Icons.Default.Forum,
-                            label = stringResource(R.string.discord_support_short),
-                            containerColor = MaterialTheme.colorScheme.secondary,
-                            contentColor = MaterialTheme.colorScheme.onSecondary,
-                            onClick = onDiscordClick
                         )
                     }
                 }

@@ -175,8 +175,6 @@
     <string name="custom_leet_description">Custom character mappings</string>
 
     <string name="kofi_support">Support on Ko-Fi</string>
-    <string name="discord_support">Join our Discord</string>
-    <string name="discord_toast_error">Could not open Discord link</string>
     <string name="kofi_description">Support the developer</string>
     <string name="kofi_toast_error">Could not open Ko-Fi link</string>
     <string name="kofi_toast_thanks">Thank you for your support! ☕</string>
@@ -189,7 +187,6 @@
     <string name="about_support_message">If you like the app, I would greatly appreciate your support! A good rating or a small coffee helps me a lot to continue developing.</string>
     <string name="about_support_thanks">Thank you for your support! Every rating and every coffee motivates me to develop even better apps. ❤️</string>
     <string name="kofi_support_short">Ko-Fi</string>
-    <string name="discord_support_short">Discord</string>
 
     <string name="about_developer_info">Solo developer with passion</string>
     <string name="about_made_with_love">Made with ❤️ in Germany</string>
@@ -350,7 +347,6 @@
     <string name="leet_option_custom_name">Custom</string>
 
     <string name="url_kofi">https://ko-fi.com/beigel</string>
-    <string name="discord_invite_url" translatable="false">https://discord.gg/ww9DEnFUJp</string>
     <string name="url_play_store">https://play.google.com/store/apps/details?id=com.beigel.leetSpeak_Generator</string>
 
     <string name="content_description_favorite">Favorite</string>
@@ -402,7 +398,7 @@
 
     <string name="onboarding_about_me_title">Made by a solo developer</string>
     <string name="onboarding_about_me_desc">Hi! 👋 I\'m a solo developer who built this app out of passion for coding and leetspeak. It\'s always free, no ads.</string>
-    <string name="onboarding_support_hint">If you like the app, a rating, a coffee, or joining the Discord helps me a lot to keep developing.</string>
+    <string name="onboarding_support_hint">If you like the app, a rating or a coffee helps me a lot to keep developing.</string>
 
     <string name="onboarding_whatsnew_title">New in this update</string>
     <string name="onboarding_whatsnew_keyboard_title">Leetspeak keyboard</string>

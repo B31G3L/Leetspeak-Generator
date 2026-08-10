@@ -176,8 +176,6 @@
     <string name="custom_leet_description">Mappature di caratteri personalizzate</string>
 
     <string name="kofi_support">Supporta su Ko-Fi</string>
-    <string name="discord_support">Unisciti al nostro Discord</string>
-    <string name="discord_toast_error">Impossibile aprire il link Discord</string>
     <string name="kofi_description">Supporta lo sviluppatore</string>
     <string name="kofi_toast_error">Impossibile aprire il link Ko-Fi</string>
     <string name="kofi_toast_thanks">Grazie per il tuo supporto! ☕</string>
@@ -190,7 +188,6 @@
     <string name="about_support_message">Se ti piace l\'app, apprezzerei molto il tuo supporto! Una buona valutazione o un piccolo caffè mi aiuta molto a continuare a sviluppare.</string>
     <string name="about_support_thanks">Grazie per il tuo supporto! Ogni valutazione e ogni caffè mi motiva a sviluppare app ancora migliori. ❤️</string>
     <string name="kofi_support_short">Ko-Fi</string>
-    <string name="discord_support_short">Discord</string>
 
     <string name="about_developer_info">Sviluppatore solista con passione</string>
     <string name="about_made_with_love">Fatto con ❤️ in Germania</string>
@@ -351,7 +348,6 @@
     <string name="leet_option_custom_name">Personalizzato</string>
 
     <string name="url_kofi">https://ko-fi.com/beigel</string>
-    <string name="discord_invite_url" translatable="false">https://discord.gg/ww9DEnFUJp</string>
     <string name="url_play_store">https://play.google.com/store/apps/details?id=com.beigel.leetSpeak_Generator</string>
 
     <string name="content_description_favorite">Preferito</string>
@@ -390,7 +386,7 @@
 
     <string name="onboarding_about_me_title">Creato da uno sviluppatore solista</string>
     <string name="onboarding_about_me_desc">Ciao! 👋 Sono uno sviluppatore solista che ha creato questa app per passione per la codifica e il leetspeak. Sempre gratuita, senza pubblicità.</string>
-    <string name="onboarding_support_hint">Se ti piace l\'app, una valutazione, un caffè o unirti al Discord mi aiutano molto a continuare a svilupparla.</string>
+    <string name="onboarding_support_hint">Se ti piace l\'app, una valutazione o un caffè mi aiutano molto a continuare a svilupparla.</string>
 
     <string name="onboarding_whatsnew_title">Novità di questo aggiornamento</string>
     <string name="onboarding_whatsnew_keyboard_title">Tastiera Leetspeak</string>

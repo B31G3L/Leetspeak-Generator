@@ -56,56 +56,62 @@ class LeetManager(private val context: Context) {
         .stateIn(scope, SharingStarted.Lazily, false)
 
     init {
-        loadLeets()
+        scope.launch {
+            performLoad()
+            _isLoaded.complete(Unit)
+        }
     }
 
-    private fun loadLeets() {
-        scope.launch {
-            try {
-                val leetsJson       = prefs.getString(LEETS_KEY, null)
-                val currentIndex    = prefs.getInt(CURRENT_LEET_KEY, 0)
-                val favoritesString = prefs.getString(FAVORITE_LEETS_KEY, null)
-                val orderString     = prefs.getString(OPTIONS_ORDER_KEY, null)
+    /**
+     * Liest Leets, aktuellen Index, Favoriten und Reihenfolge frisch aus den
+     * SharedPreferences und aktualisiert die StateFlows. Notwendig, weil App
+     * und Tastatur (IME) jeweils eigene [LeetManager]-Instanzen halten, die
+     * sich nicht automatisch synchronisieren — die Tastatur ruft dies bei
+     * jedem Öffnen erneut auf, damit neu erstellte Leets sofort sichtbar sind.
+     */
+    private suspend fun performLoad() {
+        try {
+            val leetsJson       = prefs.getString(LEETS_KEY, null)
+            val currentIndex    = prefs.getInt(CURRENT_LEET_KEY, 0)
+            val favoritesString = prefs.getString(FAVORITE_LEETS_KEY, null)
+            val orderString     = prefs.getString(OPTIONS_ORDER_KEY, null)
 
-                val loadedLeets = if (leetsJson != null) {
-                    val type = object : TypeToken<List<CustomLeet>>() {}.type
-                    gson.fromJson<List<CustomLeet>>(leetsJson, type) ?: emptyList()
-                } else emptyList()
+            val loadedLeets = if (leetsJson != null) {
+                val type = object : TypeToken<List<CustomLeet>>() {}.type
+                gson.fromJson<List<CustomLeet>>(leetsJson, type) ?: emptyList()
+            } else emptyList()
 
-                // Favoriten laden: neues Set-Format bevorzugen, sonst vom alten Einzel-Favoriten migrieren
-                val loadedFavorites = if (favoritesString != null) {
-                    favoritesString.split(",").mapNotNull { it.trim().toIntOrNull() }.toSet()
-                } else {
-                    val legacyFavorite = prefs.getInt(FAVORITE_LEET_KEY, FAV_NONE)
-                    if (legacyFavorite != FAV_NONE) setOf(legacyFavorite) else emptySet()
-                }
+            // Favoriten laden: neues Set-Format bevorzugen, sonst vom alten Einzel-Favoriten migrieren
+            val loadedFavorites = if (favoritesString != null) {
+                favoritesString.split(",").mapNotNull { it.trim().toIntOrNull() }.toSet()
+            } else {
+                val legacyFavorite = prefs.getInt(FAVORITE_LEET_KEY, FAV_NONE)
+                if (legacyFavorite != FAV_NONE) setOf(legacyFavorite) else emptySet()
+            }
 
-                // Reihenfolge laden
-                val loadedOrder = if (orderString != null) {
-                    orderString.split(",").mapNotNull { it.trim().toIntOrNull() }
-                } else {
-                    // Standard: Simple, Extended, dann Custom Leets
-                    val defaultOrder = mutableListOf(FAV_SIMPLE, FAV_EXTENDED)
-                    loadedLeets.indices.forEach { defaultOrder.add(it) }
-                    defaultOrder
-                }
+            // Reihenfolge laden
+            val loadedOrder = if (orderString != null) {
+                orderString.split(",").mapNotNull { it.trim().toIntOrNull() }
+            } else {
+                // Standard: Simple, Extended, dann Custom Leets
+                val defaultOrder = mutableListOf(FAV_SIMPLE, FAV_EXTENDED)
+                loadedLeets.indices.forEach { defaultOrder.add(it) }
+                defaultOrder
+            }
 
-                withContext(Dispatchers.Main) {
-                    _leets.value            = loadedLeets
-                    _currentLeetIndex.value = currentIndex.coerceIn(0, maxOf(0, loadedLeets.size - 1))
-                    _favoriteIndices.value  = loadedFavorites
-                    _optionsOrder.value     = loadedOrder
-                }
-            } catch (e: Exception) {
-                Log.e(TAG, "Fehler beim Laden", e)
-                withContext(Dispatchers.Main) {
-                    _leets.value            = emptyList()
-                    _currentLeetIndex.value = 0
-                    _favoriteIndices.value  = emptySet()
-                    _optionsOrder.value     = listOf(FAV_SIMPLE, FAV_EXTENDED)
-                }
-            } finally {
-                _isLoaded.complete(Unit)
+            withContext(Dispatchers.Main) {
+                _leets.value            = loadedLeets
+                _currentLeetIndex.value = currentIndex.coerceIn(0, maxOf(0, loadedLeets.size - 1))
+                _favoriteIndices.value  = loadedFavorites
+                _optionsOrder.value     = loadedOrder
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Fehler beim Laden", e)
+            withContext(Dispatchers.Main) {
+                _leets.value            = emptyList()
+                _currentLeetIndex.value = 0
+                _favoriteIndices.value  = emptySet()
+                _optionsOrder.value     = listOf(FAV_SIMPLE, FAV_EXTENDED)
             }
         }
     }
@@ -120,6 +126,18 @@ class LeetManager(private val context: Context) {
      * werden, bevor der Ladevorgang fertig ist.
      */
     suspend fun awaitLoaded() = ensureLoaded()
+
+    /**
+     * Erzwingt ein Neuladen aus den SharedPreferences, unabhängig vom
+     * bisherigen [awaitLoaded]-Status. Für die Tastatur gedacht: da sie eine
+     * eigene [LeetManager]-Instanz hält, die nicht automatisch mitbekommt,
+     * wenn in der Haupt-App ein Leet erstellt/geändert/gelöscht wird, muss
+     * sie bei jedem Öffnen aktiv neu laden (siehe LeetKeyboardService).
+     */
+    suspend fun reload() {
+        ensureLoaded()
+        performLoad()
+    }
 
     private suspend fun saveLeets() = withContext(Dispatchers.IO) {
         prefs.edit()
