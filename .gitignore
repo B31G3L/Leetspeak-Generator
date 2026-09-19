@@ -1,23 +1,37 @@
+# Gradle
+.gradle/
+build/
+captures/
+local.properties
 
-# IntelliJ
+# Android Studio / IntelliJ
 *.iml
-.idea/workspace.xml
-.idea/tasks.xml
-.idea/gradle.xml
-.idea/assetWizardSettings.xml
-.idea/dictionaries
-.idea/libraries
-.idea/caches
-.idea/modules.xml
-.idea/navEditor.xml
-.idea/shelf/
-.idea/.name
-.idea/compiler.xml
-.idea/copyright/profiles_settings.xml
-.idea/encodings.xml
-.idea/misc.xml
-.idea/scopes/scope_settings.xml
-.idea/vcs.xml
-.idea/*.iml
-.idea/modules
-.idea/codeStyles/
+.idea/
+!.idea/inspectionProfiles/
+.cxx/
+
+# Build-Artefakte
+*.apk
+*.aab
+*.ap_
+*.dex
+*.class
+app/release/
+app/debug/
+release/
+
+# Signierung — NIEMALS ins Repo
+*.jks
+*.keystore
+keystore.properties
+signing.properties
+
+# Logs & Temporäres
+*.log
+*.hprof
+.DS_Store
+Thumbs.db
+
+# Test-/Coverage-Ausgaben
+/app/build/reports/
+/app/build/outputs/
