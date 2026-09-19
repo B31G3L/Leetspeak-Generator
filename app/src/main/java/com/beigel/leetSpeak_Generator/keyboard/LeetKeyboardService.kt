@@ -23,12 +23,14 @@ import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import com.beigel.leetSpeak_Generator.R
 import com.beigel.leetSpeak_Generator.data.CustomLeet
+import com.beigel.leetSpeak_Generator.data.ThemePreferences
 import com.beigel.leetSpeak_Generator.manager.LeetManager
 import com.beigel.leetSpeak_Generator.translation.LeetTranslator
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 /**
@@ -44,6 +46,7 @@ import kotlinx.coroutines.launch
 class LeetKeyboardService : InputMethodService() {
 
     private lateinit var leetManager: LeetManager
+    private lateinit var themePreferences: ThemePreferences
     private lateinit var prefs: SharedPreferences
     private val serviceScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
 
@@ -53,6 +56,13 @@ class LeetKeyboardService : InputMethodService() {
     private var isCapsLock = false
     private var lastShiftTapTime = 0L
     private var isSymbolsLayer = false
+
+    /**
+     * Aktuelle Buchstaben-Anordnung. Wird aus den App-Einstellungen (DataStore)
+     * gespiegelt, damit eine Änderung in den Settings sofort greift, ohne dass
+     * die Tastatur neu gestartet werden muss.
+     */
+    private var layout: KeyboardLayout = KeyboardLayout.DEFAULT
 
     private var modeLabelView: TextView? = null
     private var keysContainer: LinearLayout? = null
@@ -67,10 +77,6 @@ class LeetKeyboardService : InputMethodService() {
         private const val MODE_CUSTOM_INT = 2
 
         private const val DOUBLE_TAP_MS = 350L
-
-        private const val ROW1 = "qwertyuiop"
-        private const val ROW2 = "asdfghjkl"
-        private const val ROW3 = "zxcvbnm"
 
         private const val SYM_ROW1 = "1234567890"
         private const val SYM_ROW2 = "@#\$_&-+()/"
@@ -97,8 +103,22 @@ class LeetKeyboardService : InputMethodService() {
     override fun onCreate() {
         super.onCreate()
         leetManager = LeetManager(applicationContext)
+        themePreferences = ThemePreferences(applicationContext)
         prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         loadState()
+
+        // Layout-Wahl dauerhaft beobachten statt nur einmal lesen: Wird das
+        // Layout in den App-Einstellungen umgestellt, während die Tastatur im
+        // Hintergrund lebt, baut sich die Tastenfläche direkt neu auf.
+        serviceScope.launch {
+            themePreferences.keyboardLayout.collectLatest { key ->
+                val newLayout = KeyboardLayout.fromKey(key)
+                if (newLayout != layout) {
+                    layout = newLayout
+                    rebuildKeys()
+                }
+            }
+        }
 
         // LeetManager lädt die Custom Leets asynchron aus den SharedPreferences.
         // Falls die Tastatur schneller angezeigt wird als dieser Ladevorgang
@@ -441,8 +461,9 @@ class LeetKeyboardService : InputMethodService() {
                 )
             )
         } else {
-            container.addView(buildLetterRow(ROW1))
-            container.addView(buildLetterRow(ROW2, sideInsetWeight = 0.5f))
+            val slots = layout.maxRowLength
+            container.addView(buildLetterRow(layout.row1, totalSlots = slots))
+            container.addView(buildLetterRow(layout.row2, totalSlots = slots))
             val shiftKey = createSpecialKey(if (isCapsLock) "⇪" else "⇧") { handleShiftTap() }.apply {
                 textSize = 20f
                 val isActive = isShiftOn || isCapsLock
@@ -457,14 +478,19 @@ class LeetKeyboardService : InputMethodService() {
                     )
                 )
             }
+            // Shift und Backspace füllen den Platz auf, den die dritte Reihe im
+            // gemeinsamen Raster frei lässt — so bleiben die Tasten aller Reihen
+            // gleich breit, egal ob das Layout 6 (AZERTY) oder 9 (Dvorak)
+            // Buchstaben in der untersten Reihe hat.
+            val sideWeight = 1.5f + (slots - layout.row3.length).coerceAtLeast(0) / 2f
             container.addView(
                 buildRow(
                     left = shiftKey,
-                    leftWeight = 1.5f,
-                    middleChars = ROW3,
+                    leftWeight = sideWeight,
+                    middleChars = layout.row3,
                     middleIsLiteral = false,
                     right = createRepeatingSpecialKey("⌫") { handleBackspace() },
-                    rightWeight = 1.5f
+                    rightWeight = sideWeight
                 )
             )
         }
@@ -503,13 +529,19 @@ class LeetKeyboardService : InputMethodService() {
     private fun letterLabel(c: Char): String =
         if (isShiftOn || isCapsLock) c.uppercaseChar().toString() else c.toString()
 
-    /** Reihe aus reinen Buchstabentasten (werden live übersetzt). */
-    private fun buildLetterRow(chars: String, sideInsetWeight: Float = 0f): LinearLayout {
+    /**
+     * Reihe aus reinen Buchstabentasten (werden live übersetzt). [totalSlots] gibt
+     * das gemeinsame Raster aller Reihen an: Ist die Reihe kürzer, wird die
+     * Differenz links und rechts als leerer Platzhalter verteilt, damit die
+     * Tastenbreite über alle Reihen hinweg identisch bleibt.
+     */
+    private fun buildLetterRow(chars: String, totalSlots: Int = chars.length): LinearLayout {
         return LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
             layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(56)).apply {
                 topMargin = dp(6)
             }
+            val sideInsetWeight = (totalSlots - chars.length).coerceAtLeast(0) / 2f
             if (sideInsetWeight > 0f) {
                 addView(View(this@LeetKeyboardService), LinearLayout.LayoutParams(0, 0, sideInsetWeight))
             }

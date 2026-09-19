@@ -35,10 +35,12 @@ import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.core.os.LocaleListCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.beigel.leetSpeak_Generator.R
 import com.beigel.leetSpeak_Generator.data.ThemePreferences
+import com.beigel.leetSpeak_Generator.keyboard.KeyboardLayout
 import com.beigel.leetSpeak_Generator.ui.components.AboutDialog
 import com.beigel.leetSpeak_Generator.ui.theme.LeetspeakGeneratorTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -205,6 +207,7 @@ fun SettingsScreen(
 
     val themeMode by viewModel.themeMode.collectAsStateWithLifecycle()
     val language by viewModel.language.collectAsStateWithLifecycle()
+    val keyboardLayout by viewModel.keyboardLayout.collectAsStateWithLifecycle()
 
     // Copy behavior preferences
     val clearInputAfterCopy by viewModel.clearInputAfterCopy.collectAsStateWithLifecycle()
@@ -374,9 +377,16 @@ fun SettingsScreen(
                         icon = Icons.Default.Keyboard,
                         isExpanded = keyboardExpanded,
                         onExpandToggle = { keyboardExpanded = !keyboardExpanded },
-                        preview = stringResource(R.string.settings_keyboard_preview)
+                        preview = stringResource(
+                            KeyboardLayout.fromKey(keyboardLayout).displayNameRes
+                        )
                     ) {
-                        KeyboardSettings()
+                        KeyboardSettings(
+                            currentLayoutKey = keyboardLayout,
+                            onLayoutSelected = { layoutKey ->
+                                scope.launch { viewModel.setKeyboardLayout(layoutKey) }
+                            }
+                        )
                     }
                 }
 
@@ -829,7 +839,10 @@ fun AboutSection(
 }
 
 @Composable
-fun KeyboardSettings() {
+fun KeyboardSettings(
+    currentLayoutKey: String,
+    onLayoutSelected: (String) -> Unit
+) {
     val context = LocalContext.current
 
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -840,6 +853,17 @@ fun KeyboardSettings() {
         )
 
         Spacer(modifier = Modifier.height(2.dp))
+
+        SettingsSubHeader(stringResource(R.string.settings_keyboard_layout))
+        KeyboardLayoutSelector(
+            currentLayoutKey = currentLayoutKey,
+            onLayoutSelected = onLayoutSelected
+        )
+
+        HorizontalDivider(
+            modifier = Modifier.padding(vertical = 6.dp),
+            color = MaterialTheme.colorScheme.outlineVariant
+        )
 
         SupportRow(
             icon = Icons.Default.Settings,
@@ -860,6 +884,60 @@ fun KeyboardSettings() {
                 imm.showInputMethodPicker()
             }
         )
+    }
+}
+
+/**
+ * Auswahl der Buchstaben-Anordnung für die Leet-Tastatur. Die Vorschau zeigt die
+ * erste Tastenreihe, damit der Unterschied zwischen den Layouts ohne Umschalten
+ * erkennbar ist.
+ */
+@Composable
+fun KeyboardLayoutSelector(
+    currentLayoutKey: String,
+    onLayoutSelected: (String) -> Unit
+) {
+    val selected = KeyboardLayout.fromKey(currentLayoutKey)
+
+    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        KeyboardLayout.entries.forEach { layout ->
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .selectable(
+                        selected = layout == selected,
+                        onClick = { onLayoutSelected(layout.key) },
+                        indication = null,
+                        interactionSource = remember { MutableInteractionSource() }
+                    )
+                    .padding(vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                RadioButton(
+                    selected = layout == selected,
+                    onClick = { onLayoutSelected(layout.key) }
+                )
+                Spacer(modifier = Modifier.width(12.dp))
+                Column {
+                    Text(
+                        text = stringResource(layout.displayNameRes),
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontWeight = FontWeight.Medium
+                    )
+                    Text(
+                        text = stringResource(layout.descriptionRes),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Text(
+                        text = layout.row1.uppercase(),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        letterSpacing = 1.sp
+                    )
+                }
+            }
+        }
     }
 }
 

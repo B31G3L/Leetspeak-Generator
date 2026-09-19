@@ -19,6 +19,9 @@ class ThemePreferences(private val context: Context) {
         private val LANGUAGE_KEY = androidx.datastore.preferences.core.stringPreferencesKey("language_preference")
         private val HAPTIC_FEEDBACK_KEY = booleanPreferencesKey("haptic_feedback_enabled")
 
+        /** Buchstaben-Anordnung der Leet-Tastatur (Key aus KeyboardLayout). */
+        private val KEYBOARD_LAYOUT_KEY = androidx.datastore.preferences.core.stringPreferencesKey("keyboard_layout")
+
         // Copy behavior preferences
         private val CLEAR_INPUT_AFTER_COPY_KEY = androidx.datastore.preferences.core.booleanPreferencesKey("clear_input_after_copy")
         private val ASK_BEFORE_CLEAR_KEY = androidx.datastore.preferences.core.booleanPreferencesKey("ask_before_clear")
@@ -35,6 +38,14 @@ class ThemePreferences(private val context: Context) {
         const val LANGUAGE_SPANISH = "es"
         const val LANGUAGE_FRENCH = "fr"
         const val LANGUAGE_ITALIAN = "it"
+
+        /**
+         * Fallback, falls noch nichts gewählt wurde. Bewusst als String und nicht
+         * als KeyboardLayout-Referenz, damit die Datenschicht nicht von der
+         * Tastatur-Schicht abhängt — aufgelöst wird der Wert über
+         * KeyboardLayout.fromKey().
+         */
+        const val KEYBOARD_LAYOUT_DEFAULT = "qwertz"
     }
 
     // Light/Dark Mode Preference
@@ -53,6 +64,10 @@ class ThemePreferences(private val context: Context) {
     val hapticFeedbackEnabled: Flow<Boolean> = context.dataStore.data.map { preferences ->
         preferences[HAPTIC_FEEDBACK_KEY] ?: true  // Standard: ein
     }
+
+    val keyboardLayout: Flow<String> = context.dataStore.data.map { preferences ->
+        preferences[KEYBOARD_LAYOUT_KEY] ?: KEYBOARD_LAYOUT_DEFAULT
+    }
     // Copy behavior preferences
     val clearInputAfterCopy: Flow<Boolean> = context.dataStore.data.map { preferences ->
         preferences[CLEAR_INPUT_AFTER_COPY_KEY] ?: false
@@ -65,6 +80,12 @@ class ThemePreferences(private val context: Context) {
     suspend fun setTheme(theme: String) {
         context.dataStore.edit { preferences ->
             preferences[THEME_KEY] = theme
+        }
+    }
+
+    suspend fun setKeyboardLayout(layoutKey: String) {
+        context.dataStore.edit { preferences ->
+            preferences[KEYBOARD_LAYOUT_KEY] = layoutKey
         }
     }
 

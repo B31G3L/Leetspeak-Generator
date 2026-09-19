@@ -69,6 +69,17 @@ class SettingsViewModel @Inject constructor(
     val hapticFeedbackEnabled: StateFlow<Boolean> = themePreferences.hapticFeedbackEnabled
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), true)
 
+    val keyboardLayout: StateFlow<String> = themePreferences.keyboardLayout
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = ThemePreferences.KEYBOARD_LAYOUT_DEFAULT
+        )
+
+    suspend fun setKeyboardLayout(layoutKey: String) {
+        themePreferences.setKeyboardLayout(layoutKey)
+    }
+
     suspend fun setHapticFeedbackEnabled(enabled: Boolean) {
         themePreferences.setHapticFeedbackEnabled(enabled)
     }
