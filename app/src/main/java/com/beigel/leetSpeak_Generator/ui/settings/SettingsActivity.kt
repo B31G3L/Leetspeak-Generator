@@ -7,6 +7,7 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.compose.animation.*
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
@@ -53,6 +54,10 @@ class SettingsActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Siehe ComposeMainActivity: Aufruf an der von der Play Console
+        // erwarteten Stelle, die Icon-Farben regelt weiterhin das Theme.
+        enableEdgeToEdge()
 
         setContent {
             val themeMode by viewModel.themeMode.collectAsStateWithLifecycle()

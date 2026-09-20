@@ -11,6 +11,7 @@ import android.os.VibrationEffect
 import android.os.Vibrator
 import androidx.activity.compose.setContent
 import androidx.activity.compose.BackHandler
+import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.animation.core.*
@@ -65,6 +66,15 @@ class ComposeMainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Edge-to-Edge zusaetzlich hier, obwohl LeetspeakGeneratorTheme es per
+        // SideEffect ohnehin setzt: Die Play Console sucht den Aufruf per
+        // statischer Analyse an der dokumentierten Stelle. Aus dem Compose-Baum
+        // heraus ist er nach der R8-Obfuskation nicht mehr zuzuordnen, was die
+        // Meldung "Randlose Anzeige funktioniert moeglicherweise nicht fuer alle
+        // Nutzer" ausloest. Der Theme-Aufruf bleibt zustaendig fuer die
+        // Icon-Farben beim Wechsel zwischen Hell und Dunkel.
+        enableEdgeToEdge()
 
         vibrator = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             val vibratorManager = getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as android.os.VibratorManager
